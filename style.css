@@ -1,0 +1,366 @@
+/* General Body and App Container Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header Styles */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ced4da;
+}
+
+#page-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Main Content and Page Styles */
+#main-content {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.page {
+    display: none; /* Hidden by default */
+}
+
+.page.active-page {
+    display: block; /* Show the active page */
+}
+
+/* Button Styles */
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.big-button {
+    width: 80%;
+    max-width: 400px;
+    min-height: 80px;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    white-space: pre-wrap; /* Allows wrapping with \n */
+}
+
+/* Footer Styles */
+.app-footer {
+    padding: 10px 20px;
+    border-top: 1px solid #ced4da;
+}
+
+
+/* --- Light Theme --- */
+:root {
+    --bg-color: #f0f0f0;
+    --text-color: #000000;
+    --primary-btn-bg: #007BFF;
+    --primary-btn-hover-bg: #0056b3;
+    --secondary-btn-bg: #6c757d;
+    --secondary-btn-hover-bg: #5a6268;
+    --header-bg: #f0f0f0;
+    --footer-bg: #e9ecef;
+    --border-color: #ced4da;
+    --card-bg: #ffffff;
+    --link-color: #007BFF;
+    --link-hover-color: #0056b3;
+    --tab-bg: #e9ecef;
+    --tab-active-bg: #f0f0f0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.app-header {
+    background-color: var(--header-bg);
+    border-bottom-color: var(--border-color);
+}
+
+.app-footer {
+    background-color: var(--footer-bg);
+    border-top-color: var(--border-color);
+}
+
+.big-button {
+    background-color: var(--primary-btn-bg);
+    color: white;
+    border: none;
+}
+
+.big-button:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+button {
+    background-color: var(--secondary-btn-bg);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--secondary-btn-hover-bg);
+}
+
+textarea, input[type="number"] {
+    width: 100%;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    box-sizing: border-box; /* Ensures padding doesn't add to width */
+}
+
+textarea {
+    min-height: 100px;
+}
+
+
+/* --- Dark Theme --- */
+[data-theme="dark"] {
+    --bg-color: #2b2b2b;
+    --text-color: #ffffff;
+    --primary-btn-bg: #008CBA;
+    --primary-btn-hover-bg: #007A9E;
+    --secondary-btn-bg: #5a5a5a;
+    --secondary-btn-hover-bg: #6a6a6a;
+    --header-bg: #2b2b2b;
+    --footer-bg: #1e1e1e;
+    --border-color: #5a5a5a;
+    --card-bg: #3c3c3c;
+    --link-color: #00BFFF;
+    --link-hover-color: #1E90FF;
+    --tab-bg: #3c3c3c;
+    --tab-active-bg: #2b2b2b;
+}
+
+/* --- Flowchart Specific Styles --- */
+.breadcrumbs {
+    margin-bottom: 20px;
+}
+
+.breadcrumb-button {
+    background-color: transparent;
+    color: var(--link-color);
+    border: none;
+    text-decoration: underline;
+    padding: 0;
+    font-size: 16px;
+}
+
+.breadcrumb-button:hover {
+    color: var(--link-hover-color);
+}
+
+.flowchart-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+}
+
+.flowchart-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.flowchart-nav {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+}
+
+/* --- Tab Styles --- */
+.tab-container {
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+}
+
+.tab-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-button {
+    background: var(--tab-bg);
+    color: var(--text-color);
+    padding: 10px;
+    border: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    cursor: pointer;
+}
+
+.tab-button.active {
+    background: var(--tab-active-bg);
+    border-bottom: 1px solid transparent;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- Form & Calculator Styles --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.calculator-grid {
+    display: grid;
+    grid-template-columns: 2fr repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.grid-header {
+    font-weight: bold;
+    text-align: center;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+/* --- New Calculator & Form Styles --- */
+.calculator-container {
+    overflow-x: auto; /* Adds horizontal scroll on small screens */
+}
+.calculator-grid div {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center radio buttons */
+    padding: 4px;
+}
+.calculator-grid div:first-child {
+    justify-content: flex-start; /* Align item labels to the left */
+    font-weight: bold;
+}
+.aws-grid {
+    grid-template-columns: 2fr repeat(5, 1fr);
+}
+.ciwa-grid {
+    grid-template-columns: 2fr repeat(8, 1fr);
+}
+.saws-grid {
+    grid-template-columns: 1.5fr repeat(4, 1fr);
+}
+.cows-grid {
+    grid-template-columns: 1fr 2fr;
+}
+.cows-grid .grid-header:last-child {
+    text-align: left;
+    justify-content: flex-start;
+}
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-start !important;
+}
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Specific styles for Standard Drinks by Type */
+.std-drinks-grid {
+    grid-template-columns: 1fr; /* Stack categories on small screens */
+    gap: 20px;
+}
+.std-drinks-grid fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+}
+.std-drinks-grid legend {
+    font-weight: bold;
+    padding: 0 5px;
+}
+
+/* Media query for wider screens */
+@media (min-width: 768px) {
+    .std-drinks-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+/* --- New Detailed Calculator List Styles --- */
+.calculator-item {
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+}
+
+.calculator-item legend {
+    font-weight: bold;
+    font-size: 18px;
+    padding: 0 5px;
+}
+
+.radio-option {
+    padding: 8px 0;
+}
+
+.radio-option label {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Provides space between radio button and text */
+    cursor: pointer;
+}
+
+/* --- Other Syndromes Page --- */
+.calculator-page {
+    display: none; /* Hidden by default */
+    margin-top: 20px;
+}
+
+.back-to-selection-btn {
+    margin-bottom: 20px;
+    align-self: flex-start; /* Aligns the button to the left */
+}

@@ -1,0 +1,9 @@
+{
+  "short_name": "Withdrawal",
+  "name": "Withdrawal Management Assistant",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f0f0f0",
+  "description": "A clinical helper for managing withdrawal syndromes."
+}
