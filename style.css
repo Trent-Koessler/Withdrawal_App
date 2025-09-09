@@ -204,8 +204,11 @@ textarea {
 
 .tab-buttons {
     display: flex;
-    flex-wrap: wrap;
     border-bottom: 1px solid var(--border-color);
+    /* New styles for horizontal scrolling on mobile */
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 .tab-button {
@@ -261,36 +264,6 @@ textarea {
     font-weight: bold;
 }
 
-/* --- New Calculator & Form Styles --- */
-.calculator-container {
-    overflow-x: auto; /* Adds horizontal scroll on small screens */
-}
-.calculator-grid div {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center radio buttons */
-    padding: 4px;
-}
-.calculator-grid div:first-child {
-    justify-content: flex-start; /* Align item labels to the left */
-    font-weight: bold;
-}
-.aws-grid {
-    grid-template-columns: 2fr repeat(5, 1fr);
-}
-.ciwa-grid {
-    grid-template-columns: 2fr repeat(8, 1fr);
-}
-.saws-grid {
-    grid-template-columns: 1.5fr repeat(4, 1fr);
-}
-.cows-grid {
-    grid-template-columns: 1fr 2fr;
-}
-.cows-grid .grid-header:last-child {
-    text-align: left;
-    justify-content: flex-start;
-}
 .radio-group {
     display: flex;
     flex-wrap: wrap;
@@ -303,6 +276,14 @@ textarea {
     gap: 4px;
 }
 
+/* --- General Component Styles --- */
+.button-group {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
 /* Specific styles for Standard Drinks by Type */
 .std-drinks-grid {
     grid-template-columns: 1fr; /* Stack categories on small screens */
@@ -313,7 +294,7 @@ textarea {
     border-radius: 5px;
     padding: 10px;
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 1fr 70px;
     gap: 10px;
     align-items: center;
 }
@@ -329,6 +310,15 @@ textarea {
     }
 }
 
+/* --- New Calculator & Form Styles --- */
+.calculator-container {
+    overflow-x: auto; /* Adds horizontal scroll on small screens */
+}
+
+.calculator-note {
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
 /* --- New Detailed Calculator List Styles --- */
 .calculator-item {
     border: 1px solid var(--border-color);

@@ -219,24 +219,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const regimenBenzoDisplay = document.getElementById('regimen-benzo-display');
     const regimenDisplayDiv = document.getElementById('regimen-display');
     let selectedBenzo = 'Diazepam';
-    let lastSeverity = 'mild';
+    let selectedSeverity = 'mild';
+
+    const REGIMEN_CONFIG = {
+        "Diazepam": {
+            name: "Diazepam",
+            mild: { title: 'Mild-Moderate (CIWA 10-15)', schedule: [ { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' } ], prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ] },
+            moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd' } ], prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ] },
+            severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 20mg hourly until sedated or total dose reaches 80mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."] }
+        },
+        "Oxazepam": {
+            name: "Oxazepam",
+            mild: { title: 'Mild-Moderate (CIWA 10-15)', schedule: [ { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' } ], prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ] },
+            moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd' } ], prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ] },
+            severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 60mg hourly until sedated or total dose reaches 240mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 240mg oxazepam equivalent."] }
+        }
+    };
 
     function updateRegimenDisplay() {
-        const isOxa = selectedBenzo === "Oxazepam";
-        const factor = isOxa ? 3 : 1;
-        const b_name = selectedBenzo;
-        const regimens = {
-            'mild': { 'title': 'Mild-Moderate (CIWA 10-15)', 'schedule': [`Day 1: ${b_name} ${10*factor}mg qid`, `Day 2: ${b_name} ${10*factor}mg tds`, `Day 3: ${b_name} ${10*factor}mg bd`, `Day 4: ${b_name} ${5*factor}mg bd`, `Day 5: ${b_name} ${5*factor}mg nocte`], 'prn': [`CIWA 10-15: extra ${b_name} ${10*factor}mg prn`, `CIWA 15-20: extra ${b_name} ${20*factor}mg prn`] },
-            'moderate': { 'title': 'Moderate-Severe (CIWA 15-20)', 'schedule': [`Day 1: ${b_name} ${20*factor}mg qid`, `Day 2: ${b_name} ${15*factor}mg qid`, `Day 3: ${b_name} ${10*factor}mg qid`, `Day 4: ${b_name} ${10*factor}mg tds`, `Day 5: ${b_name} ${5*factor}mg tds`, `Day 6: ${b_name} ${5*factor}mg bd`], 'prn': [`CIWA 10-15: extra ${b_name} ${10*factor}mg prn`, `CIWA 15-20: extra ${b_name} ${20*factor}mg prn`] },
-            'severe': { 'title': 'Severe (CIWA > 20)', 'schedule': [`Loading Dose: ${b_name} ${20*factor}mg hourly until sedated or total dose reaches ${80*factor}mg.`, "Then commence Moderate-Severe schedule."], 'prn': ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."] }
-        };
-        const data = regimens[lastSeverity];
+        if (!regimenDisplayDiv) return;
+
+        const config = REGIMEN_CONFIG[selectedBenzo];
+        const data = config[selectedSeverity];
+        const b_name = config.name;
+
         let displayHTML = `<h3>${data.title}</h3><b>Scheduled Dosing:</b><ul>`;
-        data.schedule.forEach(s => displayHTML += `<li>${s}</li>`);
-        displayHTML += `</ul><b>PRN Dosing:</b><ul>`;
-        data.prn.forEach(p => displayHTML += `<li>${p}</li>`);
+        data.schedule.forEach((s, index) => {
+            if (typeof s === 'string') {
+                displayHTML += `<li>${s}</li>`;
+            } else {
+                displayHTML += `<li>Day ${index + 1}: ${b_name} ${s.dose}mg ${s.freq}</li>`;
+            }
+        });
         displayHTML += `</ul>`;
-        if (regimenDisplayDiv) regimenDisplayDiv.innerHTML = displayHTML;
+
+        if (data.prn && data.prn.length > 0) {
+            displayHTML += `<b>PRN Dosing:</b><ul>`;
+            data.prn.forEach(p => {
+                if (typeof p === 'string') {
+                    displayHTML += `<li>${p}</li>`;
+                } else {
+                    displayHTML += `<li>CIWA ${p.range}: extra ${b_name} ${p.dose}mg prn</li>`;
+                }
+            });
+            displayHTML += `</ul>`;
+        }
+        
+        regimenDisplayDiv.innerHTML = displayHTML;
     }
 
     benzoChoiceBtns.forEach(btn => {
@@ -252,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     regimenSeverityBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            lastSeverity = btn.dataset.severity;
+            selectedSeverity = btn.dataset.severity;
             regimenSeverityBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             updateRegimenDisplay();
@@ -306,19 +335,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- REUSABLE CALCULATOR SETUP FUNCTION ---
 function setupCalculator(config) {
-    const container = document.getElementById(config.id);
-    if (!container) return;
+    const template = document.getElementById('calculator-template');
+    if (!template) {
+        console.error("Calculator template not found!");
+        return;
+    }
 
-    const itemsContainer = container.querySelector('.calculator-items');
-    if (!itemsContainer) return;
+    const tabContent = document.getElementById(config.id);
+    if (!tabContent) {
+        console.error(`Container for calculator "${config.id}" not found!`);
+        return;
+    }
 
-    const totalScoreEl = container.querySelector('.total-score');
-    const severityEl = container.querySelector('.severity');
-    const emrSummaryEl = container.querySelector('.emr-summary');
-    const copyBtn = container.querySelector('.copy-btn');
-    const resetBtn = container.querySelector('.reset-btn');
+    // 1. Create the calculator instance from the template
+    const calculatorNode = template.cloneNode(true);
+    calculatorNode.removeAttribute('id');
+    calculatorNode.style.display = 'block';
 
-    function calculateScore() {
+    // 2. Get references to elements WITHIN the new node
+    const titleNode = calculatorNode.querySelector('.calculator-title');
+    const noteNode = calculatorNode.querySelector('.calculator-note');
+    const itemsContainer = calculatorNode.querySelector('.calculator-items');
+    const totalScoreEl = calculatorNode.querySelector('.total-score');
+    const severityEl = calculatorNode.querySelector('.severity');
+    const emrSummaryEl = calculatorNode.querySelector('.emr-summary');
+    const copyBtn = calculatorNode.querySelector('.copy-btn');
+    const resetBtn = calculatorNode.querySelector('.reset-btn');
+
+    // 3. Populate the instance
+    titleNode.textContent = config.name;
+    if (config.note) {
+        noteNode.innerHTML = `<i>${config.note}</i>`;
+        noteNode.style.display = 'block';
+    } else {
+        noteNode.style.display = 'none';
+    }
+
+    let itemsHtml = '';
+    config.items.forEach(item => {
+        itemsHtml += `<fieldset class="calculator-item"><legend>${item.displayName}</legend>`;
+        item.options.forEach((opt, index) => {
+            const isChecked = index === 0 ? 'checked' : '';
+            itemsHtml += `
+                <div class="radio-option">
+                    <label>
+                        <input type="radio" name="${item.radioName}" value="${opt.value}" ${isChecked}>
+                        ${opt.label}
+                    </label>
+                </div>`;
+        });
+        itemsHtml += `</fieldset>`;
+    });
+    itemsContainer.innerHTML = itemsHtml;
+
+    // 4. Clear the target tab and append the new calculator
+    tabContent.innerHTML = '';
+    tabContent.appendChild(calculatorNode);
+
+    // 5. Define a function that operates on this specific instance's elements
+    function updateCalculatorState() {
         let totalScore = 0;
         const checkedRadios = itemsContainer.querySelectorAll('input[type="radio"]:checked');
         checkedRadios.forEach(radio => {
@@ -326,57 +401,104 @@ function setupCalculator(config) {
         });
         
         const severity = config.severityLogic(totalScore);
-        
         totalScoreEl.textContent = totalScore;
         severityEl.textContent = severity;
         
-        // This summary logic is now robust and no longer relies on array order.
         let summary = `${config.name} assessed. Total score: ${totalScore} (${severity}).\nBreakdown:\n`;
         config.items.forEach(item => {
             const radio = itemsContainer.querySelector(`input[name="${item.radioName}"]:checked`);
-            if (radio) {
-                summary += `- ${item.displayName}: ${radio.value}\n`;
+            if (radio) { 
+                const selectedOption = item.options.find(opt => opt.value == radio.value);
+                let labelText = radio.value; // Fallback to just the score
+                if (selectedOption) {
+                    // Get the descriptive text and strip any HTML tags for a clean summary
+                    labelText = selectedOption.label.replace(/<[^>]*>?/gm, '');
+                }
+                summary += `- ${item.displayName}: ${labelText}\n`;
             }
         });
         emrSummaryEl.value = summary.trim();
     }
 
-    itemsContainer.addEventListener('change', calculateScore);
+    // 6. Add event listeners
+    itemsContainer.addEventListener('change', updateCalculatorState);
 
-    copyBtn.addEventListener('click', () => {
+    copyBtn.addEventListener('click', (e) => {
         emrSummaryEl.select();
         navigator.clipboard.writeText(emrSummaryEl.value);
+        const btn = e.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = originalText; }, 2000);
     });
 
     resetBtn.addEventListener('click', () => {
-        itemsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
-            const groupName = radio.name;
-            const firstRadioInGroup = itemsContainer.querySelector(`input[name="${groupName}"]`);
-            if (radio === firstRadioInGroup) {
-                radio.checked = true;
-            } else {
-                radio.checked = false;
+        itemsContainer.querySelectorAll('fieldset').forEach(fieldset => {
+            const firstRadio = fieldset.querySelector('input[type="radio"]');
+            if (firstRadio) {
+                firstRadio.checked = true;
             }
         });
-        calculateScore(); // Recalculate after resetting
+        updateCalculatorState(); // Recalculate after resetting
     });
-    
-    // Initial calculation on load
-    calculateScore();
+
+    // 7. Set initial state
+    updateCalculatorState();
 }
     
 // --- SETUP ALL CALCULATORS ---
 setupCalculator({
     id: 'aws',
-    name: 'AWS',
+    name: 'Alcohol Withdrawal Scale (AWS)',
     items: [
-        { displayName: "Perspiration", radioName: "aws-perspiration" },
-        { displayName: "Tremor", radioName: "aws-tremor" },
-        { displayName: "Anxiety", radioName: "aws-anxiety" },
-        { displayName: "Agitation", radioName: "aws-agitation" },
-        { displayName: "Axilla temperature", radioName: "aws-temp" },
-        { displayName: "Hallucinations", radioName: "aws-hallucinations" },
-        { displayName: "Orientation", radioName: "aws-orientation" }
+        { displayName: "Perspiration", radioName: "aws-perspiration", options: [
+            { value: 0, label: "<b>0:</b> No abnormal sweating." },
+            { value: 1, label: "<b>1:</b> Moist skin." },
+            { value: 2, label: "<b>2:</b> Localised beads of sweat, e.g. on face, chest." },
+            { value: 3, label: "<b>3:</b> Whole body wet from perspiration." },
+            { value: 4, label: "<b>4:</b> Profuse maximal sweating-clothes, linen are wet." }
+        ]},
+        { displayName: "Tremor", radioName: "aws-tremor", options: [
+            { value: 0, label: "<b>0:</b> No tremor." },
+            { value: 1, label: "<b>1:</b> Slight tremor." },
+            { value: 2, label: "<b>2:</b> Constant slight tremor of upper extremities." },
+            { value: 3, label: "<b>3:</b> Constant marked tremor of extremities." }
+        ]},
+        { displayName: "Anxiety", radioName: "aws-anxiety", options: [
+            { value: 0, label: "<b>0:</b> No apprehension or anxiety." },
+            { value: 1, label: "<b>1:</b> Slight apprehension." },
+            { value: 2, label: "<b>2:</b> Apprehension or understandable fear, e.g. of withdrawal symptoms." },
+            { value: 3, label: "<b>3:</b> Anxiety occasionally accentuated to a state of panic." },
+            { value: 4, label: "<b>4:</b> Constant panic-like anxiety." }
+        ]},
+        { displayName: "Agitation", radioName: "aws-agitation", options: [
+            { value: 0, label: "<b>0:</b> Rests normally during day, no signs of agitation." },
+            { value: 1, label: "<b>1:</b> Slight restlessness, cannot sit or lie still. Awake when others asleep." },
+            { value: 2, label: "<b>2:</b> Moves constantly, looks tense. Wants to get out of bed but obeys requests to stay in bed." },
+            { value: 3, label: "<b>3:</b> Constantly restless. Gets out of bed for no obvious reason." },
+            { value: 4, label: "<b>4:</b> Maximally restless, aggressive. Ignores requests to stay in bed." }
+        ]},
+        { displayName: "Axilla temperature", radioName: "aws-temp", options: [
+            { value: 0, label: "<b>0:</b> Temperature of 37.0°C." },
+            { value: 1, label: "<b>1:</b> Temperature of 37.1-37.5°C." },
+            { value: 2, label: "<b>2:</b> Temperature of 37.6-38.0°C." },
+            { value: 3, label: "<b>3:</b> Temperature of 38.1-38.5°C." },
+            { value: 4, label: "<b>4:</b> Temperature above 38.5°C." }
+        ]},
+        { displayName: "Hallucinations (sight, sound, taste or touch)", radioName: "aws-hallucinations", options: [
+            { value: 0, label: "<b>0:</b> No evidence of hallucinations." },
+            { value: 1, label: "<b>1:</b> Distortions of real objects, aware that these are not real if this is pointed out." },
+            { value: 2, label: "<b>2:</b> Appearance of totally new objects or perceptions, aware that these are not real if this is pointed out." },
+            { value: 3, label: "<b>3:</b> Believes the hallucinations are real but still orientated in place and person." },
+            { value: 4, label: "<b>4:</b> Believes himself to be in a totally non existent environment, preoccupied, cannot be diverted or reassured." }
+        ]},
+        { displayName: "Orientation", radioName: "aws-orientation", options: [
+            { value: 0, label: "<b>0:</b> The patient is fully orientated in time, place and person." },
+            { value: 1, label: "<b>1:</b> The patient is fully orientated in person but is not sure where he is or what time it is." },
+            { value: 2, label: "<b>2:</b> Orientated in person but disorientated in time and place." },
+            { value: 3, label: "<b>3:</b> Doubtful personal orientation, disorientated in time and place; there may be short periods of lucidity." },
+            { value: 4, label: "<b>4:</b> Disorientated in time, place and person. No meaningful contact can be obtained." }
+        ]}
     ],
     severityLogic: (score) => {
         if (score <= 4) return "Mild withdrawal";
@@ -389,16 +511,64 @@ setupCalculator({
     id: 'ciwa-ar',
     name: 'CIWA-Ar',
     items: [
-        { displayName: "Nausea & Vomiting", radioName: "ciwa-nausea" },
-        { displayName: "Tremor", radioName: "ciwa-tremor" },
-        { displayName: "Paroxysmal Sweats", radioName: "ciwa-sweats" },
-        { displayName: "Anxiety", radioName: "ciwa-anxiety" },
-        { displayName: "Agitation", radioName: "ciwa-agitation" },
-        { displayName: "Tactile Disturbances", radioName: "ciwa-tactile" },
-        { displayName: "Auditory Disturbances", radioName: "ciwa-auditory" },
-        { displayName: "Visual Disturbances", radioName: "ciwa-visual" },
-        { displayName: "Headache", radioName: "ciwa-headache" },
-        { displayName: "Orientation", radioName: "ciwa-orientation" }
+        { displayName: "Nausea and vomiting", radioName: "ciwa-nausea", options: [
+            { value: 0, label: "<b>0:</b> No nausea and no vomiting." },
+            { value: 1, label: "<b>1:</b> Mild nausea with no vomiting." },
+            { value: 4, label: "<b>4:</b> Intermittent nausea with dry heaves." },
+            { value: 7, label: "<b>7:</b> Constant nausea, frequent dry heaves and vomiting." }
+        ]},
+        { displayName: "Tremor", radioName: "ciwa-tremor", options: [
+            { value: 0, label: "<b>0:</b> No tremor." },
+            { value: 1, label: "<b>1:</b> Not visible, but can be felt fingertip to fingertip." },
+            { value: 4, label: "<b>4:</b> Moderate, with patient's arms extended." },
+            { value: 7, label: "<b>7:</b> Severe, even with arms not extended." }
+        ]},
+        { displayName: "Paroxysmal sweats", radioName: "ciwa-sweats", options: [
+            { value: 0, label: "<b>0:</b> No sweat visible." },
+            { value: 1, label: "<b>1:</b> Barely perceptible sweating, palms moist." },
+            { value: 4, label: "<b>4:</b> Beads of sweat obvious on forehead." },
+            { value: 7, label: "<b>7:</b> Drenching sweats." }
+        ]},
+        { displayName: "Anxiety", radioName: "ciwa-anxiety", options: [
+            { value: 0, label: "<b>0:</b> No anxiety, at ease." },
+            { value: 1, label: "<b>1:</b> Mildly anxious." },
+            { value: 4, label: "<b>4:</b> Moderately anxious, or guarded, so anxiety is inferred." },
+            { value: 7, label: "<b>7:</b> Equivalent to acute panic states as seen in severe delirium or acute schizophrenic reactions." }
+        ]},
+        { displayName: "Agitation", radioName: "ciwa-agitation", options: [
+            { value: 0, label: "<b>0:</b> Normal activity." },
+            { value: 1, label: "<b>1:</b> Somewhat more than normal activity." },
+            { value: 4, label: "<b>4:</b> Moderately fidgety and restless." },
+            { value: 7, label: "<b>7:</b> Equivalent to acute panic states as seen in severe delirium or acute schizophrenic reactions." }
+        ]},
+        { displayName: "Tactile disturbances", radioName: "ciwa-tactile", options: [
+            { value: 0, label: "<b>0:</b> None." }, { value: 1, label: "<b>1:</b> Very mild itching, pins and needles, burning or numbness." },
+            { value: 2, label: "<b>2:</b> Mild itching, pins and needles, burning or numbness." }, { value: 3, label: "<b>3:</b> Moderate itching, pins and needles, burning or numbness." },
+            { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
+            { value: 6, label: "<b>6:</b> Extremely severe hallucinations." }, { value: 7, label: "<b>7:</b> Continuous hallucinations." }
+        ]},
+        { displayName: "Auditory disturbances", radioName: "ciwa-auditory", options: [
+            { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild harshness or ability to frighten." },
+            { value: 2, label: "<b>2:</b> Mild harshness or ability to frighten." }, { value: 3, label: "<b>3:</b> Moderate harshness or ability to frighten." },
+            { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
+            { value: 6, label: "<b>6:</b> Extremely severe hallucinations." }, { value: 7, label: "<b>7:</b> Continuous hallucinations." }
+        ]},
+        { displayName: "Visual disturbances", radioName: "ciwa-visual", options: [
+            { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild sensitivity." },
+            { value: 2, label: "<b>2:</b> Mild sensitivity." }, { value: 3, label: "<b>3:</b> Moderate sensitivity." },
+            { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
+            { value: 6, label: "<b>6:</b> Extremely severe hallucinations." }, { value: 7, label: "<b>7:</b> Continuous hallucinations." }
+        ]},
+        { displayName: "Headaches, fullness in head", radioName: "ciwa-headache", options: [
+            { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild." }, { value: 2, label: "<b>2:</b> Mild." },
+            { value: 3, label: "<b>3:</b> Moderate." }, { value: 4, label: "<b>4:</b> Moderately severe." }, { value: 5, label: "<b>5:</b> Severe." },
+            { value: 6, label: "<b>6:</b> Very severe." }, { value: 7, label: "<b>7:</b> Extremely severe." }
+        ]},
+        { displayName: "Orientation and clouding of sensorium", radioName: "ciwa-orientation", options: [
+            { value: 0, label: "<b>0:</b> Orientated and can do serial additions." }, { value: 1, label: "<b>1:</b> Cannot do serial additions or is uncertain about date." },
+            { value: 2, label: "<b>2:</b> Disorientated for date by no more than 2 calendar days." }, { value: 3, label: "<b>3:</b> Disorientated for date by more than 2 calendar days." },
+            { value: 4, label: "<b>4:</b> Disorientated for place and/or person." }
+        ]}
     ],
     severityLogic: (score) => {
         if (score < 10) return "Mild withdrawal";
@@ -409,18 +579,18 @@ setupCalculator({
 
 setupCalculator({
     id: 'saws',
-    name: 'SAWS',
+    name: 'SAWS (Short Alcohol Withdrawal Scale)',
     items: [
-        { displayName: "Anxious", radioName: "saws-anxious" },
-        { displayName: "Sleep disturbance", radioName: "saws-sleep" },
-        { displayName: "Memory problems", radioName: "saws-memory" },
-        { displayName: "Nausea", radioName: "saws-nausea" },
-        { displayName: "Restless", radioName: "saws-restless" },
-        { displayName: "Tremor (shakes)", radioName: "saws-tremor" },
-        { displayName: "Feeling confused", radioName: "saws-confused" },
-        { displayName: "Sweating", radioName: "saws-sweating" },
-        { displayName: "Miserable", radioName: "saws-miserable" },
-        { displayName: "Heart pounding", radioName: "saws-heart" }
+        { displayName: "Anxious", radioName: "saws-anxious", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Sleep disturbance", radioName: "saws-sleep", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Memory problems", radioName: "saws-memory", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Nausea", radioName: "saws-nausea", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Restless", radioName: "saws-restless", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Tremor (shakes)", radioName: "saws-tremor", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Feeling confused", radioName: "saws-confused", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Sweating", radioName: "saws-sweating", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Miserable", radioName: "saws-miserable", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "Heart pounding", radioName: "saws-heart", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]}
     ],
     severityLogic: (score) => {
         if (score === 0) return "None";
@@ -432,19 +602,52 @@ setupCalculator({
 
 setupCalculator({
     id: 'cows',
-    name: 'COWS',
+    name: 'COWS (Clinical Opiate Withdrawal Scale)',
     items: [
-        { displayName: "Resting Pulse Rate", radioName: "cows-pulse" },
-        { displayName: "Sweating", radioName: "cows-sweating" },
-        { displayName: "Restlessness", radioName: "cows-restless" },
-        { displayName: "Pupil size", radioName: "cows-pupil" },
-        { displayName: "Bone or joint aches", radioName: "cows-aches" },
-        { displayName: "Runny nose or tearing", radioName: "cows-nose" },
-        { displayName: "GI Upset", radioName: "cows-gi" },
-        { displayName: "Tremor", radioName: "cows-tremor" },
-        { displayName: "Yawning", radioName: "cows-yawning" },
-        { displayName: "Anxiety or irritability", radioName: "cows-anxiety" },
-        { displayName: "Gooseflesh skin", radioName: "cows-skin" }
+        { displayName: "Resting Pulse Rate", radioName: "cows-pulse", options: [
+            { value: 0, label: "<b>0:</b> Pulse rate 80 or below" }, { value: 1, label: "<b>1:</b> Pulse rate 81-100" },
+            { value: 2, label: "<b>2:</b> Pulse rate 101-120" }, { value: 4, label: "<b>4:</b> Pulse rate greater than 120" }
+        ]},
+        { displayName: "Sweating", radioName: "cows-sweating", options: [
+            { value: 0, label: "<b>0:</b> No report of chills or flushing" }, { value: 1, label: "<b>1:</b> Subjective report of chills or flushing" },
+            { value: 2, label: "<b>2:</b> Flushed or observable moistness on face" }, { value: 3, label: "<b>3:</b> Sweat streaming down face" }
+        ]},
+        { displayName: "Restlessness", radioName: "cows-restless", options: [
+            { value: 0, label: "<b>0:</b> Able to sit still" }, { value: 1, label: "<b>1:</b> Reports difficulty sitting still, but is able to do so" },
+            { value: 3, label: "<b>3:</b> Frequent shifting or extraneous movements of legs/arms" }, { value: 5, label: "<b>5:</b> Unable to sit still for more than a few seconds" }
+        ]},
+        { displayName: "Pupil size", radioName: "cows-pupil", options: [
+            { value: 0, label: "<b>0:</b> Pupils pinned or normal size for room light" }, { value: 1, label: "<b>1:</b> Pupils possibly larger than normal for room light" },
+            { value: 2, label: "<b>2:</b> Pupils moderately dilated" }, { value: 5, label: "<b>5:</b> Pupils so dilated that only the rim of the iris is visible" }
+        ]},
+        { displayName: "Bone or joint aches", radioName: "cows-aches", options: [
+            { value: 0, label: "<b>0:</b> Not present" }, { value: 1, label: "<b>1:</b> Mild diffuse discomfort" },
+            { value: 2, label: "<b>2:</b> Severe diffuse aching of joints/muscles" }, { value: 4, label: "<b>4:</b> Patient is rubbing joints or muscles" }
+        ]},
+        { displayName: "Runny nose or tearing", radioName: "cows-nose", options: [
+            { value: 0, label: "<b>0:</b> Not present" }, { value: 1, label: "<b>1:</b> Nasal stuffiness or unusually moist eyes" },
+            { value: 2, label: "<b>2:</b> Nose running or tearing" }, { value: 4, label: "<b>4:</b> Nose constantly running or tears streaming" }
+        ]},
+        { displayName: "GI Upset", radioName: "cows-gi", options: [
+            { value: 0, label: "<b>0:</b> No GI symptoms" }, { value: 1, label: "<b>1:</b> Stomach cramps" }, { value: 2, label: "<b>2:</b> Nausea or loose stool" },
+            { value: 3, label: "<b>3:</b> Vomiting or diarrhoea" }, { value: 5, label: "<b>5:</b> Multiple episodes of diarrhoea or vomiting" }
+        ]},
+        { displayName: "Tremor", radioName: "cows-tremor", options: [
+            { value: 0, label: "<b>0:</b> No tremor" }, { value: 1, label: "<b>1:</b> Tremor can be felt but not observed" },
+            { value: 2, label: "<b>2:</b> Slight tremor observable" }, { value: 4, label: "<b>4:</b> Gross tremor or muscle twitching" }
+        ]},
+        { displayName: "Yawning", radioName: "cows-yawning", options: [
+            { value: 0, label: "<b>0:</b> No yawning" }, { value: 1, label: "<b>1:</b> Yawning once or twice during assessment" },
+            { value: 2, label: "<b>2:</b> Yawning three or more times" }, { value: 4, label: "<b>4:</b> Yawning several times per minute" }
+        ]},
+        { displayName: "Anxiety or irritability", radioName: "cows-anxiety", options: [
+            { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Reports increasing irritability or anxiousness" },
+            { value: 2, label: "<b>2:</b> Obviously irritable or anxious" }, { value: 4, label: "<b>4:</b> So irritable or anxious that participation is difficult" }
+        ]},
+        { displayName: "Gooseflesh skin", radioName: "cows-skin", options: [
+            { value: 0, label: "<b>0:</b> Skin is smooth" }, { value: 3, label: "<b>3:</b> Piloerection of skin can be felt" },
+            { value: 5, label: "<b>5:</b> Prominent piloerection" }
+        ]}
     ],
     severityLogic: (score) => {
         if (score <= 4) return "Minimal Withdrawal";
@@ -458,18 +661,51 @@ setupCalculator({
 
 setupCalculator({
     id: 'ciwa-b',
-    name: 'CIWA-B',
+    name: 'CIWA-B (Benzodiazepine)',
     items: [
-        { displayName: "Nausea and Vomiting", radioName: "ciwab-nausea" },
-        { displayName: "Tremor", radioName: "ciwab-tremor" },
-        { displayName: "Diaphoresis (Sweating)", radioName: "ciwab-sweats" },
-        { displayName: "Anxiety", radioName: "ciwab-anxiety" },
-        { displayName: "Agitation", radioName: "ciwab-agitation" },
-        { displayName: "Tactile Disturbances", radioName: "ciwab-tactile" },
-        { displayName: "Auditory Disturbances", radioName: "ciwab-auditory" },
-        { displayName: "Visual Disturbances", radioName: "ciwab-visual" },
-        { displayName: "Headache", radioName: "ciwab-headache" },
-        { displayName: "Clouding of Sensorium (Orientation)", radioName: "ciwab-orientation" }
+        { displayName: "1. Nausea and Vomiting", radioName: "ciwab-nausea", options: [
+            { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild nausea, no vomiting" },
+            { value: 4, label: "<b>4:</b> Intermittent nausea" }, { value: 7, label: "<b>7:</b> Constant nausea and vomiting" }
+        ]},
+        { displayName: "2. Tremor", radioName: "ciwab-tremor", options: [
+            { value: 0, label: "<b>0:</b> No tremor" }, { value: 1, label: "<b>1:</b> Not visible, can be felt" },
+            { value: 4, label: "<b>4:</b> Moderate with arms extended" }, { value: 7, label: "<b>7:</b> Severe, even without arms extended" }
+        ]},
+        { displayName: "3. Diaphoresis (Sweating)", radioName: "ciwab-sweats", options: [
+            { value: 0, label: "<b>0:</b> No sweat visible" }, { value: 1, label: "<b>1:</b> Barely perceptible" },
+            { value: 4, label: "<b>4:</b> Beads of sweat on forehead" }, { value: 7, label: "<b>7:</b> Drenching sweats" }
+        ]},
+        { displayName: "4. Anxiety", radioName: "ciwab-anxiety", options: [
+            { value: 0, label: "<b>0:</b> No anxiety" }, { value: 1, label: "<b>1:</b> Mildly anxious" },
+            { value: 4, label: "<b>4:</b> Moderately anxious or guarded" }, { value: 7, label: "<b>7:</b> Equivalent to acute panic" }
+        ]},
+        { displayName: "5. Agitation", radioName: "ciwab-agitation", options: [
+            { value: 0, label: "<b>0:</b> Normal activity" }, { value: 1, label: "<b>1:</b> Somewhat more than normal" },
+            { value: 2, label: "<b>2:</b> Moderately fidgety/restless" }, { value: 4, label: "<b>4:</b> Paces, thrashes about" }
+        ]},
+        { displayName: "6. Tactile Disturbances", radioName: "ciwab-tactile", options: [
+            { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Very mild itching, pins and needles, burning or numbness" }, { value: 2, label: "<b>2:</b> Mild itching, pins and needles, burning or numbness" },
+            { value: 3, label: "<b>3:</b> Moderate itching, pins and needles, burning or numbness" }, { value: 4, label: "<b>4:</b> Moderately severe hallucinations" }, { value: 5, label: "<b>5:</b> Severe hallucinations" },
+            { value: 6, label: "<b>6:</b> Extremely severe hallucinations" }, { value: 7, label: "<b>7:</b> Continuous hallucinations" }
+        ]},
+        { displayName: "7. Auditory Disturbances", radioName: "ciwab-auditory", options: [
+            { value: 0, label: "<b>0:</b> Not present" }, { value: 1, label: "<b>1:</b> Very mild harshness or ability to frighten" }, { value: 2, label: "<b>2:</b> Mild harshness or ability to frighten" },
+            { value: 3, label: "<b>3:</b> Moderate harshness or ability to frighten" }, { value: 4, label: "<b>4:</b> Moderately severe hallucinations" }, { value: 5, label: "<b>5:</b> Severe hallucinations" },
+            { value: 6, label: "<b>6:</b> Extremely severe hallucinations" }, { value: 7, label: "<b>7:</b> Continuous hallucinations" }
+        ]},
+        { displayName: "8. Visual Disturbances", radioName: "ciwab-visual", options: [
+            { value: 0, label: "<b>0:</b> Not present" }, { value: 1, label: "<b>1:</b> Very mild sensitivity" }, { value: 2, label: "<b>2:</b> Mild sensitivity" },
+            { value: 3, label: "<b>3:</b> Moderate sensitivity" }, { value: 4, label: "<b>4:</b> Moderately severe hallucinations" }, { value: 5, label: "<b>5:</b> Severe hallucinations" },
+            { value: 6, label: "<b>6:</b> Extremely severe hallucinations" }, { value: 7, label: "<b>7:</b> Continuous hallucinations" }
+        ]},
+        { displayName: "9. Headache", radioName: "ciwab-headache", options: [
+            { value: 0, label: "<b>0:</b> Not present" }, { value: 1, label: "<b>1:</b> Very mild" }, { value: 2, label: "<b>2:</b> Mild" }, { value: 3, label: "<b>3:</b> Moderate" },
+            { value: 4, label: "<b>4:</b> Moderately severe" }, { value: 5, label: "<b>5:</b> Severe" }, { value: 6, label: "<b>6:</b> Very severe" }, { value: 7, label: "<b>7:</b> Extremely severe" }
+        ]},
+        { displayName: "10. Clouding of Sensorium (Orientation)", radioName: "ciwab-orientation", options: [
+            { value: 0, label: "<b>0:</b> Oriented" }, { value: 1, label: "<b>1:</b> Cannot do serial additions" }, { value: 2, label: "<b>2:</b> Disoriented for date by no more than 2 calendar days" },
+            { value: 3, label: "<b>3:</b> Disoriented for date by more than 2 calendar days" }, { value: 4, label: "<b>4:</b> Disoriented for place and/or person" }
+        ]}
     ],
     severityLogic: (score) => {
         if (score < 10) return "Mild withdrawal";
@@ -481,26 +717,30 @@ setupCalculator({
 setupCalculator({
     id: 'nsw-cws',
     name: 'Cannabis Withdrawal Scale',
+    note: 'This is a monitoring tool, not a diagnostic one. Higher scores indicate greater severity.',
     items: [
-        { displayName: "Craving for marijuana", radioName: "nsw-cws-craving" },
-        { displayName: "Decreased appetite", radioName: "nsw-cws-appetite" },
-        { displayName: "Sleep difficulty", radioName: "nsw-cws-sleep" },
-        { displayName: "Increased aggression", radioName: "nsw-cws-aggression" },
-        { displayName: "Increased anger", radioName: "nsw-cws-anger" },
-        { displayName: "Increased irritability", radioName: "nsw-cws-irritability" },
-        { displayName: "Increased nervousness", radioName: "nsw-cws-nervousness" },
-        { displayName: "Restlessness", radioName: "nsw-cws-restlessness" },
-        { displayName: "Strange/vivid dreams", radioName: "nsw-cws-dreams" },
-        { displayName: "Nausea", radioName: "nsw-cws-nausea" },
-        { displayName: "Stomach ache", radioName: "nsw-cws-stomach" },
-        { displayName: "Shakiness/tremors", radioName: "nsw-cws-shakiness" },
-        { displayName: "Sweating", radioName: "nsw-cws-sweating" },
-        { displayName: "Headache", radioName: "nsw-cws-headache" },
-        { displayName: "Depressed mood", radioName: "nsw-cws-depressed" },
-        { displayName: "Chills", radioName: "nsw-cws-chills" },
-        { displayName: "Physical tension", radioName: "nsw-cws-tension" },
-        { displayName: "Yawning", radioName: "nsw-cws-yawning" },
-        { displayName: "Runny nose", radioName: "nsw-cws-runnynose" }
+        { displayName: "1. Craving for marijuana", radioName: "nsw-cws-craving", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" },
+            { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" }
+        ]},
+        { displayName: "2. Decreased appetite", radioName: "nsw-cws-appetite", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "3. Sleep difficulty", radioName: "nsw-cws-sleep", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "4. Increased aggression", radioName: "nsw-cws-aggression", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "5. Increased anger", radioName: "nsw-cws-anger", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "6. Increased irritability", radioName: "nsw-cws-irritability", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "7. Increased nervousness", radioName: "nsw-cws-nervousness", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "8. Restlessness", radioName: "nsw-cws-restlessness", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "9. Strange/vivid dreams", radioName: "nsw-cws-dreams", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "10. Nausea", radioName: "nsw-cws-nausea", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "11. Stomach ache", radioName: "nsw-cws-stomach", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "12. Shakiness/tremors", radioName: "nsw-cws-shakiness", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "13. Sweating", radioName: "nsw-cws-sweating", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "14. Headache", radioName: "nsw-cws-headache", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "15. Depressed mood", radioName: "nsw-cws-depressed", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "16. Chills", radioName: "nsw-cws-chills", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "17. Physical tension", radioName: "nsw-cws-tension", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "18. Yawning", radioName: "nsw-cws-yawning", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "19. Runny nose", radioName: "nsw-cws-runnynose", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]}
     ],
     severityLogic: (score) => {
         // This scale does not have defined severity levels, it's for monitoring.
@@ -511,34 +751,38 @@ setupCalculator({
 setupCalculator({
     id: 'cwas',
     name: 'Cannabis Withdrawal Assessment Scale',
+    note: 'This is a monitoring tool. Higher scores indicate greater severity.',
     items: [
-        { displayName: "Craving for marijuana", radioName: "cwas-craving" },
-        { displayName: "Decreased appetite", radioName: "cwas-appetite" },
-        { displayName: "Sleep difficulty", radioName: "cwas-sleep" },
-        { displayName: "Increased aggression", radioName: "cwas-aggression" },
-        { displayName: "Increased anger", radioName: "cwas-anger" },
-        { displayName: "Irritability", radioName: "cwas-irritability" },
-        { displayName: "Strange dreams", radioName: "cwas-dreams" },
-        { displayName: "Restlessness", radioName: "cwas-restlessness" },
-        { displayName: "Chills", radioName: "cwas-chills" },
-        { displayName: "Feverish feeling", radioName: "cwas-feverish" },
-        { displayName: "Stuffy nose", radioName: "cwas-stuffy-nose" },
-        { displayName: "Nausea", radioName: "cwas-nausea" },
-        { displayName: "Diarrhoea", radioName: "cwas-diarrhoea" },
-        { displayName: "Hot flashes", radioName: "cwas-hot-flashes" },
-        { displayName: "Dizziness", radioName: "cwas-dizziness" },
-        { displayName: "Sweating", radioName: "cwas-sweating" },
-        { displayName: "Hiccups", radioName: "cwas-hiccups" },
-        { displayName: "Yawning", radioName: "cwas-yawning" },
-        { displayName: "Headaches", radioName: "cwas-headaches" },
-        { displayName: "Shakiness", radioName: "cwas-shakiness" },
-        { displayName: "Muscle spasms", radioName: "cwas-muscle-spasms" },
-        { displayName: "Stomach pains", radioName: "cwas-stomach-pains" },
-        { displayName: "Fatigue", radioName: "cwas-fatigue" },
-        { displayName: "Depressed mood", radioName: "cwas-depressed" },
-        { displayName: "Difficulty concentrating", radioName: "cwas-concentrating" },
-        { displayName: "Nervousness", radioName: "cwas-nervousness" },
-        { displayName: "Violent outbursts", radioName: "cwas-violent-outbursts" }
+        { displayName: "1. Craving for marijuana", radioName: "cwas-craving", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" },
+            { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" }
+        ]},
+        { displayName: "2. Decreased appetite", radioName: "cwas-appetite", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "3. Sleep difficulty", radioName: "cwas-sleep", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "4. Increased aggression", radioName: "cwas-aggression", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "5. Increased anger", radioName: "cwas-anger", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "6. Irritability", radioName: "cwas-irritability", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "7. Strange dreams", radioName: "cwas-dreams", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "8. Restlessness", radioName: "cwas-restlessness", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "9. Chills", radioName: "cwas-chills", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "10. Feverish feeling", radioName: "cwas-feverish", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "11. Stuffy nose", radioName: "cwas-stuffy-nose", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "12. Nausea", radioName: "cwas-nausea", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "13. Diarrhoea", radioName: "cwas-diarrhoea", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "14. Hot flashes", radioName: "cwas-hot-flashes", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "15. Dizziness", radioName: "cwas-dizziness", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "16. Sweating", radioName: "cwas-sweating", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "17. Hiccups", radioName: "cwas-hiccups", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "18. Yawning", radioName: "cwas-yawning", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "19. Headaches", radioName: "cwas-headaches", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "20. Shakiness", radioName: "cwas-shakiness", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "21. Muscle spasms", radioName: "cwas-muscle-spasms", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "22. Stomach pains", radioName: "cwas-stomach-pains", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "23. Fatigue", radioName: "cwas-fatigue", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "24. Depressed mood", radioName: "cwas-depressed", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "25. Difficulty concentrating", radioName: "cwas-concentrating", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "26. Nervousness", radioName: "cwas-nervousness", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
+        { displayName: "27. Violent outbursts", radioName: "cwas-violent-outbursts", options: [ { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]}
     ],
     severityLogic: (score) => "N/A"
 });
