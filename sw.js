@@ -1,4 +1,4 @@
-const CACHE_NAME = 'withdrawal-app-cache-v2';
+const CACHE_NAME = 'withdrawal-app-cache-v5';
 const urlsToCache = [
     '.',
     'index.html',

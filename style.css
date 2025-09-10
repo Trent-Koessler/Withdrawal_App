@@ -354,3 +354,28 @@ textarea {
     margin-bottom: 20px;
     align-self: flex-start; /* Aligns the button to the left */
 }
+
+/* --- Contact List Styles --- */
+.contact-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.contact-list li {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.contact-list a {
+    color: var(--link-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.contact-list a:hover {
+    text-decoration: underline;
+    color: var(--link-hover-color);
+}

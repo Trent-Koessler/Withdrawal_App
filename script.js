@@ -787,6 +787,55 @@ setupCalculator({
     severityLogic: (score) => "N/A"
 });
 
+setupCalculator({
+    id: 'awq',
+    name: 'Amphetamine Withdrawal Questionnaire (AWQ)',
+    note: 'This is a monitoring tool. Higher scores indicate greater severity.',
+    items: [
+        { displayName: "1. Craving for amphetamine", radioName: "awq-craving", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "2. Feeling sad", radioName: "awq-sad", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "3. Lost interest or pleasure", radioName: "awq-interest", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "4. Feeling anxious", radioName: "awq-anxious", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "5. Slowed movements", radioName: "awq-slowed", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "6. Feeling agitated", radioName: "awq-agitated", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "7. Feeling tired", radioName: "awq-tired", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "8. Increased appetite", radioName: "awq-appetite", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "9. Vivid or unpleasant dreams", radioName: "awq-dreams", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]},
+        { displayName: "10. Craving sleep or sleeping too much", radioName: "awq-sleep", options: [
+            { value: 0, label: "<b>0:</b> Not at all" }, { value: 1, label: "<b>1:</b> A little" },
+            { value: 2, label: "<b>2:</b> Moderately" }, { value: 3, label: "<b>3:</b> Quite a bit" }, { value: 4, label: "<b>4:</b> Extremely" }
+        ]}
+    ],
+    severityLogic: (score) => "N/A" // No severity levels provided, for monitoring only.
+});
+
     // --- PWA Service Worker Registration ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
