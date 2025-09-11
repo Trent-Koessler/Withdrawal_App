@@ -841,7 +841,9 @@ setupCalculator({
     // --- PWA Service Worker Registration ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then(registration => {
+            // Use an absolute path for the service worker to avoid issues with subdirectories.
+            // Explicitly set the scope to the app's root directory.
+            navigator.serviceWorker.register('/Withdrawal_App/sw.js', { scope: '/Withdrawal_App/' }).then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             }, err => {
                 console.log('ServiceWorker registration failed: ', err);
