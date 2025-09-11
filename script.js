@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pages = document.querySelectorAll('.page');
     const navButtons = document.querySelectorAll('.big-button[data-page]');
     const homeButton = document.getElementById('home-button');
+    const aboutButton = document.getElementById('about-button');
 
     function showPage(pageId) {
         pages.forEach(page => {
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newPage) {
             newPage.classList.add('active-page');
             const button = document.querySelector(`[data-page='${pageId}']`);
-            let title = 'Home'; // Default title
+            let title = 'Withdrawal Management Assistant'; // Default title
             if (button) {
                 title = button.textContent.replace(/\n/g, ' ');
             } else if (pageId !== 'home-page') {
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     homeButton.addEventListener('click', () => showPage('home-page'));
+    aboutButton.addEventListener('click', () => showPage('about-page'));
 
     // --- LINK TO SCALE BUTTONS ---
     // Handles buttons on the "Other Syndromes" page that link to specific calculator tabs.
