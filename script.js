@@ -54,6 +54,29 @@ document.addEventListener('DOMContentLoaded', () => {
     homeButton.addEventListener('click', () => showPage('home-page'));
     aboutButton.addEventListener('click', () => showPage('about-page'));
 
+    // --- CRITERIA MODAL LOGIC ---
+    const criteriaModal = document.getElementById('criteria-modal');
+    const openCriteriaBtn = document.getElementById('open-criteria-modal-btn');
+    if (criteriaModal) {
+        const closeCriteriaBtn = criteriaModal.querySelector('.close-button');
+
+        if (openCriteriaBtn) {
+            openCriteriaBtn.addEventListener('click', () => {
+                criteriaModal.style.display = 'block';
+            });
+        }
+
+        if (closeCriteriaBtn) {
+            closeCriteriaBtn.addEventListener('click', () => {
+                criteriaModal.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target == criteriaModal) criteriaModal.style.display = 'none';
+        });
+    }
+
     // --- LINK TO SCALE BUTTONS ---
     // Handles buttons on the "Other Syndromes" page that link to specific calculator tabs.
     document.querySelectorAll('[data-link-to-scale]').forEach(button => {
@@ -226,13 +249,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const REGIMEN_CONFIG = {
         "Diazepam": {
             name: "Diazepam",
-            mild: { title: 'Mild-Moderate (CIWA 10-15)', schedule: [ { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' } ], prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ] },
+            mild: { 
+                title: 'Mild-Moderate (CIWA 10-15)', 
+                schedule: [ { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' } ], 
+                prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ],
+                symptom_triggered: {
+                    title: 'Symptom-Triggered Regimen',
+                    note: 'Dose no more frequently than q4hrly. For unclear alcohol intake or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements. Monitor the amount of oxazepam used and reassess requirements regularly.',
+                    doses: [
+                        'CIWA-Ar score < 10 or AWS score < 4: 0-5 mg diazepam',
+                        'CIWA-Ar 10-20 or AWS 4-14: 10 mg diazepam',
+                        'CIWA-Ar > 20 or AWS > 14: 20 mg diazepam'
+                    ],
+                    review: 'Medical review required if total dose exceeds 80mg in 24 hours.'
+                }
+            },
             moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd' } ], prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ] },
             severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 20mg hourly until sedated or total dose reaches 80mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."] }
         },
         "Oxazepam": {
             name: "Oxazepam",
-            mild: { title: 'Mild-Moderate (CIWA 10-15)', schedule: [ { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' } ], prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ] },
+            mild: { 
+                title: 'Mild-Moderate (CIWA 10-15)', 
+                schedule: [ { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' } ], 
+                prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ],
+                symptom_triggered: {
+                    title: 'Symptom-Triggered Regimen',
+                    note: 'Dose no more frequently than q4hrly. For unclear alcohol intake or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements. Monitor the amount of oxazepam used and reassess requirements regularly.',
+                    doses: [
+                        'CIWA-Ar score < 10 or AWS score < 4: 0-15 mg oxazepam',
+                        'CIWA-Ar 10-20 or AWS 4-14: 30 mg oxazepam',
+                        'CIWA-Ar > 20 or AWS > 14: 60 mg oxazepam'
+                    ],
+                    review: 'Medical review required if total dose exceeds 240mg in 24 hours.'
+                }
+            },
             moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd' } ], prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ] },
             severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 60mg hourly until sedated or total dose reaches 240mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 240mg oxazepam equivalent."] }
         }
@@ -256,17 +307,35 @@ document.addEventListener('DOMContentLoaded', () => {
         displayHTML += `</ul>`;
 
         if (data.prn && data.prn.length > 0) {
-            displayHTML += `<b>PRN Dosing:</b><ul>`;
+            displayHTML += `<b>PRN Dosing:</b>`;
+            if (selectedSeverity === 'mild' || selectedSeverity === 'moderate') {
+                displayHTML += `<div><i>(max twice daily PRN)</i></div>`;
+            }
+            displayHTML += `<ul>`;
             data.prn.forEach(p => {
                 if (typeof p === 'string') {
                     displayHTML += `<li>${p}</li>`;
                 } else {
-                    displayHTML += `<li>CIWA ${p.range}: extra ${b_name} ${p.dose}mg prn</li>`;
+                    displayHTML += `<li>CIWA ${p.range}: extra ${b_name} ${p.dose}mg PRN</li>`;
                 }
             });
             displayHTML += `</ul>`;
         }
         
+        // Add alternative symptom-triggered regimen for mild/moderate cases
+        if (selectedSeverity === 'mild' && data.symptom_triggered) {
+            const st = data.symptom_triggered;
+            displayHTML += `<hr style="margin: 20px 0;">`;
+            displayHTML += `<h3>Alternative: ${st.title}</h3>`;
+            displayHTML += `<p><i>${st.note}</i></p>`;
+            displayHTML += `<b>Dosing based on score:</b><ul>`;
+            st.doses.forEach(dose_info => {
+                displayHTML += `<li>${dose_info}</li>`;
+            });
+            displayHTML += `</ul>`;
+            displayHTML += `<p><b>${st.review}</b></p>`;
+        }
+
         regimenDisplayDiv.innerHTML = displayHTML;
     }
 

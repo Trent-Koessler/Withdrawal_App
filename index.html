@@ -55,7 +55,7 @@
                     </div>
                     <div id="prerequisites" class="tab-content active">
                         <h3>Prerequisites</h3>
-                        <p><strong>Diagnosis:</strong> Establish diagnosis of alcohol withdrawal using DSM-5 criteria. It is crucial to rule out other medical conditions that can mimic withdrawal, such as sepsis, metabolic disturbances, or intracranial events.</p>
+                        <p><strong>Diagnosis:</strong> Establish probable diagnosis of alcohol withdrawal using DSM-5 or ICD-11 <button id="open-criteria-modal-btn" class="link-button">criteria</button>. It is crucial to rule out other medical conditions that can mimic withdrawal, such as sepsis, metabolic disturbances, or intracranial events.</p>
                         <p><strong>BAL (Blood Alcohol Level):</strong> While not a contraindication to starting treatment, it is preferable to begin dosing when the BAL is low or falling (e.g., < 0.1 g/dL). This helps differentiate symptoms of intoxication from true withdrawal.</p>
                         <p><strong>Liver Function:</strong> Assess liver function (LFTs, INR, Albumin) to guide benzodiazepine choice. Severe liver impairment may necessitate using a drug with no active metabolites, like Oxazepam.</p>
                         <p><strong>CIWA-Ar Scale:</strong> Commence CIWA-Ar monitoring every 2-4 hours. This objective scale guides symptom-triggered therapy, allowing for tailored dosing and preventing both under- and over-sedation.</p>
@@ -65,6 +65,7 @@
                         <h3>Thiamine</h3>
                         <p><strong>Prophylaxis (Standard Regimen):</strong> To prevent Wernicke's Encephalopathy (WE), all patients undergoing alcohol withdrawal should receive parenteral thiamine. Commence thiamine 300mg IV/IM daily for 3-5 days. <strong>Crucially, always administer thiamine BEFORE any glucose-containing fluids.</strong></p>
                         <p><strong>Suspected Wernicke-Korsakov Syndrome (WKS):</strong> Have a high index of suspicion for WKS in any patient with confusion, ataxia, ophthalmoplegia, memory disturbance, or malnutrition. The classic triad is rare. Treatment requires high-dose thiamine: <strong>500mg IV TDS for a minimum of 5 days</strong>, followed by oral supplementation.</p>
+                        <p><strong>Caveat:</strong> Patients must be magnesium replete for adequate thiamine absorption and activation.</p>
                     </div>
                     <div id="benzo-choice" class="tab-content">
                         <h3>1. Benzodiazepine Choice</h3>
@@ -435,6 +436,41 @@
             </div>
         </footer>
 
+    </div>
+
+    <!-- Criteria Modal -->
+    <div id="criteria-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Diagnostic Criteria for Alcohol Withdrawal</h3>
+            
+            <h4>DSM-5 Criteria</h4>
+            <p><strong>A.</strong> Cessation of (or reduction in) alcohol use that has been heavy and prolonged.</p>
+            <p><strong>B.</strong> Two (or more) of the following, developing within several hours to a few days after the cessation of (or reduction in) alcohol use described in Criterion A:</p>
+            <ol>
+                <li>Autonomic hyperactivity (e.g., sweating or pulse rate greater than 100 bpm).</li>
+                <li>Increased hand tremor.</li>
+                <li>Insomnia.</li>
+                <li>Nausea or vomiting.</li>
+                <li>Transient visual, tactile, or auditory hallucinations or illusions.</li>
+                <li>Psychomotor agitation.</li>
+                <li>Anxiety.</li>
+                <li>Generalized tonic-clonic seizures.</li>
+            </ol>
+            <p><strong>C.</strong> The signs or symptoms in Criterion B cause clinically significant distress or impairment in social, occupational, or other important areas of functioning.</p>
+            <p><strong>D.</strong> The signs or symptoms are not attributable to another medical condition and are not better explained by another mental disorder, including intoxication or withdrawal from another substance.</p>
+            <p><strong>Specify if:</strong><br>
+            <em>With perceptual disturbances:</em> This specifier applies in the rare instance when hallucinations (usually visual or tactile) occur with intact reality testing, or auditory, visual, or tactile illusions occur in the absence of a delirium.</p>
+
+            <hr style="margin: 20px 0;">
+
+            <h4>ICD-11 Criteria</h4>
+            <h5>Essential (Required) Features:</h5>
+            <p>The presence of a clinically significant cluster of symptoms, behaviours, and/or physiological features that occurs upon cessation or reduction in the use of alcohol in individuals who have developed dependence on alcohol or have used alcohol for a prolonged period or in large amounts.</p>
+            <p>Presenting features of Alcohol Withdrawal may include autonomic hyperactivity (e.g., tachycardia, hypertension, perspiration), increased hand tremor, nausea, retching or vomiting, insomnia, anxiety, psychomotor agitation, depressed or dysphoric mood, transient visual, tactile or auditory illusions or hallucinations, and distractibility. Less commonly, Alcohol Withdrawal is complicated by seizures.</p>
+            <p>Onset of Alcohol Withdrawal typically occurs within 6 to 12 hours after last use, as blood alcohol concentrations decline. Symptoms vary in type, severity, onset and duration according to the duration and intensity of alcohol use prior to cessation or reduction of use.</p>
+            <p>The symptoms are not better accounted for by another medical condition or another mental disorder.</p>
+        </div>
     </div>
 
     <script src="script.js"></script>
