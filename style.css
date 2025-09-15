@@ -77,6 +77,23 @@ body {
     border-top: 1px solid #ced4da;
 }
 
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 12px;
+    gap: 15px; /* Space between version and disclaimer */
+}
+
+.footer-version {
+    white-space: nowrap; /* Prevents the version text from wrapping */
+    flex-shrink: 0; /* Prevents this element from shrinking */
+}
+
+.footer-disclaimer {
+    text-align: right; /* Aligns disclaimer text to the right if it wraps */
+}
 
 /* --- Light Theme --- */
 :root {
@@ -329,6 +346,16 @@ textarea {
     margin-top: -10px;
     margin-bottom: 15px;
 }
+
+.calculator-reference {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+    font-size: 12px;
+    line-height: 1.4;
+    font-style: italic;
+}
+
 /* --- New Detailed Calculator List Styles --- */
 .calculator-item {
     border: 1px solid var(--border-color);

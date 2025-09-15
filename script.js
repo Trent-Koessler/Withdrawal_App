@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const APP_VERSION = '0.1.5';
+    document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- THEME TOGGLE --- //
     const themeToggle = document.getElementById('theme-toggle');
@@ -246,6 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedBenzo = 'Diazepam';
     let selectedSeverity = 'mild';
 
+    const symptomTriggeredNote = (drugName) => `Dose no more frequently than q4hrly. For unclear alcohol intake or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements. Monitor the amount of ${drugName} used and reassess requirements regularly.`;
+
     const REGIMEN_CONFIG = {
         "Diazepam": {
             name: "Diazepam",
@@ -255,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ],
                 symptom_triggered: {
                     title: 'Symptom-Triggered Regimen',
-                    note: 'Dose no more frequently than q4hrly. For unclear alcohol intake or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements. Monitor the amount of oxazepam used and reassess requirements regularly.',
+                    note: symptomTriggeredNote('diazepam'),
                     doses: [
                         'CIWA-Ar score < 10 or AWS score < 4: 0-5 mg diazepam',
                         'CIWA-Ar 10-20 or AWS 4-14: 10 mg diazepam',
@@ -275,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ],
                 symptom_triggered: {
                     title: 'Symptom-Triggered Regimen',
-                    note: 'Dose no more frequently than q4hrly. For unclear alcohol intake or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements. Monitor the amount of oxazepam used and reassess requirements regularly.',
+                    note: symptomTriggeredNote('oxazepam'),
                     doses: [
                         'CIWA-Ar score < 10 or AWS score < 4: 0-15 mg oxazepam',
                         'CIWA-Ar 10-20 or AWS 4-14: 30 mg oxazepam',
@@ -459,6 +463,14 @@ function setupCalculator(config) {
     });
     itemsContainer.innerHTML = itemsHtml;
 
+    // Add reference if it exists
+    if (config.reference) {
+        const referenceNode = document.createElement('div');
+        referenceNode.className = 'calculator-reference';
+        referenceNode.innerHTML = `<strong>Reference:</strong><br>${config.reference}`;
+        calculatorNode.appendChild(referenceNode);
+    }
+
     // 4. Clear the target tab and append the new calculator
     tabContent.innerHTML = '';
     tabContent.appendChild(calculatorNode);
@@ -521,6 +533,7 @@ function setupCalculator(config) {
 setupCalculator({
     id: 'aws',
     name: 'Alcohol Withdrawal Scale (AWS)',
+    reference: 'Adapted from NSW Dept of Health (2000).',
     items: [
         { displayName: "Perspiration", radioName: "aws-perspiration", options: [
             { value: 0, label: "<b>0:</b> No abnormal sweating." },
@@ -581,6 +594,7 @@ setupCalculator({
 setupCalculator({
     id: 'ciwa-ar',
     name: 'CIWA-Ar',
+    reference: 'Clinical institute withdrawal assessment for alcohol — revised. Sullivan J, Sykora M, Schneiderman J, et al. Assessment of alcohol withdrawal: the revised Clinical Institute withdrawal for alcohol scale (CIWA-Ar). Br J Addict 1989; 84: 1353–1357.',
     items: [
         { displayName: "Nausea and vomiting", radioName: "ciwa-nausea", options: [
             { value: 0, label: "<b>0:</b> No nausea and no vomiting." },
@@ -651,6 +665,7 @@ setupCalculator({
 setupCalculator({
     id: 'saws',
     name: 'SAWS (Short Alcohol Withdrawal Scale)',
+    reference: "Gossop, M, Keaney, F, Stewart, D, Marshall, E & Strang, JA 2002, ‘Short Alcohol Withdrawal Scale (SAWS) development and psychometric properties’, Addiction Biology, vol. 7, pp. 37–43.",
     items: [
         { displayName: "Anxious", radioName: "saws-anxious", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
         { displayName: "Sleep disturbance", radioName: "saws-sleep", options: [ { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild" }, { value: 2, label: "<b>2:</b> Moderate" }, { value: 3, label: "<b>3:</b> Severe" } ]},
@@ -674,6 +689,7 @@ setupCalculator({
 setupCalculator({
     id: 'cows',
     name: 'COWS (Clinical Opiate Withdrawal Scale)',
+    reference: 'Wesson, D. R., & Ling, W. (2003). The Clinical Opiate Withdrawal Scale (COWS). Journal of Psychoactive Drugs, 35(2), 253–259.',
     items: [
         { displayName: "Resting Pulse Rate", radioName: "cows-pulse", options: [
             { value: 0, label: "<b>0:</b> Pulse rate 80 or below" }, { value: 1, label: "<b>1:</b> Pulse rate 81-100" },
@@ -733,6 +749,7 @@ setupCalculator({
 setupCalculator({
     id: 'ciwa-b',
     name: 'CIWA-B (Benzodiazepine)',
+    reference: "Busto UE, Sykora K, Sellers EM. A clinical scale to assess benzodiazepine withdrawal. Journal of Clinical Psychopharmacology. 1989;9(6):412-6. doi: 10.1097/00004714-198912000-00005",
     items: [
         { displayName: "1. Nausea and Vomiting", radioName: "ciwab-nausea", options: [
             { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild nausea, no vomiting" },
@@ -788,6 +805,7 @@ setupCalculator({
 setupCalculator({
     id: 'nsw-cws',
     name: 'Cannabis Withdrawal Scale',
+    reference: "Allsop DJ, Norberg MM, Copeland J, Fu S, Budney AJ. The Cannabis Withdrawal Scale development: patterns and predictors of cannabis withdrawal and distress. Drug Alcohol Dependence. 2011;119(1-2):123-9. doi: 10.1016/j.drugalcdep.2011.06.003",
     note: 'This is a monitoring tool, not a diagnostic one. Higher scores indicate greater severity.',
     items: [
         { displayName: "1. Craving for marijuana", radioName: "nsw-cws-craving", options: [
@@ -822,6 +840,7 @@ setupCalculator({
 setupCalculator({
     id: 'cwas',
     name: 'Cannabis Withdrawal Assessment Scale',
+    reference: "Budney, A. et al, Archives of General Psychiatry, Volume 58 (10) October 2001, 917–924.",
     note: 'This is a monitoring tool. Higher scores indicate greater severity.',
     items: [
         { displayName: "1. Craving for marijuana", radioName: "cwas-craving", options: [
@@ -861,6 +880,7 @@ setupCalculator({
 setupCalculator({
     id: 'awq',
     name: 'Amphetamine Withdrawal Questionnaire (AWQ)',
+    reference: "Srisurapanont, M., Jarusuraisin, N., and Jittiwutikan, J. Amphetamine withdrawal: Reliability, validity and factor structure of a measure. Australian and New Zealand Journal of Psychiatry, 1999. 33(1): 89-93",
     note: 'This is a monitoring tool. Higher scores indicate greater severity.',
     items: [
         { displayName: "1. Craving for amphetamine", radioName: "awq-craving", options: [
