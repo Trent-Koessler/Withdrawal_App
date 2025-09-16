@@ -347,6 +347,14 @@ textarea {
     margin-bottom: 15px;
 }
 
+.calculator-item-instruction {
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 5px 0 15px 0;
+    opacity: 0.9;
+}
+
 .calculator-reference {
     margin-top: 20px;
     padding-top: 15px;

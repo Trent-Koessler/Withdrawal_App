@@ -449,6 +449,9 @@ function setupCalculator(config) {
     let itemsHtml = '';
     config.items.forEach(item => {
         itemsHtml += `<fieldset class="calculator-item"><legend>${item.displayName}</legend>`;
+        if (item.instruction) {
+            itemsHtml += `<p class="calculator-item-instruction">${item.instruction}</p>`;
+        }
         item.options.forEach((opt, index) => {
             const isChecked = index === 0 ? 'checked' : '';
             itemsHtml += `
@@ -596,13 +599,13 @@ setupCalculator({
     name: 'CIWA-Ar',
     reference: 'Clinical institute withdrawal assessment for alcohol — revised. Sullivan J, Sykora M, Schneiderman J, et al. Assessment of alcohol withdrawal: the revised Clinical Institute withdrawal for alcohol scale (CIWA-Ar). Br J Addict 1989; 84: 1353–1357.',
     items: [
-        { displayName: "Nausea and vomiting", radioName: "ciwa-nausea", options: [
+        { displayName: "Nausea and vomiting", instruction: "Ask “Do you feel sick to your stomach? Have you vomited?” and observe.", radioName: "ciwa-nausea", options: [
             { value: 0, label: "<b>0:</b> No nausea and no vomiting." },
             { value: 1, label: "<b>1:</b> Mild nausea with no vomiting." },
             { value: 4, label: "<b>4:</b> Intermittent nausea with dry heaves." },
             { value: 7, label: "<b>7:</b> Constant nausea, frequent dry heaves and vomiting." }
         ]},
-        { displayName: "Tremor", radioName: "ciwa-tremor", options: [
+        { displayName: "Tremor", instruction: "Observe patient’s arms extended and fingers spread apart.", radioName: "ciwa-tremor", options: [
             { value: 0, label: "<b>0:</b> No tremor." },
             { value: 1, label: "<b>1:</b> Not visible, but can be felt fingertip to fingertip." },
             { value: 4, label: "<b>4:</b> Moderate, with patient's arms extended." },
@@ -614,7 +617,7 @@ setupCalculator({
             { value: 4, label: "<b>4:</b> Beads of sweat obvious on forehead." },
             { value: 7, label: "<b>7:</b> Drenching sweats." }
         ]},
-        { displayName: "Anxiety", radioName: "ciwa-anxiety", options: [
+        { displayName: "Anxiety", instruction: "Observe, and ask, “Do you feel nervous?”", radioName: "ciwa-anxiety", options: [
             { value: 0, label: "<b>0:</b> No anxiety, at ease." },
             { value: 1, label: "<b>1:</b> Mildly anxious." },
             { value: 4, label: "<b>4:</b> Moderately anxious, or guarded, so anxiety is inferred." },
@@ -626,30 +629,30 @@ setupCalculator({
             { value: 4, label: "<b>4:</b> Moderately fidgety and restless." },
             { value: 7, label: "<b>7:</b> Equivalent to acute panic states as seen in severe delirium or acute schizophrenic reactions." }
         ]},
-        { displayName: "Tactile disturbances", radioName: "ciwa-tactile", options: [
+        { displayName: "Tactile disturbances", instruction: "Ask “Have you any itching, pins and needles sensations, any burning, any numbness or do you feel bugs crawling on or under your skin?”", radioName: "ciwa-tactile", options: [
             { value: 0, label: "<b>0:</b> None." }, { value: 1, label: "<b>1:</b> Very mild itching, pins and needles, burning or numbness." },
             { value: 2, label: "<b>2:</b> Mild itching, pins and needles, burning or numbness." }, { value: 3, label: "<b>3:</b> Moderate itching, pins and needles, burning or numbness." },
             { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
             { value: 6, label: "<b>6:</b> Extremely severe hallucinations." }, { value: 7, label: "<b>7:</b> Continuous hallucinations." }
         ]},
-        { displayName: "Auditory disturbances", radioName: "ciwa-auditory", options: [
+        { displayName: "Auditory disturbances", instruction: "Ask “Are you more aware of sounds around you? Are they harsh? Do they frighten you? Are you hearing anything that is disturbing to you? Are you hearing things you know are not there?”, and observe.", radioName: "ciwa-auditory", options: [
             { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild harshness or ability to frighten." },
             { value: 2, label: "<b>2:</b> Mild harshness or ability to frighten." }, { value: 3, label: "<b>3:</b> Moderate harshness or ability to frighten." },
             { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
             { value: 6, label: "<b>6:</b> Extremely severe hallucinations." }, { value: 7, label: "<b>7:</b> Continuous hallucinations." }
         ]},
-        { displayName: "Visual disturbances", radioName: "ciwa-visual", options: [
+        { displayName: "Visual disturbances", instruction: "Ask “Does the light appear to be too bright? Is its colour different? Does it hurt your eyes? Are you seeing anything that is disturbing to you? Are you seeing things you know are not there?”, and observe.", radioName: "ciwa-visual", options: [
             { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild sensitivity." },
             { value: 2, label: "<b>2:</b> Mild sensitivity." }, { value: 3, label: "<b>3:</b> Moderate sensitivity." },
             { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
             { value: 6, label: "<b>6:</b> Extremely severe hallucinations." }, { value: 7, label: "<b>7:</b> Continuous hallucinations." }
         ]},
-        { displayName: "Headaches, fullness in head", radioName: "ciwa-headache", options: [
+        { displayName: "Headaches, fullness in head", instruction: "Ask “Does your head feel different? Does it feel like there is a band around your head?” Do not rate for dizziness or lightheadedness. Otherwise, rate severity", radioName: "ciwa-headache", options: [
             { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild." }, { value: 2, label: "<b>2:</b> Mild." },
             { value: 3, label: "<b>3:</b> Moderate." }, { value: 4, label: "<b>4:</b> Moderately severe." }, { value: 5, label: "<b>5:</b> Severe." },
             { value: 6, label: "<b>6:</b> Very severe." }, { value: 7, label: "<b>7:</b> Extremely severe." }
         ]},
-        { displayName: "Orientation and clouding of sensorium", radioName: "ciwa-orientation", options: [
+        { displayName: "Orientation and clouding of sensorium", instruction: "Ask “What day is this? Where are you? Who am I?”", radioName: "ciwa-orientation", options: [
             { value: 0, label: "<b>0:</b> Orientated and can do serial additions." }, { value: 1, label: "<b>1:</b> Cannot do serial additions or is uncertain about date." },
             { value: 2, label: "<b>2:</b> Disorientated for date by no more than 2 calendar days." }, { value: 3, label: "<b>3:</b> Disorientated for date by more than 2 calendar days." },
             { value: 4, label: "<b>4:</b> Disorientated for place and/or person." }
@@ -691,15 +694,15 @@ setupCalculator({
     name: 'COWS (Clinical Opiate Withdrawal Scale)',
     reference: 'Wesson, D. R., & Ling, W. (2003). The Clinical Opiate Withdrawal Scale (COWS). Journal of Psychoactive Drugs, 35(2), 253–259.',
     items: [
-        { displayName: "Resting Pulse Rate", radioName: "cows-pulse", options: [
+        { displayName: "Resting Pulse Rate", instruction: "Measured after patient is sitting or lying for one minute.", radioName: "cows-pulse", options: [
             { value: 0, label: "<b>0:</b> Pulse rate 80 or below" }, { value: 1, label: "<b>1:</b> Pulse rate 81-100" },
             { value: 2, label: "<b>2:</b> Pulse rate 101-120" }, { value: 4, label: "<b>4:</b> Pulse rate greater than 120" }
         ]},
-        { displayName: "Sweating", radioName: "cows-sweating", options: [
+        { displayName: "Sweating", instruction: "Over past half-hour not accounted for by room temperature or patient activity.", radioName: "cows-sweating", options: [
             { value: 0, label: "<b>0:</b> No report of chills or flushing" }, { value: 1, label: "<b>1:</b> Subjective report of chills or flushing" },
             { value: 2, label: "<b>2:</b> Flushed or observable moistness on face" }, { value: 3, label: "<b>3:</b> Sweat streaming down face" }
         ]},
-        { displayName: "Restlessness", radioName: "cows-restless", options: [
+        { displayName: "Restlessness", instruction: "Observation during assessment", radioName: "cows-restless", options: [
             { value: 0, label: "<b>0:</b> Able to sit still" }, { value: 1, label: "<b>1:</b> Reports difficulty sitting still, but is able to do so" },
             { value: 3, label: "<b>3:</b> Frequent shifting or extraneous movements of legs/arms" }, { value: 5, label: "<b>5:</b> Unable to sit still for more than a few seconds" }
         ]},
@@ -707,32 +710,32 @@ setupCalculator({
             { value: 0, label: "<b>0:</b> Pupils pinned or normal size for room light" }, { value: 1, label: "<b>1:</b> Pupils possibly larger than normal for room light" },
             { value: 2, label: "<b>2:</b> Pupils moderately dilated" }, { value: 5, label: "<b>5:</b> Pupils so dilated that only the rim of the iris is visible" }
         ]},
-        { displayName: "Bone or joint aches", radioName: "cows-aches", options: [
+        { displayName: "Bone or joint aches", instruction: "If patient was having pain previously, only the additional component attributed to opiates withdrawal is scored", radioName: "cows-aches", options: [
             { value: 0, label: "<b>0:</b> Not present" }, { value: 1, label: "<b>1:</b> Mild diffuse discomfort" },
-            { value: 2, label: "<b>2:</b> Severe diffuse aching of joints/muscles" }, { value: 4, label: "<b>4:</b> Patient is rubbing joints or muscles" }
+            { value: 2, label: "<b>2:</b> Patient reports severe diffuse aching of joints/muscles" }, { value: 4, label: "<b>4:</b> Patient is rubbing joints or muscles and is unable to sit still because of discomfort" }
         ]},
-        { displayName: "Runny nose or tearing", radioName: "cows-nose", options: [
+        { displayName: "Runny nose or tearing", instruction: "Not accounted for by cold symptoms or allergies", radioName: "cows-nose", options: [
             { value: 0, label: "<b>0:</b> Not present" }, { value: 1, label: "<b>1:</b> Nasal stuffiness or unusually moist eyes" },
-            { value: 2, label: "<b>2:</b> Nose running or tearing" }, { value: 4, label: "<b>4:</b> Nose constantly running or tears streaming" }
+            { value: 2, label: "<b>2:</b> Nose running or tearing" }, { value: 4, label: "<b>4:</b> Nose constantly running or tears streaming down cheeks" }
         ]},
-        { displayName: "GI Upset", radioName: "cows-gi", options: [
+        { displayName: "GI Upset", instruction: "Over last half-hour", radio_name: "cows-gi", options: [
             { value: 0, label: "<b>0:</b> No GI symptoms" }, { value: 1, label: "<b>1:</b> Stomach cramps" }, { value: 2, label: "<b>2:</b> Nausea or loose stool" },
             { value: 3, label: "<b>3:</b> Vomiting or diarrhoea" }, { value: 5, label: "<b>5:</b> Multiple episodes of diarrhoea or vomiting" }
         ]},
-        { displayName: "Tremor", radioName: "cows-tremor", options: [
+        { displayName: "Tremor", instruction: "Observation of outstretched hands", radioName: "cows-tremor", options: [
             { value: 0, label: "<b>0:</b> No tremor" }, { value: 1, label: "<b>1:</b> Tremor can be felt but not observed" },
             { value: 2, label: "<b>2:</b> Slight tremor observable" }, { value: 4, label: "<b>4:</b> Gross tremor or muscle twitching" }
         ]},
-        { displayName: "Yawning", radioName: "cows-yawning", options: [
+        { displayName: "Yawning", instruction: "Observation during assessment", radioName: "cows-yawning", options: [
             { value: 0, label: "<b>0:</b> No yawning" }, { value: 1, label: "<b>1:</b> Yawning once or twice during assessment" },
-            { value: 2, label: "<b>2:</b> Yawning three or more times" }, { value: 4, label: "<b>4:</b> Yawning several times per minute" }
+            { value: 2, label: "<b>2:</b> Yawning three or more times during assessment" }, { value: 4, label: "<b>4:</b> Yawning several times per minute" }
         ]},
         { displayName: "Anxiety or irritability", radioName: "cows-anxiety", options: [
             { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Reports increasing irritability or anxiousness" },
-            { value: 2, label: "<b>2:</b> Obviously irritable or anxious" }, { value: 4, label: "<b>4:</b> So irritable or anxious that participation is difficult" }
+            { value: 2, label: "<b>2:</b> Obviously irritable or anxious" }, { value: 4, label: "<b>4:</b> Patient so irritable or anxious that participation in the assessment is difficult" }
         ]},
         { displayName: "Gooseflesh skin", radioName: "cows-skin", options: [
-            { value: 0, label: "<b>0:</b> Skin is smooth" }, { value: 3, label: "<b>3:</b> Piloerection of skin can be felt" },
+            { value: 0, label: "<b>0:</b> Skin is smooth" }, { value: 3, label: "<b>3:</b> Piloerection of skin can be felt or hairs standing up on arms" },
             { value: 5, label: "<b>5:</b> Prominent piloerection" }
         ]}
     ],
