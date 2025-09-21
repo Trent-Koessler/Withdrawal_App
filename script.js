@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     review: 'Medical review required if total dose exceeds 80mg in 24 hours.'
                 }
             },
-            moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd' } ], prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ] },
+            moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' } ], prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ] },
             severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 20mg hourly until sedated or total dose reaches 80mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."] }
         },
         "Oxazepam": {
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     review: 'Medical review required if total dose exceeds 240mg in 24 hours.'
                 }
             },
-            moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd' } ], prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ] },
+            moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' } ], prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ] },
             severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 60mg hourly until sedated or total dose reaches 240mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 240mg oxazepam equivalent."] }
         }
     };
@@ -305,7 +305,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof s === 'string') {
                 displayHTML += `<li>${s}</li>`;
             } else {
-                displayHTML += `<li>Day ${index + 1}: ${b_name} ${s.dose}mg ${s.freq}</li>`;
+                displayHTML += `<li>Day ${index + 1}: ${b_name} ${s.dose}mg ${s.freq}`;
+                if (s.note) {
+                    displayHTML += ` <i>(${s.note})</i>`;
+                }
+                displayHTML += `</li>`;
             }
         });
         displayHTML += `</ul>`;
