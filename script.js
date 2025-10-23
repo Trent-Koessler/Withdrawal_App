@@ -4,16 +4,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- THEME TOGGLE --- //
     const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
+    const html = document.documentElement;
+    
+    // Set button text based on current theme (already applied in head)
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        themeToggle.textContent = '☀️ Light Mode';
+    } else {
+        themeToggle.textContent = '🌙 Dark Mode';
+    }
+    
     themeToggle.addEventListener('click', () => {
-        const isDarkMode = body.dataset.theme === 'dark';
+        const isDarkMode = html.dataset.theme === 'dark';
         if (isDarkMode) {
-            body.removeAttribute('data-theme');
+            html.removeAttribute('data-theme');
             themeToggle.textContent = '🌙 Dark Mode';
-        } else {
-            body.dataset.theme = 'dark';
+            localStorage.setItem('theme', 'light');
+        } else { 
+            html.dataset.theme = 'dark';
             themeToggle.textContent = '☀️ Light Mode';
-        }
+            localStorage.setItem('theme', 'dark');
+        } 
     });
 
     // --- PAGE NAVIGATION --- //
