@@ -19,6 +19,7 @@ body {
     padding: 10px 15px;
     border-bottom: 1px solid #ced4da;
     gap: 15px; /* Add space between title and controls */
+    position: relative;
 }
 
 #page-title {
@@ -29,11 +30,86 @@ body {
     min-width: 0; /* Allow title to shrink and truncate */
 }
 
+/* Hamburger Menu Styles */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 25px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10;
+}
+
+.hamburger span {
+    width: 100%;
+    height: 3px;
+    background-color: var(--text-color);
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
 .header-controls {
     display: flex;
     align-items: center;
     gap: 8px; /* Space between buttons */
     flex-shrink: 0; /* Prevent this group from shrinking */
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+    
+    .header-controls {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--secondary-bg-color);
+        flex-direction: column;
+        width: 100%;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        padding: 15px 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: none;
+        gap: 15px;
+        padding-left: 0px;
+        padding-right: 0px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+    
+    .header-controls.active {
+        display: flex;
+    }
+    
+    .header-controls button {
+        width: 90%;
+        text-align: center;
+        padding: 18px 20px;
+        font-size: 18px;
+        font-weight: 500;
+        border-radius: 8px;
+    }
 }
 
 /* Main Content and Page Styles */
@@ -98,6 +174,7 @@ body {
 /* --- Light Theme --- */
 :root {
     --bg-color: #f0f0f0;
+    --secondary-bg-color: #1f1f1f;
     --text-color: #000000;
     --primary-btn-bg: #007BFF;
     --primary-btn-hover-bg: #0056b3;
@@ -171,6 +248,7 @@ textarea {
 /* --- Dark Theme --- */
 [data-theme="dark"] {
     --bg-color: #2b2b2b;
+    --secondary-bg-color: #101010;
     --text-color: #ffffff;
     --primary-btn-bg: #008CBA;
     --primary-btn-hover-bg: #007A9E;

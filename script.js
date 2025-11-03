@@ -2,18 +2,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const APP_VERSION = '0.1.6';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
+    // --- HAMBURGER MENU --- //
+    const hamburger = document.getElementById('hamburger-menu');
+    const headerControls = document.getElementById('header-controls');
+    
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        headerControls.classList.toggle('active');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!hamburger.contains(e.target) && !headerControls.contains(e.target)) {
+            hamburger.classList.remove('active');
+            headerControls.classList.remove('active');
+        }
+    });
+    
+    // Close menu when a navigation button is clicked
+    headerControls.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            headerControls.classList.remove('active');
+        });
+    });
+
     // --- THEME TOGGLE --- //
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
-    themeToggle.addEventListener('click', () => {
-        const isDarkMode = body.dataset.theme === 'dark';
-        if (isDarkMode) {
-            body.removeAttribute('data-theme');
-            themeToggle.textContent = '🌙 Dark Mode';
-        } else {
-            body.dataset.theme = 'dark';
-            themeToggle.textContent = '☀️ Light Mode';
-        }
+        themeToggle.addEventListener('click', () => {
+            const isDarkMode = body.dataset.theme === 'dark';
+            if (isDarkMode) {
+                body.removeAttribute('data-theme');
+                themeToggle.textContent = '🌙 Dark Mode'; 
+            } else { 
+                body.dataset.theme = 'dark';
+                themeToggle.textContent = '☀️ Light Mode'; 
+            } 
     });
 
     // --- PAGE NAVIGATION --- //
