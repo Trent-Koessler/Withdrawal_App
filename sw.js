@@ -35,23 +35,19 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // Use a "Network falling back to cache" strategy.
-    // This is a good strategy for an app shell where you want the latest version if online,
-    // but want it to work offline.
+    // For navigation requests (loading the page), use a network-first strategy.
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request).catch(() => caches.match(event.request))
+        );
+        return;
+    }
+
+    // For other requests (CSS, JS, images), use a cache-first strategy
+    // for speed and offline capability.
     event.respondWith(
-        fetch(event.request).then(response => {
-            // If the fetch is successful, clone the response and cache it.
-            // We only cache successful GET requests.
-            if (response && response.status === 200 && event.request.method === 'GET') {
-                const responseToCache = response.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, responseToCache);
-                });
-            }
-            return response;
-        }).catch(() => {
-            // If the network request fails, try to find the request in the cache.
-            return caches.match(event.request);
+        caches.match(event.request).then(cachedResponse => {
+            return cachedResponse || fetch(event.request);
         })
     );
 });

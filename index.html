@@ -6,12 +6,17 @@
     <title>Withdrawal Management Assistant</title>
     <script>
         // Apply theme immediately to prevent flash
-        (function() {
+        (function () {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
         })();
+        // Set initial button text on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.textContent = localStorage.getItem('theme') === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
     </script>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="/Withdrawal_App/manifest.json">
