@@ -35,23 +35,35 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // Use a "Network falling back to cache" strategy.
-    // This is a good strategy for an app shell where you want the latest version if online,
-    // but want it to work offline.
     event.respondWith(
-        fetch(event.request).then(response => {
-            // If the fetch is successful, clone the response and cache it.
-            // We only cache successful GET requests.
-            if (response && response.status === 200 && event.request.method === 'GET') {
-                const responseToCache = response.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, responseToCache);
-                });
-            }
-            return response;
-        }).catch(() => {
-            // If the network request fails, try to find the request in the cache.
-            return caches.match(event.request);
-        })
+        new Promise(resolve => {
+            const networkTimeout = 5000; // 5 seconds
+
+            const timeoutPromise = new Promise(resolve => {
+                setTimeout(() => {
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.match(event.request).then(cachedResponse => {
+                            if (cachedResponse) {
+                                console.log(`Network timed out for ${event.request.url}, serving from cache.`);
+                                resolve(cachedResponse);
+                            }
+                        });
+                    });
+                }, networkTimeout);
+            });
+
+            const networkPromise = fetch(event.request).then(response => {
+                if (response && response.status === 200) {
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseToCache);
+                    });
+                }
+                return response;
+            });
+
+            // Race the network request against the timeout
+            Promise.race([networkPromise, timeoutPromise]).then(resolve);
+        }).catch(() => caches.match(event.request)) // Fallback for total network failure
     );
 });
