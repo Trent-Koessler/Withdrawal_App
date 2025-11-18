@@ -5,6 +5,12 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+body.modal-open > #app-container {
+    filter: blur(4px);
+    -webkit-filter: blur(4px);
+    pointer-events: none;
+}
+
 #app-container {
     display: flex;
     flex-direction: column;
@@ -18,8 +24,7 @@ body {
     align-items: center;
     padding: 10px 15px;
     border-bottom: 1px solid #ced4da;
-    gap: 15px; /* Add space between title and controls */
-    position: relative;
+    gap: 15px; 
 }
 
 #page-title {
@@ -30,14 +35,26 @@ body {
     min-width: 0; /* Allow title to shrink and truncate */
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between buttons */
+    flex-shrink: 0; /* Prevent this group from shrinking */
+}
+
+/* Hide hamburger on desktop and show regular controls */
+@media (min-width: 769px) {
+    .hamburger { display: none !important; }
+}
+
 /* Hamburger Menu Styles */
 .hamburger {
-    display: none;
+    display: none; /* Hidden by default on desktop */
     flex-direction: column;
     justify-content: space-around;
     width: 30px;
     height: 25px;
-    background: transparent;
+    background: transparent !important; /* Override default button styles */
     border: none;
     cursor: pointer;
     padding: 0;
@@ -48,67 +65,61 @@ body {
     width: 100%;
     height: 3px;
     background-color: var(--text-color);
-    transition: all 0.3s ease;
-    border-radius: 2px;
+    border-radius: 5px;
+    transition: all 0.3s linear;
+    position: relative;
+    transform-origin: 1px;
 }
 
+/* Hamburger animation to 'X' */
 .hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(8px, 8px);
+    transform: rotate(45deg);
 }
 
 .hamburger.active span:nth-child(2) {
     opacity: 0;
+    transform: translateX(20px);
 }
 
 .hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
+    transform: rotate(-45deg);
 }
 
-.header-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Space between buttons */
-    flex-shrink: 0; /* Prevent this group from shrinking */
-}
-
-/* Mobile Styles */
+/* Responsive Header for Mobile */
 @media (max-width: 768px) {
     .hamburger {
-        display: flex;
+        display: flex; /* Show hamburger on mobile */
     }
-    
+
     .header-controls {
+        display: none; /* Hide the nav links by default on mobile */
         position: absolute;
-        top: 100%;
-        left: 0;
+        top: 60px; /* Position below the header */
         right: 0;
-        background-color: var(--secondary-bg-color);
-        flex-direction: column;
-        width: 100%;
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
         border-top: none;
-        border-left: none;
-        border-right: none;
-        padding: 15px 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        display: none;
-        gap: 15px;
-        padding-left: 0px;
-        padding-right: 0px;
-        padding-top: 20px;
-        padding-bottom: 20px;
+        border-radius: 0 0 0 8px;
+        flex-direction: column;
+        width: 150px;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    
+
     .header-controls.active {
-        display: flex;
+        display: flex; /* Show the menu when active */
     }
-    
+
     .header-controls button {
-        width: 90%;
-        text-align: center;
-        padding: 18px 20px;
-        font-size: 18px;
-        font-weight: 500;
-        border-radius: 8px;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* Adjust footer for small screens */
+    .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
     }
 }
 
@@ -174,7 +185,6 @@ body {
 /* --- Light Theme --- */
 :root {
     --bg-color: #f0f0f0;
-    --secondary-bg-color: #1f1f1f;
     --text-color: #000000;
     --primary-btn-bg: #007BFF;
     --primary-btn-hover-bg: #0056b3;
@@ -248,7 +258,6 @@ textarea {
 /* --- Dark Theme --- */
 [data-theme="dark"] {
     --bg-color: #2b2b2b;
-    --secondary-bg-color: #101010;
     --text-color: #ffffff;
     --primary-btn-bg: #008CBA;
     --primary-btn-hover-bg: #007A9E;
@@ -542,6 +551,11 @@ textarea {
     color: var(--text-color);
     text-decoration: none;
     cursor: pointer;
+}
+
+/* Style for the mandatory disclaimer modal button */
+#disclaimer-modal button {
+    background-color: var(--primary-btn-bg);
 }
 
 /* Link-style button */

@@ -1,6 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.1.7';
+    const APP_VERSION = '0.1.8';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
+
+    // --- DISCLAIMER MODAL --- //
+    const disclaimerModal = document.getElementById('disclaimer-modal');
+    const acceptDisclaimerBtn = document.getElementById('accept-disclaimer-btn');
+
+    // Show the modal on page load
+    disclaimerModal.style.display = 'block';
+    document.body.classList.add('modal-open');
+
+    acceptDisclaimerBtn.addEventListener('click', () => {
+        disclaimerModal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    });
+
+
 
     // --- HAMBURGER MENU --- //
     const hamburger = document.getElementById('hamburger-menu');
@@ -88,21 +103,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const openCriteriaBtn = document.getElementById('open-criteria-modal-btn');
     if (criteriaModal) {
         const closeCriteriaBtn = criteriaModal.querySelector('.close-button');
-
+ 
+        function openModal() {
+            document.body.classList.add('modal-open');
+            criteriaModal.style.display = 'block';
+        }
+ 
+        function closeModal() {
+            document.body.classList.remove('modal-open');
+            criteriaModal.style.display = 'none';
+        }
+ 
         if (openCriteriaBtn) {
-            openCriteriaBtn.addEventListener('click', () => {
-                criteriaModal.style.display = 'block';
-            });
+            openCriteriaBtn.addEventListener('click', openModal);
         }
-
         if (closeCriteriaBtn) {
-            closeCriteriaBtn.addEventListener('click', () => {
-                criteriaModal.style.display = 'none';
-            });
+            closeCriteriaBtn.addEventListener('click', closeModal);
         }
-
         window.addEventListener('click', (event) => {
-            if (event.target == criteriaModal) criteriaModal.style.display = 'none';
+            if (event.target == criteriaModal) closeModal();
         });
     }
 

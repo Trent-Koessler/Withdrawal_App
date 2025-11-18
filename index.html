@@ -77,7 +77,8 @@
                     </div>
                     <div id="thiamine" class="tab-content">
                         <h3>Thiamine</h3>
-                        <p><strong>Prophylaxis (Standard Regimen):</strong> To prevent Wernicke's Encephalopathy (WE), all patients undergoing alcohol withdrawal should receive parenteral thiamine. Commence thiamine 300mg IV/IM daily for 3-5 days. <strong>Crucially, always administer thiamine BEFORE any glucose-containing fluids.</strong></p>
+                        <p><strong>WKS prophylaxis for an otherwise healthy person with good dietary intake (generally not appropriate for those receiving significant withdrawal treatment):</strong> Oral thiamine 100mg TDS (or 300mg daily) for 3 days then 100mg daily for 11 days thereafter </p>
+                        <p><strong>WKS prophylaxis for those with chronic high level alcohol use and/or poor nutrition:</strong> All patients undergoing inpatient alcohol withdrawal should receive parenteral thiamine. Commence thiamine 300mg IV/IM daily for 3 days, then 300mg oral daily for 2-3 weeks. <strong>Crucially, always administer thiamine BEFORE any glucose-containing fluids.</strong></p>
                         <p><strong>Suspected Wernicke-Korsakov Syndrome (WKS):</strong> Have a high index of suspicion for WKS in any patient with confusion, ataxia, ophthalmoplegia, memory disturbance, or malnutrition. The classic triad is rare. Treatment requires high-dose thiamine: <strong>500mg IV TDS for a minimum of 5 days</strong>, followed by oral supplementation.</p>
                         <p><strong>Caveat:</strong> Patients must be magnesium replete for adequate thiamine absorption and activation.</p>
                     </div>
@@ -459,18 +460,17 @@
         <footer class="app-footer">
             <div class="footer-content">
                 <span class="footer-version">Version <span class="app-version"></span></span>
-                <span class="footer-disclaimer">Information contained herein is not a substitute for professional medical advice. We recommend seeking assistance from D&A, consultation-liaison addiction, DASAS or similar services for this. All information assumes that patients are adults.</span>
+                <span class="footer-disclaimer" style="font-size: 14px;">Information contained herein is not a substitute for professional medical advice. We recommend seeking assistance from D&A, consultation-liaison addiction, DASAS or similar services for this. All information assumes that patients are adults.</span>
             </div>
         </footer>
 
-    </div>
+    </div> <!-- End of #app-container -->
 
     <!-- Criteria Modal -->
     <div id="criteria-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h3>Diagnostic Criteria for Alcohol Withdrawal</h3>
-            
             <h4>DSM-5 Criteria</h4>
             <p><strong>A.</strong> Cessation of (or reduction in) alcohol use that has been heavy and prolonged.</p>
             <p><strong>B.</strong> Two (or more) of the following, developing within several hours to a few days after the cessation of (or reduction in) alcohol use described in Criterion A:</p>
@@ -488,15 +488,27 @@
             <p><strong>D.</strong> The signs or symptoms are not attributable to another medical condition and are not better explained by another mental disorder, including intoxication or withdrawal from another substance.</p>
             <p><strong>Specify if:</strong><br>
             <em>With perceptual disturbances:</em> This specifier applies in the rare instance when hallucinations (usually visual or tactile) occur with intact reality testing, or auditory, visual, or tactile illusions occur in the absence of a delirium.</p>
-
             <hr style="margin: 20px 0;">
-
             <h4>ICD-11 Criteria</h4>
             <h5>Essential (Required) Features:</h5>
             <p>The presence of a clinically significant cluster of symptoms, behaviours, and/or physiological features that occurs upon cessation or reduction in the use of alcohol in individuals who have developed dependence on alcohol or have used alcohol for a prolonged period or in large amounts.</p>
             <p>Presenting features of Alcohol Withdrawal may include autonomic hyperactivity (e.g., tachycardia, hypertension, perspiration), increased hand tremor, nausea, retching or vomiting, insomnia, anxiety, psychomotor agitation, depressed or dysphoric mood, transient visual, tactile or auditory illusions or hallucinations, and distractibility. Less commonly, Alcohol Withdrawal is complicated by seizures.</p>
             <p>Onset of Alcohol Withdrawal typically occurs within 6 to 12 hours after last use, as blood alcohol concentrations decline. Symptoms vary in type, severity, onset and duration according to the duration and intensity of alcohol use prior to cessation or reduction of use.</p>
             <p>The symptoms are not better accounted for by another medical condition or another mental disorder.</p>
+        </div>
+    </div>
+
+    <!-- Mandatory Disclaimer Modal -->
+    <div id="disclaimer-modal" class="modal">
+        <div class="modal-content">
+            <h3>Disclaimer & Terms of Use</h3>
+            <p><strong>This application is intended for educational and informational purposes only.</strong></p>
+            <p>It is an informal quality improvement project and is <strong>not a medical device</strong>. It is not a substitute for professional clinical judgment, diagnosis, or treatment. The author bears no responsibility for decisions made using it.</p>
+            <p>All information, calculations, and recommendations generated by this tool must be independently verified by a qualified clinician before being used for patient care. All information assumes that patients are adults.</p>
+            <p>By clicking "Accept", you acknowledge and agree to these terms.</p>
+            <div class="button-group" style="justify-content: center; margin-top: 20px;">
+                <button id="accept-disclaimer-btn">Accept and Continue</button>
+            </div>
         </div>
     </div>
 
