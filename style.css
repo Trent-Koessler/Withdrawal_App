@@ -398,6 +398,12 @@ textarea {
     gap: 10px;
 }
 
+/* Ensure severity buttons are exactly equal in size and text scales/wraps */
+.regimen-severity-btn {
+    flex: 1;
+    min-width: 0; 
+}
+
 /* Specific styles for Standard Drinks by Type */
 .std-drinks-grid {
     grid-template-columns: 1fr; /* Stack categories on small screens */
