@@ -147,9 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
 
     const FLOWCHART_LOGIC = {
-        'start': { 'title': 'Start', 'type': 'question', 'text': 'How is the patient being referred?', 'options': [{'label': 'GP, D&A, Other LHD Service, or Self-Referral', 'next_step': 'intake_assessment'}] },
-        'intake_assessment': { 'title': 'Assessment', 'type': 'question', 'text': 'Proceed with intake and a comprehensive assessment. Does the patient require withdrawal management?', 'options': [{'label': 'Yes, withdrawal is required', 'next_step': 'ask_std_drinks'}, {'label': 'No, withdrawal is not required', 'next_step': 'refer_psychosocial'}] },
-        'refer_psychosocial': { 'title': 'Referral', 'type': 'outcome', 'text': 'Patient does not require withdrawal management.\n\nRefer to Addiction Medicine / psychosocial team as appropriate.', 'emr_summary': 'Patient assessed and does not require withdrawal management. Referred to Addiction Medicine / psychosocial team for ongoing support.' },
+        'intake_assessment': { 'title': 'Start / Assessment', 'type': 'question', 'text': 'Undertake a comprehensive drug and alcohol assessment. Does the patient require consideration for alcohol withdrawal management?', 'options': [{'label': 'Yes, withdrawal is required', 'next_step': 'ask_std_drinks'}, {'label': 'No, withdrawal is not required', 'next_step': 'refer_psychosocial'}] },
+        'refer_psychosocial': { 'title': 'Referral', 'type': 'outcome', 'text': 'Patient does not require withdrawal management.\n\nIf there are still concerns regarding substance use, consider referral to Addiction Medicine / psychosocial team as appropriate.', 'emr_summary': 'Patient assessed and does not require withdrawal management. Referred to Addiction Medicine / psychosocial team for ongoing support.' },
         'ask_std_drinks': { 'title': 'Alcohol Intake', 'type': 'question', 'text': "What is the patient's average recent daily standard drink (std) intake?", 'options': [ {'label': '≤ 7 Standard Drinks daily', 'next_step': 'ask_seizure_history_under8'}, {'label': '8-14 Standard Drinks daily', 'next_step': 'ask_seizure_history_8to14'}, {'label': '≥ 15 Standard Drinks daily', 'next_step': 'ask_seizure_history_15plus'} ] },
         'ask_seizure_history_under8': { 'title': 'Seizure History (≤ 7)', 'type': 'question', 'text': 'Does the patient have a past history of seizures, delirium tremens, or complex withdrawal?', 'options': [{'label': 'No past history', 'next_step': 'outcome_supportive_care_under8'}, {'label': 'Yes, has a past history', 'next_step': 'outcome_admit_dh_under8'}] },
         'outcome_supportive_care_under8': { 'title': 'Supportive Care', 'type': 'outcome', 'text': 'Patient has no past history of severe withdrawal.\n\nRecommendation: Supportive treatment.', 'emr_summary': 'Patient consuming ≤ 7 standard drinks daily with no history of complex withdrawal. Plan: Supportive treatment.' },
@@ -168,8 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let history = [];
 
     function startFlowchart() {
-        history = ['start'];
-        renderFlowchartStep('start');
+        history = ['intake_assessment'];
+        renderFlowchartStep('intake_assessment');
     }
 
     function renderFlowchartStep(stepId) {
@@ -428,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let totalSd = 0;
             const inputs = document.querySelectorAll('#std-by-type input[type="number"]');
             inputs.forEach(input => {
-                const qty = parseFloat(input.value) || 0;
+                const qty = Math.max(0, parseFloat(input.value) || 0); // Prevent negative quantities
                 const sd = parseFloat(input.dataset.sd) || 0;
                 totalSd += qty * sd;
             });
@@ -440,8 +439,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const calculateByVolumeBtn = document.getElementById('calculate-by-volume');
     if (calculateByVolumeBtn) {
         calculateByVolumeBtn.addEventListener('click', () => {
-            const volume = parseFloat(document.getElementById('volume-ml').value) || 0;
-            const abv = parseFloat(document.getElementById('abv-percent').value) || 0;
+            const volume = Math.max(0, parseFloat(document.getElementById('volume-ml').value) || 0);
+            const abv = Math.max(0, parseFloat(document.getElementById('abv-percent').value) || 0);
             const result = (volume / 1000) * abv * 0.789;
             document.getElementById('volume-result').value = `--- Standard Drink Calculation ---\n\nA ${volume}mL beverage at ${abv}% ABV contains:\n\n--> ${result.toFixed(2)} standard drinks.\n\nFormula: Volume (L) × ABV (%) × 0.789 (density of ethanol)`;
         });
