@@ -3,7 +3,7 @@ Withdrawal App / Withdrawal Management Assistant
 A Progressive Web App (PWA) for clinical decision support, designed to assist healthcare professionals in managing alcohol withdrawal. 
 This tool provides quick access to summarised guidelines, triage flowcharts, and common clinical calculators in a fast, offline-capable, and installable web app.
 
-⚠️ Disclaimer
+Disclaimer
 This application is intended for educational and informational purposes only. 
 This app is an informal quality improvement project based on guidelines and operating procedures from the Western NSW Local Health District. 
 It is not a medical device and is not a substitute for professional clinical judgment, diagnosis, or treatment. The author bears no responsibility for decisions made using it.
