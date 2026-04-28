@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navButtons = document.querySelectorAll('.big-button[data-page]');
     const homeButton = document.getElementById('home-button');
     const aboutButton = document.getElementById('about-button');
+    const feedbackButton = document.getElementById('feedback-button');
 
     function showPage(pageId) {
         pages.forEach(page => {
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title = pageElement.dataset.title || 'Withdrawal Assistant';
             }
             pageTitle.textContent = title;
+            document.title = title + ' - SUD Toolkit';
 
             if (pageId === 'alcohol-withdrawal-page') {
                 startFlowchart();
@@ -97,6 +99,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     homeButton.addEventListener('click', () => showPage('home-page'));
     aboutButton.addEventListener('click', () => showPage('about-page'));
+    
+    if (feedbackButton) {
+        feedbackButton.addEventListener('click', () => {
+            const feedbackUrl = 'mailto:trentkoessler@gmail.com?subject=SUD Toolkit Feedback';
+            window.open(feedbackUrl, '_blank');
+        });
+    }
 
     // --- CRITERIA MODAL LOGIC ---
     const criteriaModal = document.getElementById('criteria-modal');
