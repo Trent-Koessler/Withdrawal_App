@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newPage) {
             newPage.classList.add('active-page');
             const button = document.querySelector(`[data-page='${pageId}']`);
-            let title = 'Withdrawal Management Assistant'; // Default title
+            let title = 'Substance Use Disorder (SUD) Toolkit'; // Default title
             if (button) {
                 title = button.textContent.replace(/\n/g, ' ');
             } else if (pageId !== 'home-page') {
