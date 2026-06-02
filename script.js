@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PAGE NAVIGATION --- //
     const pageTitle = document.getElementById('page-title');
     const pages = document.querySelectorAll('.page');
-    const navButtons = document.querySelectorAll('.big-button[data-page]');
+    const navButtons = document.querySelectorAll('[data-page]');
     const homeButton = document.getElementById('home-button');
     const aboutButton = document.getElementById('about-button');
     const feedbackButton = document.getElementById('feedback-button');
