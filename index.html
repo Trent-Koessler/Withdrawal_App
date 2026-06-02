@@ -48,7 +48,7 @@
                     <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
                     <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol Detox Guidelines</button>
                     <button class="big-button" data-page="scales-page">Clinical Scales & Calculators</button>
-                    <button class="big-button" data-page="other-syndromes-page">Other Withdrawal Syndromes</button>
+                    <button class="big-button" data-page="other-syndromes-page">Other Substances</button>
                     <button class="big-button" data-page="contacts-page">Helpful Contacts & Helplines</button>
                 </nav>
             </div>
@@ -122,9 +122,14 @@
                     </div>
                     <div id="special-cases" class="tab-content">
                         <h3>Special Cases</h3>
+                        <div class="warning-box">
+                            <strong>⚠️ Pregnancy:</strong> Alcohol withdrawal during pregnancy is high risk for both maternal and fetal complications (including miscarriage, premature labour, and fetal distress). <strong>Specialist Obstetric and Addiction Medicine consultation is strongly advised.</strong>
+                        </div>
+                        <p><b>Elderly / Frail Patients:</b> High risk for over-sedation, falls, and paradoxical reactions. Routine use of long-acting agents (diazepam) is cautioned. Oxazepam is generally preferred, starting at lower doses with frequent clinical review.</p>
                         <p><b>Seizures (current or past):</b> Consider loading with benzodiazepines as for severe withdrawal</p>
                         <p><b>Alcohol Withdrawal Delirium:</b> Needs ICU/HDU or 1:1 nursing</p>
                         <p><b>Adjunctive Medications for Severe Symptoms:</b> In cases of delirium or severe agitation/psychosis poorly responsive to benzodiazepines, other agents may be considered <strong>after specialist consultation</strong>. Examples include low-dose antipsychotics (e.g., Haloperidol, Olanzapine). These are not first-line and require careful risk/benefit assessment.</p>
+                        <p><b>Poly-substance Withdrawal:</b> Overlapping symptoms (e.g., sweating, tachycardia, nausea) from co-occurring opioid or benzodiazepine withdrawal can artificially inflate the CIWA-Ar score. Generally, treat the most life-threatening withdrawal first (Alcohol/Benzodiazepines) with long-acting sedatives, which often incidentally smooths out less dangerous withdrawals (like opioids or stimulants).</p>
                         <p><b>General Notes:</b> If total daily diazepam equivalent exceeds 80mg, contact specialist service (e.g. D&A CL service, Drug and Alcohol State Advisory Service (DASAS) - 1800 023 687)</p>
                     </div>
                 </div>
@@ -162,6 +167,7 @@
                         </ul>
                         <h4>Exclusion Criteria (Contraindications)</h4>
                         <ul>
+                            <li><strong>Pregnancy or suspected pregnancy.</strong> (Requires specialist inpatient management).</li>
                             <li>Medical or psychiatric contraindications, including but not limited to: a seizure disorder, prior or current Wernicke-Korsakoff syndrome, history of suicide attempts, cognitive impairment, or recurrent delirium.</li>
                             <li>Major unmanaged hepatic or renal disease. If present, discussion with an addiction medicine specialist is required regarding regimen modification (e.g., using oxazepam instead of diazepam).</li>
                             <li>Patient is on regular opioids, beta-blockers, or alpha-adrenergic acting agents (e.g., clonidine, prazosin) due to potential interactions and/or masking of alcohol withdrawal symptoms.</li>
@@ -371,13 +377,208 @@
 </div>
 
 <!-- Other Syndromes Page -->
-<div id="other-syndromes-page" class="page" data-title="Other Withdrawal Syndromes">
+<div id="other-syndromes-page" class="page" data-title="Other Substances">
     <div class="button-container">
-        <button class="big-button" data-link-to-scale="cows">Opioid Withdrawal (COWS)</button>
-        <button class="big-button" data-link-to-scale="ciwa-b">Benzodiazepine Withdrawal (CIWA-B)</button>
-        <button class="big-button" data-link-to-scale="nsw-cws">Cannabis Withdrawal Checklist</button>
-        <button class="big-button" data-link-to-scale="awq">Amphetamine Withdrawal (AWQ)</button>
+        <button class="big-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
+        <button class="big-button" data-page="benzo-withdrawal-page">Benzodiazepine Withdrawal</button>
+        <button class="big-button" data-page="cannabis-withdrawal-page">Cannabis Withdrawal</button>
+        <button class="big-button" data-page="stimulant-withdrawal-page">Psychostimulant Withdrawal</button>
+        <button class="big-button" data-page="ghb-withdrawal-page">GHB Withdrawal</button>
+        <button class="big-button" data-page="nicotine-withdrawal-page">Nicotine Withdrawal</button>
+        <button class="big-button" data-page="volatile-withdrawal-page">Volatile Substances Withdrawal</button>
     </div>
+</div>
+
+<!-- Opioid Withdrawal Page -->
+<div id="opioid-withdrawal-page" class="page" data-title="Opioid Withdrawal">
+    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+    <h3>Opioid Withdrawal Syndrome</h3>
+    <p><strong>Onset:</strong> 6-24 hours (short-acting, e.g., heroin), 36-72 hours (long-acting, e.g., methadone).</p>
+    <p><strong>Duration:</strong> 5-10 days (short-acting), 14-21 days (long-acting), with protracted symptoms lasting weeks.</p>
+    <p><strong>Symptoms:</strong> Dysphoria, nausea, vomiting, muscle aches, lacrimation, rhinorrhoea, pupillary dilation, piloerection, sweating, diarrhoea, yawning, fever, insomnia.</p>
+    <p><strong>Key Distinguishing Features:</strong> Piloerection ("gooseflesh"), prominent yawning, pupillary dilation, rhinorrhoea, and lacrimation.</p>
+    
+    <div class="warning-box">
+        <strong>⚠️ Pregnancy Warning:</strong> Withdrawing a pregnant patient from opioids carries a high risk of fetal distress and spontaneous abortion. Do not commence withdrawal. Consult Obstetrics and Addiction Medicine immediately to arrange Opioid Substitution Therapy. Neonates born to mothers on OST will require monitoring for Neonatal Abstinence Syndrome (NAS).
+    </div>
+
+    <div class="button-container" style="margin: 20px 0;">
+        <button class="big-button" data-link-to-scale="cows">Go to COWS Scale</button>
+    </div>
+
+    <h4>Management</h4>
+    <p>Opioid withdrawal is intensely uncomfortable but rarely life-threatening. Management typically involves either opioid substitution therapy or symptomatic medication. <strong>Consult addiction services for complex patients, pregnancy, or severe medical co-morbidities.</strong></p>
+    
+    <h5>Opioid Substitution Therapy (Buprenorphine)</h5>
+    <div class="danger-box">
+        <strong>🚨 Precipitated Withdrawal Warning:</strong> Administering Buprenorphine before the patient is in adequate withdrawal (e.g., COWS &lt; 12, or too soon after full-agonist opioids) will strip the receptors and plunge the patient into violent, sudden withdrawal.
+    </div>
+    <p>Buprenorphine is highly effective for managing withdrawal. To avoid precipitated withdrawal, the patient must be in moderate withdrawal prior to the first dose (e.g., COWS > 12, or at least 12-24 hours since last short-acting opioid). Micro-dosing schedules and <strong>Long-Acting Injectable Buprenorphine (LAIB)</strong> (e.g., Buvidal, Sublocade) are increasingly used and may be considered in consultation with specialist services.</p>
+    
+    <h5>Symptomatic Medications</h5>
+    <p>The following symptomatic medications are recommended for the management of withdrawal symptoms:</p>
+    <ul>
+        <li><strong>Autonomic symptoms (sweating, anxiety, restlessness):</strong> Clonidine 100-150 micrograms oral QID PRN (Hold if BP &lt; 90/60 or HR &lt; 60).</li>
+        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+        <li><strong>Diarrhoea:</strong> Loperamide 2mg oral (after each loose bowel action, max 16mg/day).</li>
+        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
+        <li><strong>Severe Agitation / Insomnia:</strong> Diazepam 2.5-5mg oral QID PRN (Max 20mg/day, monitor closely if co-prescribed with opioids).</li>
+    </ul>
+
+    <h5>Harm Reduction &amp; Overdose Prevention</h5>
+    <div class="warning-box">
+        <strong>⚠️ Lost Tolerance:</strong> Patients leaving an opioid detox have completely lost their tolerance. A previously "normal" dose can now be fatal.
+    </div>
+    <p><strong>Take-Home Naloxone:</strong> Always prescribe or supply Take-Home Naloxone (e.g., Nyxoid nasal spray or Prenoxad intramuscular injection) to <em>any</em> patient discharging from an opioid withdrawal program, along with brief overdose response education.</p>
+
+</div>
+
+<!-- Benzo Withdrawal Page -->
+<div id="benzo-withdrawal-page" class="page" data-title="Benzodiazepine Withdrawal">
+    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+    <h3>Benzodiazepine Withdrawal Syndrome</h3>
+    <p><strong>Onset:</strong> 1-2 days (short-acting, e.g., alprazolam), 2-7 days (long-acting, e.g., diazepam).</p>
+    <p><strong>Duration:</strong> 2-4 weeks, though protracted withdrawal can last months.</p>
+    <p><strong>Symptoms:</strong> Anxiety, insomnia, restlessness, agitation, irritability, muscle tension/spasms, tremors, diaphoresis, palpitations. Severe withdrawal can include hallucinations, psychosis, and seizures.</p>
+    <p><strong>Key Distinguishing Features:</strong> Severe muscle tension, perceptual disturbances (extreme sensitivity to light/sound), and risk of delayed seizures.</p>
+    
+    <div class="danger-box">
+        <strong>🚨 Red Flags (Escalate Care):</strong> Monitor closely for signs of severe withdrawal, including seizures, delirium, hallucinations, or severe autonomic instability. If these occur, escalate to emergency medical care immediately.
+    </div>
+
+    <div class="danger-box">
+        <strong>🚨 Flumazenil Contraindication:</strong> Do not use Flumazenil (a benzodiazepine reversal agent) in patients with chronic benzodiazepine dependence. It can trigger intractable, life-threatening seizures.
+    </div>
+
+    <div class="button-container" style="margin: 20px 0;">
+        <button class="big-button" data-link-to-scale="ciwa-b">Go to CIWA-B Scale</button>
+    </div>
+
+    <div class="warning-box">
+        <strong>⚠️ Pregnancy Warning:</strong> Benzodiazepine use and withdrawal during pregnancy carry risks of neonatal withdrawal and complications. Tapering must be managed in close consultation with Obstetric and Addiction Medicine specialists.
+    </div>
+
+    <h4>Tapering Schedules</h4>
+    <p><strong>Discussion with addiction services is strongly recommended.</strong></p>
+    <p>Arranging a safe and effective outpatient taper is often difficult and carries risks if not closely monitored. Relapse rates are high, and abrupt cessation can lead to seizures and delirium.</p>
+    <p>Conversion to a long-acting agent (like diazepam) followed by a gradual reduction is the standard approach. For a tool to help formulate a tapering schedule, see <a href="https://trent-koessler.github.io/Hypertaper/" target="_blank">HyperTaper</a>.</p>
+    
+    <h4>Symptomatic Management</h4>
+    <p>Management is primarily via a controlled taper of benzodiazepines. The following symptomatic medications may provide relief for specific complaints, but do not prevent severe complications like seizures:</p>
+    <ul>
+        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+        <li><strong>Diarrhoea:</strong> Loperamide 2mg oral (after each loose bowel action, max 16mg/day).</li>
+        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
+    </ul>
+</div>
+
+<!-- Cannabis Withdrawal Page -->
+<div id="cannabis-withdrawal-page" class="page" data-title="Cannabis Withdrawal">
+    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+    <h3>Cannabis Withdrawal Syndrome</h3>
+    <p><strong>Onset:</strong> 1-2 days after cessation.</p>
+    <p><strong>Peak:</strong> 2-6 days.</p>
+    <p><strong>Duration:</strong> 1-3 weeks (sleep disturbances can last longer).</p>
+    <p><strong>Symptoms:</strong> Irritability, anger, aggression, anxiety, depressed mood, restlessness, sleep difficulty (insomnia, vivid/disturbing dreams), decreased appetite/weight loss, physical symptoms (chills, sweating, shakiness, stomach pain, headache).</p>
+    <p><strong>Key Distinguishing Features:</strong> Vivid and disturbing dreams (REM rebound), pronounced anger/irritability, and significant appetite loss.</p>
+    
+    <div class="button-container" style="margin: 20px 0;">
+        <button class="big-button" data-link-to-scale="nsw-cws">Go to CWS Scale</button>
+        <button class="big-button" data-link-to-scale="cwas">Go to CWAS Scale</button>
+    </div>
+
+    <h4>Symptomatic Management</h4>
+    <p>Medications are typically only required for severe symptoms. The following symptomatic medications are recommended:</p>
+    <ul>
+        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
+        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+        <li><strong>Severe anxiety or agitation:</strong> Diazepam 5mg oral BD-QID PRN (short course only, e.g., 3-5 days). Please note - outside of the NSW Health guidelines, other guidelines and our own clinical experience suggests using quetiapine 25-50mg TDS or olanzapine 2.5mg TDS tends to yield better results as first line management with BZDs second line management of agitation/anxiety.</li>
+        <li><strong>Insomnia:</strong> Promethazine 25mg oral nocte PRN.</li>
+    </ul>
+</div>
+
+<!-- Psychostimulants Withdrawal Page -->
+<div id="stimulant-withdrawal-page" class="page" data-title="Psychostimulant Withdrawal">
+    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+    <h3>Psychostimulant Withdrawal (Amphetamines, Cocaine)</h3>
+    <p><strong>Onset:</strong> 1-2 days after cessation (the "crash").</p>
+    <p><strong>Peak:</strong> 2-4 days.</p>
+    <p><strong>Duration:</strong> 1-3 weeks.</p>
+    <p><strong>Symptoms:</strong> Fatigue, lethargy, hypersomnia followed by insomnia, increased appetite, vivid/unpleasant dreams, psychomotor retardation or agitation, depressed mood, cravings.</p>
+    <p><strong>Key Distinguishing Features:</strong> Profound hypersomnia, hyperphagia (increased appetite), and severe psychomotor retardation during the "crash" phase.</p>
+    
+    <div class="danger-box">
+        <strong>🚨 Red Flags (Escalate Care):</strong> The initial "crash" phase can precipitate severe psychiatric symptoms. Escalate care immediately if the patient exhibits severe paranoia, acute psychosis, or acute suicidality.
+    </div>
+
+    <div class="button-container" style="margin: 20px 0;">
+        <button class="big-button" data-link-to-scale="awq">Go to AWQ Scale</button>
+    </div>
+
+    <h4>Management</h4>
+    <p>Withdrawal is generally not life-threatening but is associated with severe psychological distress, agitation, and risk of suicide. Monitor mental state closely.</p>
+    
+    <h5>Symptomatic Medications</h5>
+    <p>The following symptomatic medications are recommended for the management of withdrawal symptoms:</p>
+    <ul>
+        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
+        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+        <li><strong>Agitation and anxiety:</strong> Diazepam 5-10mg oral up to QID PRN (short course only).</li>
+        <li><strong>Severe psychiatric symptoms (psychosis/severe agitation):</strong> Antipsychotics such as Olanzapine 2.5-5mg oral BD PRN or Haloperidol. Seek specialist psychiatric input.</li>
+    </ul>
+</div>
+
+<!-- GHB Withdrawal Page -->
+<div id="ghb-withdrawal-page" class="page" data-title="GHB Withdrawal">
+    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+    <h3>GHB/GBL Withdrawal Syndrome</h3>
+    <p><strong>Onset:</strong> 1-6 hours after last dose.</p>
+    <p><strong>Duration:</strong> 3-14 days.</p>
+    <p><strong>Symptoms:</strong> Tremor, anxiety, tachycardia, hypertension, diaphoresis, insomnia, nausea, vomiting. Severe cases can rapidly progress to delirium, severe psychosis, and seizures (similar to severe alcohol withdrawal but faster onset).</p>
+    <p><strong>Key Distinguishing Features:</strong> Extremely rapid onset, sudden and severe delirium, wild vital sign fluctuations, and massive resistance to standard benzodiazepine doses.</p>
+    
+    <h4>Management</h4>
+    <div class="danger-box">
+        <strong>🚨 Medical Emergency:</strong> GHB withdrawal can escalate rapidly and unpredictably. Watch for sudden onset of severe delirium, extreme agitation, and dangerous fluctuations in heart rate (bradycardia/tachycardia). 
+    </div>
+    <p><strong>Inpatient management in a high-dependency setting is often required. Consult addiction medicine and ICU immediately.</strong> High-dose benzodiazepines are the mainstay of treatment, often requiring significantly larger doses than standard alcohol withdrawal.</p>
+</div>
+
+<!-- Nicotine Withdrawal Page -->
+<div id="nicotine-withdrawal-page" class="page" data-title="Nicotine Withdrawal">
+    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+    <h3>Nicotine Withdrawal Syndrome</h3>
+    <p><strong>Onset:</strong> 2-12 hours.</p>
+    <p><strong>Peak:</strong> 1-3 days.</p>
+    <p><strong>Duration:</strong> 3-4 weeks.</p>
+    <p><strong>Symptoms:</strong> Cravings, irritability, anxiety, difficulty concentrating, restlessness, sleep disturbances, increased appetite/weight gain, depressed mood.</p>
+    <p><strong>Key Distinguishing Features:</strong> Intense cravings, increased appetite, and weight gain.</p>
+    
+    <h4>Management</h4>
+    <p>Nicotine Replacement Therapy (NRT) in a combination approach (e.g., long-acting patch + fast-acting oral form) is first-line. Alternatives include Varenicline or Bupropion. Offer brief interventions and referral to Quitline (13 7848).</p>
+    
+    <h5>Special Considerations</h5>
+    <div class="warning-box">
+        <strong>⚠️ Drug Interactions (CYP1A2):</strong> Tobacco smoke induces the CYP1A2 enzyme. Abrupt smoking cessation can significantly <strong>increase</strong> blood levels of medications metabolized by this enzyme, particularly <strong>olanzapine, clozapine, theophylline, and warfarin</strong>. Monitor closely for toxicity and consider prophylactic dose reductions in consultation with pharmacy/psychiatry.
+    </div>
+    <p><strong>Pregnancy:</strong> NRT is generally safer than smoking, though intermittent rapid-acting NRT (gum, lozenge) is often preferred over continuous patches. Consult local guidelines.<br><strong>Vaping:</strong> Liquid nicotine vaporisers (e-cigarettes) may be considered as a second-line harm reduction step-down tool for patients unsuccessful with standard NRT.</p>
+</div>
+
+<!-- Volatile Substances Withdrawal Page -->
+<div id="volatile-withdrawal-page" class="page" data-title="Volatile Substances Withdrawal">
+    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+    <h3>Volatile Substances (Inhalants) Withdrawal</h3>
+    <p><strong>Onset:</strong> 24-48 hours.</p>
+    <p><strong>Duration:</strong> 2-5 days.</p>
+    <p><strong>Symptoms:</strong> Sleep disturbances, nausea, tremors, irritability, diaphoresis, fleeting illusions, cravings. Rare complications include seizures or delirium.</p>
+    <p><strong>Key Distinguishing Features:</strong> Fleeting illusions, sleep disturbances, and cravings, though generally lacks a highly specific classic syndrome compared to other substances.</p>
+    
+    <h4>Management</h4>
+    <p>Provide a low-stimulation, safe environment. Treat symptomatically.</p>
 </div>
 
 <!-- Helpful Contacts Page -->
@@ -391,6 +592,7 @@
         <li><strong>Quitline (Smoking Cessation):</strong> <a href="tel:137848">13 78 48</a> (M-F, 8am-8pm; Sat, 9am-5pm)</li>
         <li><strong>Family Drug Support Line:</strong> <a href="tel:1300368186">1300 368 186</a> (24/7)</li>
         <li><strong>Gambling Help (G-Line):</strong> <a href="tel:1800633635">1800 633 635</a> (24/7)</li>
+        <li><strong>MotherSafe:</strong> <a href="tel:1800647848">1800 647 848</a> (Medications in pregnancy and lactation advice, M-F 9am-5pm)</li>
     </ul>
 
     <h3>NSW Local Health District (LHD) D&A Service Intake Lines</h3>

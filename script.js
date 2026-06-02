@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.1.9';
+    const APP_VERSION = '0.2.0';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- DISCLAIMER MODAL --- //
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PAGE NAVIGATION --- //
     const pageTitle = document.getElementById('page-title');
     const pages = document.querySelectorAll('.page');
-    const navButtons = document.querySelectorAll('.big-button[data-page]');
+    const navButtons = document.querySelectorAll('[data-page]');
     const homeButton = document.getElementById('home-button');
     const aboutButton = document.getElementById('about-button');
     const feedbackButton = document.getElementById('feedback-button');
