@@ -1,4 +1,4 @@
-const CACHE_NAME = 'withdrawal-app-cache-v9';
+const CACHE_NAME = 'withdrawal-app-cache-v11';
 const urlsToCache = [
     '/Withdrawal_App/',
     '/Withdrawal_App/index.html',
