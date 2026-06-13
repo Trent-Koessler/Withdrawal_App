@@ -1,14 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.1.9';
+    const APP_VERSION = '0.1.91';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
+
+    // --- PREVENT TRANSITION FLASH --- //
+    window.addEventListener('load', () => {
+        document.body.classList.remove('preload');
+    });
 
     // --- DISCLAIMER MODAL --- //
     const disclaimerModal = document.getElementById('disclaimer-modal');
     const acceptDisclaimerBtn = document.getElementById('accept-disclaimer-btn');
-
-    // Show the modal on page load
-    disclaimerModal.style.display = 'block';
-    document.body.classList.add('modal-open');
 
     acceptDisclaimerBtn.addEventListener('click', () => {
         disclaimerModal.style.display = 'none';

@@ -1,4 +1,10 @@
 /* General Body and App Container Styles */
+/* Prevent animations from firing during page load */
+.preload * {
+    transition: none !important;
+    -webkit-transition: none !important;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
