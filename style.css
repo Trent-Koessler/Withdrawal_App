@@ -204,6 +204,8 @@ body.modal-open > #app-container {
     --link-hover-color: #0056b3;
     --tab-bg: #e9ecef;
     --tab-active-bg: #f0f0f0;
+    --warning-bg: #fff3cd; --warning-text: #856404; --warning-border: #ffc107;
+    --danger-bg: #f8d7da; --danger-text: #721c24; --danger-border: #dc3545;
 }
 
 body {
@@ -277,6 +279,8 @@ textarea {
     --link-hover-color: #1E90FF;
     --tab-bg: #3c3c3c;
     --tab-active-bg: #2b2b2b;
+    --warning-bg: #4d4015; --warning-text: #ffda6a; --warning-border: #ffc107;
+    --danger-bg: #4a1f24; --danger-text: #f5c6cb; --danger-border: #dc3545;
 }
 
 /* --- Flowchart Specific Styles --- */
@@ -495,8 +499,36 @@ textarea {
 }
 
 .back-to-selection-btn {
+    background-color: transparent;
+    color: var(--link-color);
+    border: none;
+    text-decoration: underline;
+    padding: 0;
+    font-size: 16px;
     margin-bottom: 20px;
-    align-self: flex-start; /* Aligns the button to the left */
+    cursor: pointer;
+}
+.back-to-selection-btn:hover {
+    color: var(--link-hover-color);
+}
+
+/* --- Alert & Warning Boxes --- */
+.warning-box, .danger-box {
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border-radius: 0 4px 4px 0;
+    font-size: 15px;
+    line-height: 1.4;
+}
+.warning-box {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-left: 4px solid var(--warning-border);
+}
+.danger-box {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-left: 4px solid var(--danger-border);
 }
 
 /* --- Contact List Styles --- */

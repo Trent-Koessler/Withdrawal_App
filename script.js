@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.1.91';
+    const APP_VERSION = '0.2.2';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PAGE NAVIGATION --- //
     const pageTitle = document.getElementById('page-title');
     const pages = document.querySelectorAll('.page');
-    const navButtons = document.querySelectorAll('.big-button[data-page]');
+    const navButtons = document.querySelectorAll('[data-page]');
     const homeButton = document.getElementById('home-button');
     const aboutButton = document.getElementById('about-button');
     const feedbackButton = document.getElementById('feedback-button');
@@ -505,6 +505,15 @@ function setupCalculator(config) {
         noteNode.style.display = 'none';
     }
 
+    // Add a return button to the related clinical guidelines page if configured
+    if (config.relatedPage) {
+        const backBtn = document.createElement('button');
+        backBtn.className = 'back-to-selection-btn';
+        backBtn.textContent = `← Back to ${config.relatedPage.title}`;
+        backBtn.addEventListener('click', () => showPage(config.relatedPage.id));
+        calculatorNode.insertBefore(backBtn, titleNode);
+    }
+
     let itemsHtml = '';
     config.items.forEach(item => {
         itemsHtml += `<fieldset class="calculator-item"><legend>${item.displayName}</legend>`;
@@ -752,6 +761,7 @@ setupCalculator({
     id: 'cows',
     name: 'COWS (Clinical Opiate Withdrawal Scale)',
     reference: 'Wesson, D. R., & Ling, W. (2003). The Clinical Opiate Withdrawal Scale (COWS). Journal of Psychoactive Drugs, 35(2), 253–259.',
+    relatedPage: { id: 'opioid-withdrawal-page', title: 'Opioid Withdrawal Guidelines' },
     items: [
         { displayName: "Resting Pulse Rate", instruction: "Measured after patient is sitting or lying for one minute.", radioName: "cows-pulse", options: [
             { value: 0, label: "<b>0:</b> Pulse rate 80 or below" }, { value: 1, label: "<b>1:</b> Pulse rate 81-100" },
@@ -812,6 +822,7 @@ setupCalculator({
     id: 'ciwa-b',
     name: 'CIWA-B (Benzodiazepine)',
     reference: "Busto UE, Sykora K, Sellers EM. A clinical scale to assess benzodiazepine withdrawal. Journal of Clinical Psychopharmacology. 1989;9(6):412-6. doi: 10.1097/00004714-198912000-00005",
+    relatedPage: { id: 'benzo-withdrawal-page', title: 'Benzodiazepine Withdrawal Guidelines' },
     items: [
         { displayName: "1. Nausea and Vomiting", radioName: "ciwab-nausea", options: [
             { value: 0, label: "<b>0:</b> None" }, { value: 1, label: "<b>1:</b> Mild nausea, no vomiting" },
@@ -868,6 +879,7 @@ setupCalculator({
     id: 'nsw-cws',
     name: 'Cannabis Withdrawal Scale',
     reference: "Allsop DJ, Norberg MM, Copeland J, Fu S, Budney AJ. The Cannabis Withdrawal Scale development: patterns and predictors of cannabis withdrawal and distress. Drug Alcohol Dependence. 2011;119(1-2):123-9. doi: 10.1016/j.drugalcdep.2011.06.003",
+    relatedPage: { id: 'cannabis-withdrawal-page', title: 'Cannabis Withdrawal Guidelines' },
     note: 'This is a monitoring tool, not a diagnostic one. Higher scores indicate greater severity.',
     items: [
         { displayName: "1. Craving for marijuana", radioName: "nsw-cws-craving", options: [
@@ -903,6 +915,7 @@ setupCalculator({
     id: 'cwas',
     name: 'Cannabis Withdrawal Assessment Scale',
     reference: "Budney, A. et al, Archives of General Psychiatry, Volume 58 (10) October 2001, 917–924.",
+    relatedPage: { id: 'cannabis-withdrawal-page', title: 'Cannabis Withdrawal Guidelines' },
     note: 'This is a monitoring tool. Higher scores indicate greater severity.',
     items: [
         { displayName: "1. Craving for marijuana", radioName: "cwas-craving", options: [
@@ -943,6 +956,7 @@ setupCalculator({
     id: 'awq',
     name: 'Amphetamine Withdrawal Questionnaire (AWQ)',
     reference: "Srisurapanont, M., Jarusuraisin, N., and Jittiwutikan, J. Amphetamine withdrawal: Reliability, validity and factor structure of a measure. Australian and New Zealand Journal of Psychiatry, 1999. 33(1): 89-93",
+    relatedPage: { id: 'stimulant-withdrawal-page', title: 'Psychostimulant Withdrawal Guidelines' },
     note: 'This is a monitoring tool. Higher scores indicate greater severity.',
     items: [
         { displayName: "1. Craving for amphetamine", radioName: "awq-craving", options: [
