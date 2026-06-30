@@ -159,7 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const FLOWCHART_LOGIC = {
         'intake_assessment': { 'title': 'Start / Assessment', 'type': 'question', 'text': 'Undertake a comprehensive drug and alcohol assessment. Does the patient require consideration for alcohol withdrawal management?', 'options': [{'label': 'Yes, withdrawal is required', 'next_step': 'ask_std_drinks'}, {'label': 'No, withdrawal is not required', 'next_step': 'refer_psychosocial'}] },
         'refer_psychosocial': { 'title': 'Referral', 'type': 'outcome', 'text': 'Patient does not require withdrawal management.\n\nIf there are still concerns regarding substance use, consider referral to Addiction Medicine / psychosocial team as appropriate.', 'emr_summary': 'Patient assessed and does not require withdrawal management. Referred to Addiction Medicine / psychosocial team for ongoing support.' },
-        'ask_std_drinks': { 'title': 'Alcohol Intake', 'type': 'question', 'text': "What is the patient's average recent daily standard drink (std) intake?", 'options': [ {'label': '≤ 7 Standard Drinks daily', 'next_step': 'ask_seizure_history_under8'}, {'label': '8-14 Standard Drinks daily', 'next_step': 'ask_seizure_history_8to14'}, {'label': '≥ 15 Standard Drinks daily', 'next_step': 'ask_seizure_history_15plus'} ] },
+        'ask_std_drinks': { 
+            'title': 'Alcohol Intake', 
+            'type': 'question', 
+            'text': "What is the patient's average recent daily standard drink (std) intake?", 
+            'warning': "<strong>💡 Binge-Drinking Consideration:</strong> If the patient has a binge-drinking pattern rather than continuous daily use, assess for their average recent daily intake during binge episodes. Binge-drinking is less likely to produce physiological dependence and severe withdrawal syndromes.",
+            'options': [ 
+                {'label': '≤ 7 Standard Drinks daily', 'next_step': 'ask_seizure_history_under8'}, 
+                {'label': '8-14 Standard Drinks daily', 'next_step': 'ask_seizure_history_8to14'}, 
+                {'label': '≥ 15 Standard Drinks daily', 'next_step': 'ask_seizure_history_15plus'} 
+            ] 
+        },
         'ask_seizure_history_under8': { 'title': 'Seizure History (≤ 7)', 'type': 'question', 'text': 'Does the patient have a past history of seizures, delirium tremens, or complex withdrawal?', 'options': [{'label': 'No past history', 'next_step': 'outcome_supportive_care_under8'}, {'label': 'Yes, has a past history', 'next_step': 'outcome_admit_dh_under8'}] },
         'outcome_supportive_care_under8': { 'title': 'Supportive Care', 'type': 'outcome', 'text': 'Patient has no past history of severe withdrawal.\n\nRecommendation: Supportive treatment.', 'emr_summary': 'Patient consuming ≤ 7 standard drinks daily with no history of complex withdrawal. Plan: Supportive treatment.' },
         'outcome_admit_dh_under8': { 'title': 'Consider Admission (≤ 7)', 'type': 'outcome', 'text': 'Patient has a past history of severe withdrawal.\n\nRecommendation: Consider admission to district hospital / MPS / outpatient detox unit for monitoring.', 'emr_summary': 'Patient consuming ≤ 7 standard drinks daily but has a history of complex withdrawal. Plan: Consider admission to district hospital / MPS / outpatient detox unit for monitored withdrawal.', 'guideline_link': 'inpatient-guidelines-page' },
@@ -204,6 +214,12 @@ document.addEventListener('DOMContentLoaded', () => {
         textElement.className = 'flowchart-text';
         textElement.innerText = stepData.text;
         flowchartPage.appendChild(textElement);
+        if (stepData.warning) {
+            const warningElement = document.createElement('div');
+            warningElement.className = 'warning-box';
+            warningElement.innerHTML = stepData.warning;
+            flowchartPage.appendChild(warningElement);
+        }
         const optionsContainer = document.createElement('div');
         optionsContainer.className = 'flowchart-options';
         if (stepData.type === 'question') {
@@ -324,7 +340,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' } ], prn: [ { range: '10-15', dose: 10 }, { range: '15-20', dose: 20 } ] },
-            severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 20mg hourly until sedated or total dose reaches 80mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."] }
+            severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 20mg hourly until sedated or total dose reaches 80mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."] },
+            unknown: {
+                title: 'Unknown Tolerance (Test-Dose Protocol)',
+                schedule: [
+                    'Administer test-dose: Diazepam 10mg orally once.',
+                    'Monitor the patient closely for sedation and clinical response after 1 hour.',
+                    'If patient shows signs of sedation (e.g. drowsy, slurred speech, ataxia): the patient has lower/normal tolerance. Manage cautiously with the Mild-Moderate regimen.',
+                    'If patient is NOT sedated after 1 hour: the patient has higher/established tolerance. Consider Moderate-Severe schedule or standard CIWA-Ar-based PRN dosing.'
+                ],
+                prn: [
+                    'Monitor patient closely for signs of toxicity or escalating withdrawal.',
+                    'Consult Drug & Alcohol specialist service if withdrawal severity is unclear.'
+                ]
+            }
         },
         "Oxazepam": {
             name: "Oxazepam",
@@ -344,7 +373,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [ { dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' } ], prn: [ { range: '10-15', dose: 30 }, { range: '15-20', dose: 60 } ] },
-            severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 60mg hourly until sedated or total dose reaches 240mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 240mg oxazepam equivalent."] }
+            severe: { title: 'Severe (CIWA > 20)', schedule: [ `Loading Dose: 60mg hourly until sedated or total dose reaches 240mg.`, "Then commence Moderate-Severe schedule." ], prn: ["Manage in HDU.", "Review if total > 240mg oxazepam equivalent."] },
+            unknown: {
+                title: 'Unknown Tolerance (Test-Dose Protocol)',
+                schedule: [
+                    'Administer test-dose: Oxazepam 30mg orally once.',
+                    'Monitor the patient closely for sedation and clinical response after 1 hour.',
+                    'If patient shows signs of sedation (e.g. drowsy, slurred speech, ataxia): the patient has lower/normal tolerance. Manage cautiously with the Mild-Moderate regimen.',
+                    'If patient is NOT sedated after 1 hour: the patient has higher/established tolerance. Consider Moderate-Severe schedule or standard CIWA-Ar-based PRN dosing.'
+                ],
+                prn: [
+                    'Monitor patient closely for signs of toxicity or escalating withdrawal.',
+                    'Consult Drug & Alcohol specialist service if withdrawal severity is unclear.'
+                ]
+            }
         }
     };
 
