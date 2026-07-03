@@ -21,6 +21,7 @@ body.modal-open > #app-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    visibility: visible;
 }
 
 /* Header Styles */

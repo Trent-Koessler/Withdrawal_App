@@ -13,6 +13,29 @@
             }
         })();
     </script>
+    <style>
+        /* Critical inline CSS to prevent Flash of Unstyled Content (FOUC) */
+        body {
+            background-color: #ffffff;
+        }
+        [data-theme="dark"] body {
+            background-color: #121212; /* Match theme background fallback */
+        }
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        #app-container {
+            visibility: hidden;
+        }
+    </style>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="/Withdrawal_App/manifest.json">
     <meta name="description" content="A clinical decision support PWA for managing alcohol and other drug withdrawal syndromes, featuring guidelines, flowcharts, and calculators.">
