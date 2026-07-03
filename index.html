@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUD Toolkit</title>
     <script>
         // Apply theme immediately to prevent flash
-        (function() {
+        (function () {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
@@ -18,9 +19,12 @@
         body {
             background-color: #ffffff;
         }
+
         [data-theme="dark"] body {
-            background-color: #121212; /* Match theme background fallback */
+            background-color: #121212;
+            /* Match theme background fallback */
         }
+
         .modal {
             position: fixed;
             z-index: 1000;
@@ -28,20 +32,23 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
             display: none;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
         #app-container {
             visibility: hidden;
         }
     </style>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="/Withdrawal_App/manifest.json">
-    <meta name="description" content="A clinical decision support PWA for managing alcohol and other drug withdrawal syndromes, featuring guidelines, flowcharts, and calculators.">
+    <meta name="description"
+        content="A clinical decision support PWA for managing alcohol and other drug withdrawal syndromes, featuring guidelines, flowcharts, and calculators.">
     <link rel="apple-touch-icon" href="/Withdrawal_App/icons/icon-192x192.png">
-    <meta name="theme-color" content="#f0f0f0"/>
+    <meta name="theme-color" content="#f0f0f0" />
 </head>
+
 <body>
 
     <div id="app-container">
@@ -67,9 +74,12 @@
             <!-- Home Page -->
             <div id="home-page" class="page active-page">
                 <nav class="button-container">
-                    <button class="big-button" data-page="alcohol-withdrawal-page">Alcohol Withdrawal Decision Flowchart</button>
-                    <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
-                    <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol Detox Guidelines</button>
+                    <button class="big-button" data-page="alcohol-withdrawal-page">Alcohol Withdrawal Decision
+                        Flowchart</button>
+                    <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal
+                        Guidelines</button>
+                    <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol
+                        Detox Guidelines</button>
                     <button class="big-button" data-page="scales-page">Clinical Scales & Calculators</button>
                     <button class="big-button" data-page="other-syndromes-page">Other Substances</button>
                     <button class="big-button" data-page="contacts-page">Helpful Contacts & Helplines</button>
@@ -93,28 +103,52 @@
                     </div>
                     <div id="prerequisites" class="tab-content active">
                         <h3>Prerequisites</h3>
-                        <p><strong>Diagnosis:</strong> Establish probable diagnosis of alcohol withdrawal using DSM-5 or ICD-11 <button id="open-criteria-modal-btn" class="link-button">criteria</button>. It is crucial to rule out other medical conditions that can mimic withdrawal, such as sepsis, metabolic disturbances, or intracranial events.</p>
-                        <p><strong>BAL (Blood Alcohol Level):</strong> While not a contraindication to starting treatment, it is preferable to begin dosing when the BAL is low or falling (e.g., < 0.1 g/dL). This helps differentiate symptoms of intoxication from true withdrawal.</p>
-                        <p><strong>Liver Function:</strong> Assess liver function (LFTs, INR, Albumin) to guide benzodiazepine choice. Severe liver impairment may necessitate using a drug with no active metabolites, like Oxazepam.</p>
-                        <p><strong>CIWA-Ar Scale:</strong> Commence CIWA-Ar monitoring every 2-4 hours. This objective scale guides symptom-triggered therapy, allowing for tailored dosing and preventing both under- and over-sedation.</p>
-                        <p><strong>Post-withdrawal plan:</strong> Ensure there is a follow-up plan in place for ongoing support and monitoring after the withdrawal process. To withdraw without a plan is to risk (1) relapse and broader treatment futility (2) reducing alcohol tolerance and temporarily worsening risks of intoxication.</p>
+                        <p><strong>Diagnosis:</strong> Establish probable diagnosis of alcohol withdrawal using DSM-5 or
+                            ICD-11 <button id="open-criteria-modal-btn" class="link-button">criteria</button>. It is
+                            crucial to rule out other medical conditions that can mimic withdrawal, such as sepsis,
+                            metabolic disturbances, or intracranial events.</p>
+                        <p><strong>BAL (Blood Alcohol Level):</strong> While not a contraindication to starting
+                            treatment, it is preferable to begin dosing when the BAL is low or falling (e.g., < 0.1
+                                g/dL). This helps differentiate symptoms of intoxication from true withdrawal.</p>
+                                <p><strong>Liver Function:</strong> Assess liver function (LFTs, INR, Albumin) to guide
+                                    benzodiazepine choice. Severe liver impairment may necessitate using a drug with no
+                                    active metabolites, like Oxazepam.</p>
+                                <p><strong>CIWA-Ar Scale:</strong> Commence CIWA-Ar monitoring every 2-4 hours. This
+                                    objective scale guides symptom-triggered therapy, allowing for tailored dosing and
+                                    preventing both under- and over-sedation.</p>
+                                <p><strong>Post-withdrawal plan:</strong> Ensure there is a follow-up plan in place for
+                                    ongoing support and monitoring after the withdrawal process. To withdraw without a
+                                    plan is to risk (1) relapse and broader treatment futility (2) reducing alcohol
+                                    tolerance and temporarily worsening risks of intoxication.</p>
                     </div>
                     <div id="thiamine" class="tab-content">
                         <h3>Thiamine</h3>
-                        <p><strong>WKS prophylaxis for an otherwise healthy person with good dietary intake (generally not appropriate for those receiving significant withdrawal treatment):</strong> Oral thiamine 100mg TDS (or 300mg daily) for 3 days then 100mg daily for 11 days thereafter </p>
-                        <p><strong>WKS prophylaxis for those with chronic high level alcohol use and/or poor nutrition:</strong> All patients undergoing inpatient alcohol withdrawal should receive parenteral thiamine. Commence thiamine 300mg IV/IM daily for 3 days, then 300mg oral daily for 2-3 weeks. <strong>Crucially, always administer thiamine BEFORE any glucose-containing fluids.</strong></p>
-                        <p><strong>Suspected Wernicke-Korsakov Syndrome (WKS):</strong> Have a high index of suspicion for WKS in any patient with confusion, ataxia, ophthalmoplegia, memory disturbance, or malnutrition. The classic triad is rare. Treatment requires high-dose thiamine: <strong>500mg IV TDS for a minimum of 5 days</strong>, followed by oral supplementation.</p>
-                        <p><strong>Caveat:</strong> Patients must be magnesium replete for adequate thiamine absorption and activation.</p>
+                        <p><strong>WKS prophylaxis for an otherwise healthy person with good dietary intake (generally
+                                not appropriate for those receiving significant withdrawal treatment):</strong> Oral
+                            thiamine 100mg TDS (or 300mg daily) for 3 days then 100mg daily for 11 days thereafter </p>
+                        <p><strong>WKS prophylaxis for those with chronic high level alcohol use and/or poor
+                                nutrition:</strong> All patients undergoing inpatient alcohol withdrawal should receive
+                            parenteral thiamine. Commence thiamine 300mg IV/IM daily for 3 days, then 300mg oral daily
+                            for 2-3 weeks. <strong>Crucially, always administer thiamine BEFORE any glucose-containing
+                                fluids.</strong></p>
+                        <p><strong>Suspected Wernicke-Korsakov Syndrome (WKS):</strong> Have a high index of suspicion
+                            for WKS in any patient with confusion, ataxia, ophthalmoplegia, memory disturbance, or
+                            malnutrition. The classic triad is rare. Treatment requires high-dose thiamine:
+                            <strong>500mg IV TDS for a minimum of 5 days</strong>, followed by oral supplementation.</p>
+                        <p><strong>Caveat:</strong> Patients must be magnesium replete for adequate thiamine absorption
+                            and activation.</p>
                     </div>
                     <div id="benzo-choice" class="tab-content">
                         <h3>1. Benzodiazepine Choice</h3>
-                        <p><strong>Diazepam:</strong> The standard choice due to its long half-life, which provides a smooth, self-tapering effect and reduces the risk of breakthrough symptoms and seizures.</p>
-                        <p><strong>Oxazepam:</strong> Preferred in specific situations as it has no active metabolites and is less likely to accumulate.</p>
+                        <p><strong>Diazepam:</strong> The standard choice due to its long half-life, which provides a
+                            smooth, self-tapering effect and reduces the risk of breakthrough symptoms and seizures.</p>
+                        <p><strong>Oxazepam:</strong> Preferred in specific situations as it has no active metabolites
+                            and is less likely to accumulate.</p>
                         <p>Use <strong>Oxazepam</strong> in cases of:<br>
-                             • <b>Significant liver impairment</b> (e.g., cirrhosis, high bilirubin, coagulopathy).<br>
-                             • <b>Respiratory insufficiency</b> or risk of respiratory depression (e.g., COPD).<br>
-                             • <b>Elderly or frail patients</b> who are more sensitive to sedative effects.<br>
-                             • <b>Cerebral trauma / CVA</b> where over-sedation is a risk.</p>
+                            • <b>Significant liver impairment</b> (e.g., cirrhosis, high bilirubin, coagulopathy).<br>
+                            • <b>Respiratory insufficiency</b> or risk of respiratory depression (e.g., COPD).<br>
+                            • <b>Elderly or frail patients</b> who are more sensitive to sedative effects.<br>
+                            • <b>Cerebral trauma / CVA</b> where over-sedation is a risk.</p>
                         <p><b>Conversion:</b> Diazepam 10mg is approximately equivalent to Oxazepam 30mg.</p>
                         <div class="button-group">
                             <button class="benzo-choice-btn active" data-benzo="Diazepam">Select Diazepam</button>
@@ -143,21 +177,47 @@
                                 <small>Test-dose protocol | monitor sedation at 1 hour</small>
                             </button>
                         </div>
-                        <p> Ensure CIWA-Ar done q2hrly at least initially for all patients commenced on regimen. Check BAC before commencing. Do not start CIWA-Ar or benzodiazepines until 6+ hours post last drink.  Regularly review patient and adjust as per clinical judgement. </p>
-                        <p> Do not give regular or PRN doses if patient is sedated. If multiple doses are not able to be given, review regular dosing schedule.</p>
+                        <p> Ensure CIWA-Ar done q2hrly at least initially for all patients commenced on regimen. Check
+                            BAC before commencing. Do not start CIWA-Ar or benzodiazepines until 6+ hours post last
+                            drink. Regularly review patient and adjust as per clinical judgement. </p>
+                        <p> Do not give regular or PRN doses if patient is sedated. If multiple doses are not able to be
+                            given, review regular dosing schedule.</p>
+                        <p
+                            style="background-color: var(--warning-bg); color: var(--warning-text); border-left: 4px solid var(--warning-border); padding: 10px 15px; border-radius: 0 4px 4px 0; font-size: 14.5px; line-height: 1.4; margin-bottom: 15px;">
+                            <strong>⚠️ Delayed or Uncertain Commencement:</strong> If the commencement of withdrawal is
+                            significantly delayed or the timeline is highly uncertain (e.g., last drink was >24-48 hours
+                            ago, or patient history is unreliable), routine initiation of a weaning regimen is
+                            cautioned. Seeking specialist clinical advice first and considering a test-dose protocol to
+                            assess tolerance is advised.</p>
                         <div id="regimen-display"></div>
                     </div>
                     <div id="special-cases" class="tab-content">
                         <h3>Special Cases</h3>
                         <div class="warning-box">
-                            <strong>⚠️ Pregnancy:</strong> Alcohol withdrawal during pregnancy is high risk for both maternal and fetal complications (including miscarriage, premature labour, and fetal distress). <strong>Specialist Obstetric and Addiction Medicine consultation is strongly advised.</strong>
+                            <strong>⚠️ Pregnancy:</strong> Alcohol withdrawal during pregnancy is high risk for both
+                            maternal and fetal complications (including miscarriage, premature labour, and fetal
+                            distress). <strong>Specialist Obstetric and Addiction Medicine consultation is strongly
+                                advised.</strong>
                         </div>
-                        <p><b>Elderly / Frail Patients:</b> High risk for over-sedation, falls, and paradoxical reactions. Routine use of long-acting agents (diazepam) is cautioned. Oxazepam is generally preferred, starting at lower doses with frequent clinical review.</p>
-                        <p><b>Seizures (current or past):</b> Consider loading with benzodiazepines as for severe withdrawal</p>
+                        <p><b>Elderly / Frail Patients:</b> High risk for over-sedation, falls, and paradoxical
+                            reactions. Routine use of long-acting agents (diazepam) is cautioned. Oxazepam is generally
+                            preferred, starting at lower doses with frequent clinical review.</p>
+                        <p><b>Seizures (current or past):</b> Consider loading with benzodiazepines as for severe
+                            withdrawal</p>
                         <p><b>Alcohol Withdrawal Delirium:</b> Needs ICU/HDU or 1:1 nursing</p>
-                        <p><b>Adjunctive Medications for Severe Symptoms:</b> In cases of delirium or severe agitation/psychosis poorly responsive to benzodiazepines, other agents may be considered <strong>after specialist consultation</strong>. Examples include low-dose antipsychotics (e.g., Haloperidol, Olanzapine). These are not first-line and require careful risk/benefit assessment.</p>
-                        <p><b>Poly-substance Withdrawal:</b> Overlapping symptoms (e.g., sweating, tachycardia, nausea) from co-occurring opioid or benzodiazepine withdrawal can artificially inflate the CIWA-Ar score. Generally, treat the most life-threatening withdrawal first (Alcohol/Benzodiazepines) with long-acting sedatives, which often incidentally smooths out less dangerous withdrawals (like opioids or stimulants).</p>
-                        <p><b>General Notes:</b> If total daily diazepam equivalent exceeds 80mg, contact specialist service (e.g. D&A CL service, Drug and Alcohol State Advisory Service (DASAS) - 1800 023 687)</p>
+                        <p><b>Adjunctive Medications for Severe Symptoms:</b> In cases of delirium or severe
+                            agitation/psychosis poorly responsive to benzodiazepines, other agents may be considered
+                            <strong>after specialist consultation</strong>. Examples include low-dose antipsychotics
+                            (e.g., Haloperidol, Olanzapine). These are not first-line and require careful risk/benefit
+                            assessment.</p>
+                        <p><b>Poly-substance Withdrawal:</b> Overlapping symptoms (e.g., sweating, tachycardia, nausea)
+                            from co-occurring opioid or benzodiazepine withdrawal can artificially inflate the CIWA-Ar
+                            score. Generally, treat the most life-threatening withdrawal first (Alcohol/Benzodiazepines)
+                            with long-acting sedatives, which often incidentally smooths out less dangerous withdrawals
+                            (like opioids or stimulants).</p>
+                        <p><b>General Notes:</b> If total daily diazepam equivalent exceeds 80mg, contact specialist
+                            service (e.g. D&A CL service, Drug and Alcohol State Advisory Service (DASAS) - 1800 023
+                            687)</p>
                     </div>
                 </div>
             </div>
@@ -169,35 +229,51 @@
                         <button class="tab-button active" data-tab="ambulatory-selection">1. Patient Selection</button>
                         <button class="tab-button" data-tab="ambulatory-protocol">2. Example Protocol</button>
                         <button class="tab-button" data-tab="ambulatory-meds">3. Medication Regimen</button>
-                        <button class="tab-button" data-tab="ambulatory-escalation">4. When to Cease or Escalate</button>
+                        <button class="tab-button" data-tab="ambulatory-escalation">4. When to Cease or
+                            Escalate</button>
                     </div>
                     <div id="ambulatory-selection" class="tab-content active">
                         <h3>Patient Selection Criteria</h3>
-                        <p>The following criteria should be met for a patient to be considered for an outpatient (ambulatory) detox.</p>
+                        <p>The following criteria should be met for a patient to be considered for an outpatient
+                            (ambulatory) detox.</p>
                         <h4>Inclusion Criteria</h4>
                         <ul>
                             <li>Age &gt; 18-years-old.</li>
-                            <li>Has undertaken a comprehensive AOD assessment, has alcohol dependence, and <strong>is willing to engage in the detox process.</strong></li>
-                            <li>Patient has up-to-date FBC, LFTs, EUCs, INR, and these have been reviewed by the AOD clinician.</li>
+                            <li>Has undertaken a comprehensive AOD assessment, has alcohol dependence, and <strong>is
+                                    willing to engage in the detox process.</strong></li>
+                            <li>Patient has up-to-date FBC, LFTs, EUCs, INR, and these have been reviewed by the AOD
+                                clinician.</li>
                             <li>Mild to moderate alcohol withdrawal severity expected, defined by:
                                 <ul>
-                                    <li>Average or low risk on Prediction of Alcohol Withdrawal Severity Scale (PAWSS), OR a clear clinical rationale exists for proceeding despite a higher score.</li>
+                                    <li>Average or low risk on Prediction of Alcohol Withdrawal Severity Scale (PAWSS),
+                                        OR a clear clinical rationale exists for proceeding despite a higher score.</li>
                                     <li>Patient’s average alcohol intake is ≤15 standard drinks per day.</li>
                                 </ul>
                             </li>
                             <li>Patient agrees to daily review at the service.</li>
-                            <li>Patient has nominated a pharmacy or other suitable location (e.g. clinic or practice where medicines have been left) for DAILY pickup of medication, and the dispensing location has agreed.</li>
+                            <li>Patient has nominated a pharmacy or other suitable location (e.g. clinic or practice
+                                where medicines have been left) for DAILY pickup of medication, and the dispensing
+                                location has agreed.</li>
                             <li>Patient has a reasonably safe home environment or supervision.</li>
-                            <li>Patient has reliable means for daily reviews (e.g., transport to review or clinician will go to patient).</li>
-                            <li>Patient has a reasonable plan for service engagement after detox (e.g., outpatient services, rehabilitation).</li>
+                            <li>Patient has reliable means for daily reviews (e.g., transport to review or clinician
+                                will go to patient).</li>
+                            <li>Patient has a reasonable plan for service engagement after detox (e.g., outpatient
+                                services, rehabilitation).</li>
                             <li>There is no alcohol remaining in the house prior to detox commencing.</li>
                         </ul>
                         <h4>Exclusion Criteria (Contraindications)</h4>
                         <ul>
-                            <li><strong>Pregnancy or suspected pregnancy.</strong> (Requires specialist inpatient management).</li>
-                            <li>Medical or psychiatric contraindications, including but not limited to: a seizure disorder, prior or current Wernicke-Korsakoff syndrome, history of suicide attempts, cognitive impairment, or recurrent delirium.</li>
-                            <li>Major unmanaged hepatic or renal disease. If present, discussion with an addiction medicine specialist is required regarding regimen modification (e.g., using oxazepam instead of diazepam).</li>
-                            <li>Patient is on regular opioids, beta-blockers, or alpha-adrenergic acting agents (e.g., clonidine, prazosin) due to potential interactions and/or masking of alcohol withdrawal symptoms.</li>
+                            <li><strong>Pregnancy or suspected pregnancy.</strong> (Requires specialist inpatient
+                                management).</li>
+                            <li>Medical or psychiatric contraindications, including but not limited to: a seizure
+                                disorder, prior or current Wernicke-Korsakoff syndrome, history of suicide attempts,
+                                cognitive impairment, or recurrent delirium.</li>
+                            <li>Major unmanaged hepatic or renal disease. If present, discussion with an addiction
+                                medicine specialist is required regarding regimen modification (e.g., using oxazepam
+                                instead of diazepam).</li>
+                            <li>Patient is on regular opioids, beta-blockers, or alpha-adrenergic acting agents (e.g.,
+                                clonidine, prazosin) due to potential interactions and/or masking of alcohol withdrawal
+                                symptoms.</li>
                         </ul>
                     </div>
                     <div id="ambulatory-protocol" class="tab-content">
@@ -205,23 +281,34 @@
                         <p>This is an <i>example</i> process for a structured outpatient detox program.</p>
                         <ul>
                             <li>All detoxes start on Monday, cease on Friday, and are organised the week prior.</li>
-                            <li>Scripts for the weaning regimen are written by the patient's GP or a service medical officer.</li>
+                            <li>Scripts for the weaning regimen are written by the patient's GP or a service medical
+                                officer.</li>
                             <li><b>Patient must present daily for review:</b>
                                 <ul>
-                                    <li>Nursing staff perform a CIWA-Ar assessment in the AM before the first dose of the day.</li>
+                                    <li>Nursing staff perform a CIWA-Ar assessment in the AM before the first dose of
+                                        the day.</li>
                                     <li>Nursing staff perform a brief delirium screen daily (e.g., 4AT screen).</li>
-                                    <li>Nursing staff perform a breathalyser test (or if unavailable, an alternative screening method for recent alcohol consumption). <b>All patients must have an undetectable BAL to qualify for further benzodiazepines.</b></li>
+                                    <li>Nursing staff perform a breathalyser test (or if unavailable, an alternative
+                                        screening method for recent alcohol consumption). <b>All patients must have an
+                                            undetectable BAL to qualify for further benzodiazepines.</b></li>
                                     <li>Basic observations are taken (HR, BP, RR, temperature).</li>
-                                    <li>If all checks are satisfactory, staff will call the nominated pharmacy to authorise the dispensing of the next day's supply of medication.</li>
-                                    <li>In the absence of complicating factors, reviews on days 4-5 may be via phone or video call.</li>
+                                    <li>If all checks are satisfactory, staff will call the nominated pharmacy to
+                                        authorise the dispensing of the next day's supply of medication.</li>
+                                    <li>In the absence of complicating factors, reviews on days 4-5 may be via phone or
+                                        video call.</li>
                                 </ul>
                             </li>
                             <li><b>Medical Officer Review Triggers:</b>
                                 <ul>
-                                    <li>Nursing staff should call the AOD medical officer if CIWA-Ar score is &gt;20 or other complications arise.</li>
-                                    <li>If any concerns arise (e.g., high CIWA-Ar score, positive BAL, signs of delirium), the patient should be referred to a medical officer for review and the detox protocol should be ceased.</li>
-                                    <li>The medical officer should consider calling a specialist service (e.g., DASAS 1800 023 687) if withdrawal appears severe despite treatment.</li>
-                                    <li>Top-up doses may be considered in rare circumstances via a separate, specific script.</li>
+                                    <li>Nursing staff should call the AOD medical officer if CIWA-Ar score is &gt;20 or
+                                        other complications arise.</li>
+                                    <li>If any concerns arise (e.g., high CIWA-Ar score, positive BAL, signs of
+                                        delirium), the patient should be referred to a medical officer for review and
+                                        the detox protocol should be ceased.</li>
+                                    <li>The medical officer should consider calling a specialist service (e.g., DASAS
+                                        1800 023 687) if withdrawal appears severe despite treatment.</li>
+                                    <li>Top-up doses may be considered in rare circumstances via a separate, specific
+                                        script.</li>
                                 </ul>
                             </li>
                         </ul>
@@ -229,27 +316,31 @@
                     <div id="ambulatory-meds" class="tab-content">
                         <h3>Medication Regimen</h3>
                         <p><strong>Example Diazepam Regimen (Fixed-Dose):</strong></p>
-                        <p>A common approach is a 5-day fixed-dose weaning regimen. This must be adjusted based on clinical assessment. <strong>Staged, daily supply from a pharmacy is essential.</strong></p>
+                        <p>A common approach is a 5-day fixed-dose weaning regimen. This must be adjusted based on
+                            clinical assessment. <strong>Staged, daily supply from a pharmacy is essential.</strong></p>
                         <ul>
-                             <li><b>Day 1:</b> 10mg QID (four times a day)</li>
-                             <li><b>Day 2:</b> 10mg TDS (three times a day)</li>
-                             <li><b>Day 3:</b> 10mg BD (twice a day)</li>
-                             <li><b>Day 4:</b> 5mg BD (twice a day)</li>
-                             <li><b>Day 5:</b> 5mg Nocte (at night), then cease.</li>
+                            <li><b>Day 1:</b> 10mg QID (four times a day)</li>
+                            <li><b>Day 2:</b> 10mg TDS (three times a day)</li>
+                            <li><b>Day 3:</b> 10mg BD (twice a day)</li>
+                            <li><b>Day 4:</b> 5mg BD (twice a day)</li>
+                            <li><b>Day 5:</b> 5mg Nocte (at night), then cease.</li>
                         </ul>
                         <p> Ensure that in addition to the above patients receive thiamine 300mg oral tablets daily </p>
 
                         <p><strong>Dosing Times:</strong></p>
-                        <p>A QID (four times a day) schedule can be challenging. While ideal times might be 0600, 1200, 1800, 2200, a more realistic schedule based on service opening hours might be:</p>
+                        <p>A QID (four times a day) schedule can be challenging. While ideal times might be 0600, 1200,
+                            1800, 2200, a more realistic schedule based on service opening hours might be:</p>
                         <p><strong>09:00, 13:00, 18:00, 22:00</strong></p>
-                        <p>It is helpful to provide the patient with a pictorial or clearly written schedule of their dosing times.</p>
+                        <p>It is helpful to provide the patient with a pictorial or clearly written schedule of their
+                            dosing times.</p>
                     </div>
                     <div id="ambulatory-escalation" class="tab-content">
                         <h3>When to Cease or Escalate Care</h3>
                         <h4>Situations Triggering Protocol to be Aborted</h4>
                         <ul>
                             <li>Patient has a positive BAL (Blood Alcohol Level).</li>
-                            <li>Patient does not present for reviews or is not taking diazepam as directed (e.g., taking takeaway doses all at once).</li>
+                            <li>Patient does not present for reviews or is not taking diazepam as directed (e.g., taking
+                                takeaway doses all at once).</li>
                             <li>Use of other interacting substances (e.g., opioids, illicit drugs).</li>
                             <li>Verbal abuse or violence towards staff.</li>
                             <li>Oversedation despite the clinician decreasing doses.</li>
@@ -267,431 +358,579 @@
             </div>
 
             <!-- Scales & Calculators Page -->
-<div id="scales-page" class="page" data-title="Clinical Scales & Calculators">
-    <div class="tab-container">
-        <div class="tab-buttons">
-            <button class="tab-button active" data-tab="std-drinks">Standard Drinks</button>
-            <button class="tab-button" data-tab="aws">AWS</button>
-            <button class="tab-button" data-tab="ciwa-ar">CIWA-Ar</button>
-            <button class="tab-button" data-tab="saws">SAWS</button>
-            <button class="tab-button" data-tab="cows">COWS (Opiate)</button>
-            <button class="tab-button" data-tab="ciwa-b">CIWA-B (Benzo)</button>
-            <button class="tab-button" data-tab="nsw-cws">CWS</button>
-            <button class="tab-button" data-tab="cwas">CWAS</button>
-            <button class="tab-button" data-tab="awq">AWQ (Amphetamine)</button>
-        </div>
+            <div id="scales-page" class="page" data-title="Clinical Scales & Calculators">
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="std-drinks">Standard Drinks</button>
+                        <button class="tab-button" data-tab="aws">AWS</button>
+                        <button class="tab-button" data-tab="ciwa-ar">CIWA-Ar</button>
+                        <button class="tab-button" data-tab="saws">SAWS</button>
+                        <button class="tab-button" data-tab="cows">COWS (Opiate)</button>
+                        <button class="tab-button" data-tab="ciwa-b">CIWA-B (Benzo)</button>
+                        <button class="tab-button" data-tab="nsw-cws">CWS</button>
+                        <button class="tab-button" data-tab="cwas">CWAS</button>
+                        <button class="tab-button" data-tab="awq">AWQ (Amphetamine)</button>
+                    </div>
 
-        <!-- This is a hidden template for generating calculators -->
-        <div id="calculator-template" style="display: none;">
-            <h3 class="calculator-title"></h3>
-            <p class="calculator-note" style="display: none;"></p>
-            <div class="calculator-items">
-                <!-- Items will be injected here by JS -->
-            </div>
-            <div class="results-grid">
-                <label>Total Score:</label><span class="total-score">0</span>
-                <label>Severity:</label><span class="severity"></span>
-            </div>
-            <textarea class="emr-summary" readonly></textarea>
-            <div class="button-group">
-                <button class="copy-btn">Copy EMR Summary</button>
-                <button class="reset-btn">Reset</button>
-            </div>
-        </div>
-        
-        <section id="std-drinks" class="tab-content active">
-            <div class="tab-container">
-                <div class="tab-buttons">
-                    <button class="tab-button active" data-tab="std-by-type">Calculate by Common Drink Types</button>
-                    <button class="tab-button" data-tab="std-by-volume">Calculate by Custom Volume & ABV</button>
+                    <!-- This is a hidden template for generating calculators -->
+                    <div id="calculator-template" style="display: none;">
+                        <h3 class="calculator-title"></h3>
+                        <p class="calculator-note" style="display: none;"></p>
+                        <div class="calculator-items">
+                            <!-- Items will be injected here by JS -->
+                        </div>
+                        <div class="results-grid">
+                            <label>Total Score:</label><span class="total-score">0</span>
+                            <label>Severity:</label><span class="severity"></span>
+                        </div>
+                        <textarea class="emr-summary" readonly></textarea>
+                        <div class="button-group">
+                            <button class="copy-btn">Copy EMR Summary</button>
+                            <button class="reset-btn">Reset</button>
+                        </div>
+                    </div>
+
+                    <section id="std-drinks" class="tab-content active">
+                        <div class="tab-container">
+                            <div class="tab-buttons">
+                                <button class="tab-button active" data-tab="std-by-type">Calculate by Common Drink
+                                    Types</button>
+                                <button class="tab-button" data-tab="std-by-volume">Calculate by Custom Volume &
+                                    ABV</button>
+                            </div>
+                            <div id="std-by-type" class="tab-content">
+                                <div class="form-grid std-drinks-grid">
+                                    <fieldset>
+                                        <legend>Beer</legend>
+                                        <label for="b1">Full Strength (4.8%) - Middy / Pot (285ml)</label><input
+                                            type="number" id="b1" data-sd="1.1" placeholder="Qty">
+                                        <label for="b2">Full Strength (4.8%) - Schooner (425ml)</label><input
+                                            type="number" id="b2" data-sd="1.6" placeholder="Qty">
+                                        <label for="b3">Full Strength (4.8%) - Can/Stubby (375ml)</label><input
+                                            type="number" id="b3" data-sd="1.4" placeholder="Qty">
+                                        <label for="b10">Full Strength (4.8%) - Carton (24 cans/stubbies)</label><input
+                                            type="number" id="b10" data-sd="33.6" placeholder="Qty">
+                                        <label for="b4">Mid Strength (3.5%) - Middy / Pot (285ml)</label><input
+                                            type="number" id="b4" data-sd="0.8" placeholder="Qty">
+                                        <label for="b5">Mid Strength (3.5%) - Schooner (425ml)</label><input
+                                            type="number" id="b5" data-sd="1.2" placeholder="Qty">
+                                        <label for="b6">Mid Strength (3.5%) - Can/Stubby (375ml)</label><input
+                                            type="number" id="b6" data-sd="1.0" placeholder="Qty">
+                                        <label for="b11">Mid Strength (3.5%) - Carton (24 cans/stubbies)</label><input
+                                            type="number" id="b11" data-sd="24" placeholder="Qty">
+                                        <label for="b7">Low Strength (2.7%) - Middy / Pot (285ml)</label><input
+                                            type="number" id="b7" data-sd="0.6" placeholder="Qty">
+                                        <label for="b8">Low Strength (2.7%) - Schooner (425ml)</label><input
+                                            type="number" id="b8" data-sd="0.9" placeholder="Qty">
+                                        <label for="b9">Low Strength (2.7%) - Can/Stubby (375ml)</label><input
+                                            type="number" id="b9" data-sd="0.8" placeholder="Qty">
+                                        <label for="b12">Low Strength (2.7%) - Carton (24 cans/stubbies)</label><input
+                                            type="number" id="b12" data-sd="19.2" placeholder="Qty">
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend>Wine & Champagne</legend>
+                                        <label for="w1">Red Wine (13.5%) - Restaurant Serve (150ml)</label><input
+                                            type="number" id="w1" data-sd="1.6" placeholder="Qty">
+                                        <label for="w2">Red Wine (13.5%) - Standard Serve (100ml)</label><input
+                                            type="number" id="w2" data-sd="1.0" placeholder="Qty">
+                                        <label for="w3">Red Wine (13.5%) - Bottle (750ml)</label><input type="number"
+                                            id="w3" data-sd="8.0" placeholder="Qty">
+                                        <label for="w4">White Wine (12.5%) - Restaurant Serve (150ml)</label><input
+                                            type="number" id="w4" data-sd="1.4" placeholder="Qty">
+                                        <label for="w5">White Wine (12.5%) - Standard Serve (100ml)</label><input
+                                            type="number" id="w5" data-sd="1.0" placeholder="Qty">
+                                        <label for="w6">White Wine (12.5%) - Bottle (750ml)</label><input type="number"
+                                            id="w6" data-sd="7.5" placeholder="Qty">
+                                        <label for="w7">Champagne (12.5%) - Flute (150ml)</label><input type="number"
+                                            id="w7" data-sd="1.5" placeholder="Qty">
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend>Casks & Fortified Wine</legend>
+                                        <label for="c1">Red Wine Cask (13.5%) - 2L</label><input type="number" id="c1"
+                                            data-sd="21.0" placeholder="Qty">
+                                        <label for="c2">Red Wine Cask (13.5%) - 4L</label><input type="number" id="c2"
+                                            data-sd="43.0" placeholder="Qty">
+                                        <label for="c3">White Wine Cask (12.5%) - 2L</label><input type="number" id="c3"
+                                            data-sd="19.5" placeholder="Qty">
+                                        <label for="c4">White Wine Cask (12.5%) - 4L</label><input type="number" id="c4"
+                                            data-sd="39.0" placeholder="Qty">
+                                        <label for="c5">Port (17.5%) - Serve (60ml)</label><input type="number" id="c5"
+                                            data-sd="0.8" placeholder="Qty">
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend>Spirits & Pre-mix (RTDs)</legend>
+                                        <label for="s1">Spirit Nip (40%) - 30ml</label><input type="number" id="s1"
+                                            data-sd="1.0" placeholder="Qty">
+                                        <label for="s2">Spirit Bottle (40%) - 700ml</label><input type="number" id="s2"
+                                            data-sd="22.0" placeholder="Qty">
+                                        <label for="s3">Spirit Bottle (40%) - 1L</label><input type="number" id="s3"
+                                            data-sd="31.6" placeholder="Qty">
+                                        <label for="s4">RTD Full Strength (5%) - 275ml</label><input type="number"
+                                            id="s4" data-sd="1.1" placeholder="Qty">
+                                        <label for="s5">RTD Full Strength (5%) - 375ml</label><input type="number"
+                                            id="s5" data-sd="1.5" placeholder="Qty">
+                                        <label for="s6">RTD High Strength (7%) - 375ml</label><input type="number"
+                                            id="s6" data-sd="2.1" placeholder="Qty">
+                                    </fieldset>
+                                </div>
+                                <div class="button-group">
+                                    <button id="calculate-by-type">Calculate</button>
+                                    <button class="reset-btn">Reset</button>
+                                </div>
+                                <textarea id="type-result" readonly></textarea>
+                            </div>
+                            <div id="std-by-volume" class="tab-content">
+                                <h3>Calculate by Volume and ABV</h3>
+                                <div class="form-grid">
+                                    <label for="volume-ml">Volume of beverage (mL):</label>
+                                    <input type="number" id="volume-ml" placeholder="e.g., 375">
+                                    <label for="abv-percent">Alcohol by Volume (ABV %):</label>
+                                    <input type="number" id="abv-percent" placeholder="e.g., 4.8">
+                                </div>
+                                <div class="button-group">
+                                    <button id="calculate-by-volume">Calculate</button>
+                                    <button class="reset-btn">Reset</button>
+                                </div>
+                                <textarea id="volume-result" readonly></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="aws" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+
+                    <section id="ciwa-ar" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+
+                    <section id="saws" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+
+                    <section id="cows" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+                    <section id="ciwa-b" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+                    <section id="nsw-cws" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+                    <section id="cwas" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+                    <section id="awq" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
                 </div>
-                <div id="std-by-type" class="tab-content">
-                    <div class="form-grid std-drinks-grid">
-                        <fieldset>
-                            <legend>Beer</legend>
-                            <label for="b1">Full Strength (4.8%) - Middy / Pot (285ml)</label><input type="number" id="b1" data-sd="1.1" placeholder="Qty">
-                            <label for="b2">Full Strength (4.8%) - Schooner (425ml)</label><input type="number" id="b2" data-sd="1.6" placeholder="Qty">
-                            <label for="b3">Full Strength (4.8%) - Can/Stubby (375ml)</label><input type="number" id="b3" data-sd="1.4" placeholder="Qty">
-                            <label for="b10">Full Strength (4.8%) - Carton (24 cans/stubbies)</label><input type="number" id="b10" data-sd="33.6" placeholder="Qty">
-                            <label for="b4">Mid Strength (3.5%) - Middy / Pot (285ml)</label><input type="number" id="b4" data-sd="0.8" placeholder="Qty">
-                            <label for="b5">Mid Strength (3.5%) - Schooner (425ml)</label><input type="number" id="b5" data-sd="1.2" placeholder="Qty">
-                            <label for="b6">Mid Strength (3.5%) - Can/Stubby (375ml)</label><input type="number" id="b6" data-sd="1.0" placeholder="Qty">
-                            <label for="b11">Mid Strength (3.5%) - Carton (24 cans/stubbies)</label><input type="number" id="b11" data-sd="24" placeholder="Qty">
-                            <label for="b7">Low Strength (2.7%) - Middy / Pot (285ml)</label><input type="number" id="b7" data-sd="0.6" placeholder="Qty">
-                            <label for="b8">Low Strength (2.7%) - Schooner (425ml)</label><input type="number" id="b8" data-sd="0.9" placeholder="Qty">
-                            <label for="b9">Low Strength (2.7%) - Can/Stubby (375ml)</label><input type="number" id="b9" data-sd="0.8" placeholder="Qty">
-                            <label for="b12">Low Strength (2.7%) - Carton (24 cans/stubbies)</label><input type="number" id="b12" data-sd="19.2" placeholder="Qty">
-                        </fieldset>
-                        <fieldset>
-                            <legend>Wine & Champagne</legend>
-                            <label for="w1">Red Wine (13.5%) - Restaurant Serve (150ml)</label><input type="number" id="w1" data-sd="1.6" placeholder="Qty">
-                            <label for="w2">Red Wine (13.5%) - Standard Serve (100ml)</label><input type="number" id="w2" data-sd="1.0" placeholder="Qty">
-                            <label for="w3">Red Wine (13.5%) - Bottle (750ml)</label><input type="number" id="w3" data-sd="8.0" placeholder="Qty">
-                            <label for="w4">White Wine (12.5%) - Restaurant Serve (150ml)</label><input type="number" id="w4" data-sd="1.4" placeholder="Qty">
-                            <label for="w5">White Wine (12.5%) - Standard Serve (100ml)</label><input type="number" id="w5" data-sd="1.0" placeholder="Qty">
-                            <label for="w6">White Wine (12.5%) - Bottle (750ml)</label><input type="number" id="w6" data-sd="7.5" placeholder="Qty">
-                            <label for="w7">Champagne (12.5%) - Flute (150ml)</label><input type="number" id="w7" data-sd="1.5" placeholder="Qty">
-                        </fieldset>
-                        <fieldset>
-                            <legend>Casks & Fortified Wine</legend>
-                            <label for="c1">Red Wine Cask (13.5%) - 2L</label><input type="number" id="c1" data-sd="21.0" placeholder="Qty">
-                            <label for="c2">Red Wine Cask (13.5%) - 4L</label><input type="number" id="c2" data-sd="43.0" placeholder="Qty">
-                            <label for="c3">White Wine Cask (12.5%) - 2L</label><input type="number" id="c3" data-sd="19.5" placeholder="Qty">
-                            <label for="c4">White Wine Cask (12.5%) - 4L</label><input type="number" id="c4" data-sd="39.0" placeholder="Qty">
-                            <label for="c5">Port (17.5%) - Serve (60ml)</label><input type="number" id="c5" data-sd="0.8" placeholder="Qty">
-                        </fieldset>
-                        <fieldset>
-                            <legend>Spirits & Pre-mix (RTDs)</legend>
-                            <label for="s1">Spirit Nip (40%) - 30ml</label><input type="number" id="s1" data-sd="1.0" placeholder="Qty">
-                            <label for="s2">Spirit Bottle (40%) - 700ml</label><input type="number" id="s2" data-sd="22.0" placeholder="Qty">
-                            <label for="s3">Spirit Bottle (40%) - 1L</label><input type="number" id="s3" data-sd="31.6" placeholder="Qty">
-                            <label for="s4">RTD Full Strength (5%) - 275ml</label><input type="number" id="s4" data-sd="1.1" placeholder="Qty">
-                            <label for="s5">RTD Full Strength (5%) - 375ml</label><input type="number" id="s5" data-sd="1.5" placeholder="Qty">
-                            <label for="s6">RTD High Strength (7%) - 375ml</label><input type="number" id="s6" data-sd="2.1" placeholder="Qty">
-                        </fieldset>
-                    </div>
-                    <div class="button-group">
-                        <button id="calculate-by-type">Calculate</button>
-                        <button class="reset-btn">Reset</button>
-                    </div>
-                    <textarea id="type-result" readonly></textarea>
-                </div>
-                <div id="std-by-volume" class="tab-content">
-                    <h3>Calculate by Volume and ABV</h3>
-                    <div class="form-grid">
-                        <label for="volume-ml">Volume of beverage (mL):</label>
-                        <input type="number" id="volume-ml" placeholder="e.g., 375">
-                        <label for="abv-percent">Alcohol by Volume (ABV %):</label>
-                        <input type="number" id="abv-percent" placeholder="e.g., 4.8">
-                    </div>
-                    <div class="button-group">
-                        <button id="calculate-by-volume">Calculate</button>
-                        <button class="reset-btn">Reset</button>
-                    </div>
-                    <textarea id="volume-result" readonly></textarea>
+            </div>
+
+            <!-- Other Syndromes Page -->
+            <div id="other-syndromes-page" class="page" data-title="Other Substances">
+                <div class="button-container">
+                    <button class="big-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
+                    <button class="big-button" data-page="benzo-withdrawal-page">Benzodiazepine Withdrawal</button>
+                    <button class="big-button" data-page="cannabis-withdrawal-page">Cannabis Withdrawal</button>
+                    <button class="big-button" data-page="stimulant-withdrawal-page">Psychostimulant Withdrawal</button>
+                    <button class="big-button" data-page="ghb-withdrawal-page">GHB Withdrawal</button>
+                    <button class="big-button" data-page="nicotine-withdrawal-page">Nicotine Withdrawal</button>
+                    <button class="big-button" data-page="volatile-withdrawal-page">Volatile Substances
+                        Withdrawal</button>
                 </div>
             </div>
-        </section>
-        
-        <section id="aws" class="tab-content calculator-container">
-    <!-- Content will be generated by script.js -->
-</section>
 
-<section id="ciwa-ar" class="tab-content calculator-container">
-    <!-- Content will be generated by script.js -->
-</section>
+            <!-- Opioid Withdrawal Page -->
+            <div id="opioid-withdrawal-page" class="page" data-title="Opioid Withdrawal">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <h3>Opioid Withdrawal Syndrome</h3>
+                <p><strong>Onset:</strong> 6-24 hours (short-acting, e.g., heroin), 36-72 hours (long-acting, e.g.,
+                    methadone).</p>
+                <p><strong>Duration:</strong> 5-10 days (short-acting), 14-21 days (long-acting), with protracted
+                    symptoms lasting weeks.</p>
+                <p><strong>Symptoms:</strong> Dysphoria, nausea, vomiting, muscle aches, lacrimation, rhinorrhoea,
+                    pupillary dilation, piloerection, sweating, diarrhoea, yawning, fever, insomnia.</p>
+                <p><strong>Key Distinguishing Features:</strong> Piloerection ("gooseflesh"), prominent yawning,
+                    pupillary dilation, rhinorrhoea, and lacrimation.</p>
 
-<section id="saws" class="tab-content calculator-container">
-    <!-- Content will be generated by script.js -->
-</section>
+                <div class="warning-box">
+                    <strong>⚠️ Pregnancy Warning:</strong> Withdrawing a pregnant patient from opioids carries a high
+                    risk of fetal distress and spontaneous abortion. Do not commence withdrawal. Consult Obstetrics and
+                    Addiction Medicine immediately to arrange Opioid Substitution Therapy. Neonates born to mothers on
+                    OST will require monitoring for Neonatal Abstinence Syndrome (NAS).
+                </div>
 
-<section id="cows" class="tab-content calculator-container">
-    <!-- Content will be generated by script.js -->
-</section>
-        <section id="ciwa-b" class="tab-content calculator-container">
-            <!-- Content will be generated by script.js -->
-        </section>
-        <section id="nsw-cws" class="tab-content calculator-container">
-            <!-- Content will be generated by script.js -->
-        </section>
-        <section id="cwas" class="tab-content calculator-container">
-            <!-- Content will be generated by script.js -->
-        </section>
-        <section id="awq" class="tab-content calculator-container">
-            <!-- Content will be generated by script.js -->
-        </section>
-    </div>
-</div>
+                <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-link-to-scale="cows">Go to COWS Scale</button>
+                </div>
 
-<!-- Other Syndromes Page -->
-<div id="other-syndromes-page" class="page" data-title="Other Substances">
-    <div class="button-container">
-        <button class="big-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
-        <button class="big-button" data-page="benzo-withdrawal-page">Benzodiazepine Withdrawal</button>
-        <button class="big-button" data-page="cannabis-withdrawal-page">Cannabis Withdrawal</button>
-        <button class="big-button" data-page="stimulant-withdrawal-page">Psychostimulant Withdrawal</button>
-        <button class="big-button" data-page="ghb-withdrawal-page">GHB Withdrawal</button>
-        <button class="big-button" data-page="nicotine-withdrawal-page">Nicotine Withdrawal</button>
-        <button class="big-button" data-page="volatile-withdrawal-page">Volatile Substances Withdrawal</button>
-    </div>
-</div>
+                <h4>Management</h4>
+                <p>Opioid withdrawal is intensely uncomfortable but rarely life-threatening. Management typically
+                    involves either opioid substitution therapy or symptomatic medication. <strong>Consult addiction
+                        services for complex patients, pregnancy, or severe medical co-morbidities.</strong></p>
 
-<!-- Opioid Withdrawal Page -->
-<div id="opioid-withdrawal-page" class="page" data-title="Opioid Withdrawal">
-    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
-    <h3>Opioid Withdrawal Syndrome</h3>
-    <p><strong>Onset:</strong> 6-24 hours (short-acting, e.g., heroin), 36-72 hours (long-acting, e.g., methadone).</p>
-    <p><strong>Duration:</strong> 5-10 days (short-acting), 14-21 days (long-acting), with protracted symptoms lasting weeks.</p>
-    <p><strong>Symptoms:</strong> Dysphoria, nausea, vomiting, muscle aches, lacrimation, rhinorrhoea, pupillary dilation, piloerection, sweating, diarrhoea, yawning, fever, insomnia.</p>
-    <p><strong>Key Distinguishing Features:</strong> Piloerection ("gooseflesh"), prominent yawning, pupillary dilation, rhinorrhoea, and lacrimation.</p>
-    
-    <div class="warning-box">
-        <strong>⚠️ Pregnancy Warning:</strong> Withdrawing a pregnant patient from opioids carries a high risk of fetal distress and spontaneous abortion. Do not commence withdrawal. Consult Obstetrics and Addiction Medicine immediately to arrange Opioid Substitution Therapy. Neonates born to mothers on OST will require monitoring for Neonatal Abstinence Syndrome (NAS).
-    </div>
+                <h5>Opioid Substitution Therapy (Buprenorphine)</h5>
+                <div class="danger-box">
+                    <strong>🚨 Precipitated Withdrawal Warning:</strong> Administering Buprenorphine before the patient
+                    is in adequate withdrawal (e.g., COWS &lt; 12, or too soon after full-agonist opioids) will strip
+                    the receptors and plunge the patient into violent, sudden withdrawal.
+                </div>
+                <p>Buprenorphine is highly effective for managing withdrawal. To avoid precipitated withdrawal, the
+                    patient must be in moderate withdrawal prior to the first dose (e.g., COWS > 12, or at least 12-24
+                    hours since last short-acting opioid). Micro-dosing schedules and <strong>Long-Acting Injectable
+                        Buprenorphine (LAIB)</strong> (e.g., Buvidal, Sublocade) are increasingly used and may be
+                    considered in consultation with specialist services.</p>
 
-    <div class="button-container" style="margin: 20px 0;">
-        <button class="big-button" data-link-to-scale="cows">Go to COWS Scale</button>
-    </div>
+                <h5>Symptomatic Medications</h5>
+                <p>The following symptomatic medications are recommended for the management of withdrawal symptoms:</p>
+                <ul>
+                    <li><strong>Autonomic symptoms (sweating, anxiety, restlessness):</strong> Clonidine 100-150
+                        micrograms oral QID PRN (Hold if BP &lt; 90/60 or HR &lt; 60).</li>
+                    <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR
+                        Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+                    <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+                    <li><strong>Diarrhoea:</strong> Loperamide 2mg oral (after each loose bowel action, max 16mg/day).
+                    </li>
+                    <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg
+                        oral TDS PRN.</li>
+                    <li><strong>Severe Agitation / Insomnia:</strong> Diazepam 2.5-5mg oral QID PRN (Max 20mg/day,
+                        monitor closely if co-prescribed with opioids).</li>
+                </ul>
 
-    <h4>Management</h4>
-    <p>Opioid withdrawal is intensely uncomfortable but rarely life-threatening. Management typically involves either opioid substitution therapy or symptomatic medication. <strong>Consult addiction services for complex patients, pregnancy, or severe medical co-morbidities.</strong></p>
-    
-    <h5>Opioid Substitution Therapy (Buprenorphine)</h5>
-    <div class="danger-box">
-        <strong>🚨 Precipitated Withdrawal Warning:</strong> Administering Buprenorphine before the patient is in adequate withdrawal (e.g., COWS &lt; 12, or too soon after full-agonist opioids) will strip the receptors and plunge the patient into violent, sudden withdrawal.
-    </div>
-    <p>Buprenorphine is highly effective for managing withdrawal. To avoid precipitated withdrawal, the patient must be in moderate withdrawal prior to the first dose (e.g., COWS > 12, or at least 12-24 hours since last short-acting opioid). Micro-dosing schedules and <strong>Long-Acting Injectable Buprenorphine (LAIB)</strong> (e.g., Buvidal, Sublocade) are increasingly used and may be considered in consultation with specialist services.</p>
-    
-    <h5>Symptomatic Medications</h5>
-    <p>The following symptomatic medications are recommended for the management of withdrawal symptoms:</p>
-    <ul>
-        <li><strong>Autonomic symptoms (sweating, anxiety, restlessness):</strong> Clonidine 100-150 micrograms oral QID PRN (Hold if BP &lt; 90/60 or HR &lt; 60).</li>
-        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
-        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
-        <li><strong>Diarrhoea:</strong> Loperamide 2mg oral (after each loose bowel action, max 16mg/day).</li>
-        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
-        <li><strong>Severe Agitation / Insomnia:</strong> Diazepam 2.5-5mg oral QID PRN (Max 20mg/day, monitor closely if co-prescribed with opioids).</li>
-    </ul>
+                <h5>Harm Reduction &amp; Overdose Prevention</h5>
+                <div class="warning-box">
+                    <strong>⚠️ Lost Tolerance:</strong> Patients leaving an opioid detox have completely lost their
+                    tolerance. A previously "normal" dose can now be fatal.
+                </div>
+                <p><strong>Take-Home Naloxone:</strong> Always prescribe or supply Take-Home Naloxone (e.g., Nyxoid
+                    nasal spray or Prenoxad intramuscular injection) to <em>any</em> patient discharging from an opioid
+                    withdrawal program, along with brief overdose response education.</p>
 
-    <h5>Harm Reduction &amp; Overdose Prevention</h5>
-    <div class="warning-box">
-        <strong>⚠️ Lost Tolerance:</strong> Patients leaving an opioid detox have completely lost their tolerance. A previously "normal" dose can now be fatal.
-    </div>
-    <p><strong>Take-Home Naloxone:</strong> Always prescribe or supply Take-Home Naloxone (e.g., Nyxoid nasal spray or Prenoxad intramuscular injection) to <em>any</em> patient discharging from an opioid withdrawal program, along with brief overdose response education.</p>
+            </div>
 
-</div>
+            <!-- Benzo Withdrawal Page -->
+            <div id="benzo-withdrawal-page" class="page" data-title="Benzodiazepine Withdrawal">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <h3>Benzodiazepine Withdrawal Syndrome</h3>
+                <p><strong>Onset:</strong> 1-2 days (short-acting, e.g., alprazolam), 2-7 days (long-acting, e.g.,
+                    diazepam).</p>
+                <p><strong>Duration:</strong> 2-4 weeks, though protracted withdrawal can last months.</p>
+                <p><strong>Symptoms:</strong> Anxiety, insomnia, restlessness, agitation, irritability, muscle
+                    tension/spasms, tremors, diaphoresis, palpitations. Severe withdrawal can include hallucinations,
+                    psychosis, and seizures.</p>
+                <p><strong>Key Distinguishing Features:</strong> Severe muscle tension, perceptual disturbances (extreme
+                    sensitivity to light/sound), and risk of delayed seizures.</p>
 
-<!-- Benzo Withdrawal Page -->
-<div id="benzo-withdrawal-page" class="page" data-title="Benzodiazepine Withdrawal">
-    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
-    <h3>Benzodiazepine Withdrawal Syndrome</h3>
-    <p><strong>Onset:</strong> 1-2 days (short-acting, e.g., alprazolam), 2-7 days (long-acting, e.g., diazepam).</p>
-    <p><strong>Duration:</strong> 2-4 weeks, though protracted withdrawal can last months.</p>
-    <p><strong>Symptoms:</strong> Anxiety, insomnia, restlessness, agitation, irritability, muscle tension/spasms, tremors, diaphoresis, palpitations. Severe withdrawal can include hallucinations, psychosis, and seizures.</p>
-    <p><strong>Key Distinguishing Features:</strong> Severe muscle tension, perceptual disturbances (extreme sensitivity to light/sound), and risk of delayed seizures.</p>
-    
-    <div class="danger-box">
-        <strong>🚨 Red Flags (Escalate Care):</strong> Monitor closely for signs of severe withdrawal, including seizures, delirium, hallucinations, or severe autonomic instability. If these occur, escalate to emergency medical care immediately.
-    </div>
+                <div class="danger-box">
+                    <strong>🚨 Red Flags (Escalate Care):</strong> Monitor closely for signs of severe withdrawal,
+                    including seizures, delirium, hallucinations, or severe autonomic instability. If these occur,
+                    escalate to emergency medical care immediately.
+                </div>
 
-    <div class="danger-box">
-        <strong>🚨 Flumazenil Contraindication:</strong> Do not use Flumazenil (a benzodiazepine reversal agent) in patients with chronic benzodiazepine dependence. It can trigger intractable, life-threatening seizures.
-    </div>
+                <div class="danger-box">
+                    <strong>🚨 Flumazenil Contraindication:</strong> Do not use Flumazenil (a benzodiazepine reversal
+                    agent) in patients with chronic benzodiazepine dependence. It can trigger intractable,
+                    life-threatening seizures.
+                </div>
 
-    <div class="button-container" style="margin: 20px 0;">
-        <button class="big-button" data-link-to-scale="ciwa-b">Go to CIWA-B Scale</button>
-    </div>
+                <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-link-to-scale="ciwa-b">Go to CIWA-B Scale</button>
+                </div>
 
-    <div class="warning-box">
-        <strong>⚠️ Pregnancy Warning:</strong> Benzodiazepine use and withdrawal during pregnancy carry risks of neonatal withdrawal and complications. Tapering must be managed in close consultation with Obstetric and Addiction Medicine specialists.
-    </div>
+                <div class="warning-box">
+                    <strong>⚠️ Pregnancy Warning:</strong> Benzodiazepine use and withdrawal during pregnancy carry
+                    risks of neonatal withdrawal and complications. Tapering must be managed in close consultation with
+                    Obstetric and Addiction Medicine specialists.
+                </div>
 
-    <h4>Tapering Schedules</h4>
-    <p><strong>Discussion with addiction services is strongly recommended.</strong></p>
-    <p>Arranging a safe and effective outpatient taper is often difficult and carries risks if not closely monitored. Relapse rates are high, and abrupt cessation can lead to seizures and delirium.</p>
-    <p>Conversion to a long-acting agent (like diazepam) followed by a gradual reduction is the standard approach. For a tool to help formulate a tapering schedule, see <a href="https://trent-koessler.github.io/Hypertaper/" target="_blank">HyperTaper</a>.</p>
-    
-    <h4>Symptomatic Management</h4>
-    <p>Management is primarily via a controlled taper of benzodiazepines. The following symptomatic medications may provide relief for specific complaints, but do not prevent severe complications like seizures:</p>
-    <ul>
-        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
-        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
-        <li><strong>Diarrhoea:</strong> Loperamide 2mg oral (after each loose bowel action, max 16mg/day).</li>
-        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
-    </ul>
-</div>
+                <h4>Tapering Schedules</h4>
+                <p><strong>Discussion with addiction services is strongly recommended.</strong></p>
+                <p>Arranging a safe and effective outpatient taper is often difficult and carries risks if not closely
+                    monitored. Relapse rates are high, and abrupt cessation can lead to seizures and delirium.</p>
+                <p>Conversion to a long-acting agent (like diazepam) followed by a gradual reduction is the standard
+                    approach. For a tool to help formulate a tapering schedule, see <a
+                        href="https://trent-koessler.github.io/Hypertaper/" target="_blank">HyperTaper</a>.</p>
 
-<!-- Cannabis Withdrawal Page -->
-<div id="cannabis-withdrawal-page" class="page" data-title="Cannabis Withdrawal">
-    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
-    <h3>Cannabis Withdrawal Syndrome</h3>
-    <p><strong>Onset:</strong> 1-2 days after cessation.</p>
-    <p><strong>Peak:</strong> 2-6 days.</p>
-    <p><strong>Duration:</strong> 1-3 weeks (sleep disturbances can last longer).</p>
-    <p><strong>Symptoms:</strong> Irritability, anger, aggression, anxiety, depressed mood, restlessness, sleep difficulty (insomnia, vivid/disturbing dreams), decreased appetite/weight loss, physical symptoms (chills, sweating, shakiness, stomach pain, headache).</p>
-    <p><strong>Key Distinguishing Features:</strong> Vivid and disturbing dreams (REM rebound), pronounced anger/irritability, and significant appetite loss.</p>
-    
-    <div class="button-container" style="margin: 20px 0;">
-        <button class="big-button" data-link-to-scale="nsw-cws">Go to CWS Scale</button>
-        <button class="big-button" data-link-to-scale="cwas">Go to CWAS Scale</button>
-    </div>
+                <h4>Symptomatic Management</h4>
+                <p>Management is primarily via a controlled taper of benzodiazepines. The following symptomatic
+                    medications may provide relief for specific complaints, but do not prevent severe complications like
+                    seizures:</p>
+                <ul>
+                    <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR
+                        Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+                    <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+                    <li><strong>Diarrhoea:</strong> Loperamide 2mg oral (after each loose bowel action, max 16mg/day).
+                    </li>
+                    <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg
+                        oral TDS PRN.</li>
+                </ul>
+            </div>
 
-    <h4>Symptomatic Management</h4>
-    <p>Medications are typically only required for severe symptoms. The following symptomatic medications are recommended:</p>
-    <ul>
-        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
-        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
-        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
-        <li><strong>Severe anxiety or agitation:</strong> Diazepam 5mg oral BD-QID PRN (short course only, e.g., 3-5 days). Please note - outside of the NSW Health guidelines, other guidelines and our own clinical experience suggests using quetiapine 25-50mg TDS or olanzapine 2.5mg TDS tends to yield better results as first line management with BZDs second line management of agitation/anxiety.</li>
-        <li><strong>Insomnia:</strong> Promethazine 25mg oral nocte PRN.</li>
-    </ul>
-</div>
+            <!-- Cannabis Withdrawal Page -->
+            <div id="cannabis-withdrawal-page" class="page" data-title="Cannabis Withdrawal">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <h3>Cannabis Withdrawal Syndrome</h3>
+                <p><strong>Onset:</strong> 1-2 days after cessation.</p>
+                <p><strong>Peak:</strong> 2-6 days.</p>
+                <p><strong>Duration:</strong> 1-3 weeks (sleep disturbances can last longer).</p>
+                <p><strong>Symptoms:</strong> Irritability, anger, aggression, anxiety, depressed mood, restlessness,
+                    sleep difficulty (insomnia, vivid/disturbing dreams), decreased appetite/weight loss, physical
+                    symptoms (chills, sweating, shakiness, stomach pain, headache).</p>
+                <p><strong>Key Distinguishing Features:</strong> Vivid and disturbing dreams (REM rebound), pronounced
+                    anger/irritability, and significant appetite loss.</p>
 
-<!-- Psychostimulants Withdrawal Page -->
-<div id="stimulant-withdrawal-page" class="page" data-title="Psychostimulant Withdrawal">
-    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
-    <h3>Psychostimulant Withdrawal (Amphetamines, Cocaine)</h3>
-    <p><strong>Onset:</strong> 1-2 days after cessation (the "crash").</p>
-    <p><strong>Peak:</strong> 2-4 days.</p>
-    <p><strong>Duration:</strong> 1-3 weeks.</p>
-    <p><strong>Symptoms:</strong> Fatigue, lethargy, hypersomnia followed by insomnia, increased appetite, vivid/unpleasant dreams, psychomotor retardation or agitation, depressed mood, cravings.</p>
-    <p><strong>Key Distinguishing Features:</strong> Profound hypersomnia, hyperphagia (increased appetite), and severe psychomotor retardation during the "crash" phase.</p>
-    
-    <div class="danger-box">
-        <strong>🚨 Red Flags (Escalate Care):</strong> The initial "crash" phase can precipitate severe psychiatric symptoms. Escalate care immediately if the patient exhibits severe paranoia, acute psychosis, or acute suicidality.
-    </div>
+                <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-link-to-scale="nsw-cws">Go to CWS Scale</button>
+                    <button class="big-button" data-link-to-scale="cwas">Go to CWAS Scale</button>
+                </div>
 
-    <div class="button-container" style="margin: 20px 0;">
-        <button class="big-button" data-link-to-scale="awq">Go to AWQ Scale</button>
-    </div>
+                <h4>Symptomatic Management</h4>
+                <p>Medications are typically only required for severe symptoms. The following symptomatic medications
+                    are recommended:</p>
+                <ul>
+                    <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg
+                        oral TDS PRN.</li>
+                    <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR
+                        Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+                    <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+                    <li><strong>Severe anxiety or agitation:</strong> Diazepam 5mg oral BD-QID PRN (short course only,
+                        e.g., 3-5 days). Please note - outside of the NSW Health guidelines, other guidelines and our
+                        own clinical experience suggests using quetiapine 25-50mg TDS or olanzapine 2.5mg TDS tends to
+                        yield better results as first line management with BZDs second line management of
+                        agitation/anxiety.</li>
+                    <li><strong>Insomnia:</strong> Promethazine 25mg oral nocte PRN.</li>
+                </ul>
+            </div>
 
-    <h4>Management</h4>
-    <p>Withdrawal is generally not life-threatening but is associated with severe psychological distress, agitation, and risk of suicide. Monitor mental state closely.</p>
-    
-    <h5>Symptomatic Medications</h5>
-    <p>The following symptomatic medications are recommended for the management of withdrawal symptoms:</p>
-    <ul>
-        <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg oral TDS PRN.</li>
-        <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
-        <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
-        <li><strong>Agitation and anxiety:</strong> Diazepam 5-10mg oral up to QID PRN (short course only).</li>
-        <li><strong>Severe psychiatric symptoms (psychosis/severe agitation):</strong> Antipsychotics such as Olanzapine 2.5-5mg oral BD PRN or Haloperidol. Seek specialist psychiatric input.</li>
-    </ul>
-</div>
+            <!-- Psychostimulants Withdrawal Page -->
+            <div id="stimulant-withdrawal-page" class="page" data-title="Psychostimulant Withdrawal">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <h3>Psychostimulant Withdrawal (Amphetamines, Cocaine)</h3>
+                <p><strong>Onset:</strong> 1-2 days after cessation (the "crash").</p>
+                <p><strong>Peak:</strong> 2-4 days.</p>
+                <p><strong>Duration:</strong> 1-3 weeks.</p>
+                <p><strong>Symptoms:</strong> Fatigue, lethargy, hypersomnia followed by insomnia, increased appetite,
+                    vivid/unpleasant dreams, psychomotor retardation or agitation, depressed mood, cravings.</p>
+                <p><strong>Key Distinguishing Features:</strong> Profound hypersomnia, hyperphagia (increased appetite),
+                    and severe psychomotor retardation during the "crash" phase.</p>
 
-<!-- GHB Withdrawal Page -->
-<div id="ghb-withdrawal-page" class="page" data-title="GHB Withdrawal">
-    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
-    <h3>GHB/GBL Withdrawal Syndrome</h3>
-    <p><strong>Onset:</strong> 1-6 hours after last dose.</p>
-    <p><strong>Duration:</strong> 3-14 days.</p>
-    <p><strong>Symptoms:</strong> Tremor, anxiety, tachycardia, hypertension, diaphoresis, insomnia, nausea, vomiting. Severe cases can rapidly progress to delirium, severe psychosis, and seizures (similar to severe alcohol withdrawal but faster onset).</p>
-    <p><strong>Key Distinguishing Features:</strong> Extremely rapid onset, sudden and severe delirium, wild vital sign fluctuations, and massive resistance to standard benzodiazepine doses.</p>
-    
-    <h4>Management</h4>
-    <div class="danger-box">
-        <strong>🚨 Medical Emergency:</strong> GHB withdrawal can escalate rapidly and unpredictably. Watch for sudden onset of severe delirium, extreme agitation, and dangerous fluctuations in heart rate (bradycardia/tachycardia). 
-    </div>
-    <p><strong>Inpatient management in a high-dependency setting is often required. Consult addiction medicine and ICU immediately.</strong> High-dose benzodiazepines are the mainstay of treatment, often requiring significantly larger doses than standard alcohol withdrawal.</p>
-</div>
+                <div class="danger-box">
+                    <strong>🚨 Red Flags (Escalate Care):</strong> The initial "crash" phase can precipitate severe
+                    psychiatric symptoms. Escalate care immediately if the patient exhibits severe paranoia, acute
+                    psychosis, or acute suicidality.
+                </div>
 
-<!-- Nicotine Withdrawal Page -->
-<div id="nicotine-withdrawal-page" class="page" data-title="Nicotine Withdrawal">
-    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
-    <h3>Nicotine Withdrawal Syndrome</h3>
-    <p><strong>Onset:</strong> 2-12 hours.</p>
-    <p><strong>Peak:</strong> 1-3 days.</p>
-    <p><strong>Duration:</strong> 3-4 weeks.</p>
-    <p><strong>Symptoms:</strong> Cravings, irritability, anxiety, difficulty concentrating, restlessness, sleep disturbances, increased appetite/weight gain, depressed mood.</p>
-    <p><strong>Key Distinguishing Features:</strong> Intense cravings, increased appetite, and weight gain.</p>
-    
-    <h4>Management</h4>
-    <p>Nicotine Replacement Therapy (NRT) in a combination approach (e.g., long-acting patch + fast-acting oral form) is first-line. Alternatives include Varenicline or Bupropion. Offer brief interventions and referral to Quitline (13 7848).</p>
-    
-    <h5>Special Considerations</h5>
-    <div class="warning-box">
-        <strong>⚠️ Drug Interactions (CYP1A2):</strong> Tobacco smoke induces the CYP1A2 enzyme. Abrupt smoking cessation can significantly <strong>increase</strong> blood levels of medications metabolized by this enzyme, particularly <strong>olanzapine, clozapine, theophylline, and warfarin</strong>. Monitor closely for toxicity and consider prophylactic dose reductions in consultation with pharmacy/psychiatry.
-    </div>
-    <p><strong>Pregnancy:</strong> NRT is generally safer than smoking, though intermittent rapid-acting NRT (gum, lozenge) is often preferred over continuous patches. Consult local guidelines.<br><strong>Vaping:</strong> Liquid nicotine vaporisers (e-cigarettes) may be considered as a second-line harm reduction step-down tool for patients unsuccessful with standard NRT.</p>
-</div>
+                <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-link-to-scale="awq">Go to AWQ Scale</button>
+                </div>
 
-<!-- Volatile Substances Withdrawal Page -->
-<div id="volatile-withdrawal-page" class="page" data-title="Volatile Substances Withdrawal">
-    <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
-    <h3>Volatile Substances (Inhalants) Withdrawal</h3>
-    <p><strong>Onset:</strong> 24-48 hours.</p>
-    <p><strong>Duration:</strong> 2-5 days.</p>
-    <p><strong>Symptoms:</strong> Sleep disturbances, nausea, tremors, irritability, diaphoresis, fleeting illusions, cravings. Rare complications include seizures or delirium.</p>
-    <p><strong>Key Distinguishing Features:</strong> Fleeting illusions, sleep disturbances, and cravings, though generally lacks a highly specific classic syndrome compared to other substances.</p>
-    
-    <h4>Management</h4>
-    <p>Provide a low-stimulation, safe environment. Treat symptomatically.</p>
-</div>
+                <h4>Management</h4>
+                <p>Withdrawal is generally not life-threatening but is associated with severe psychological distress,
+                    agitation, and risk of suicide. Monitor mental state closely.</p>
 
-<!-- Helpful Contacts Page -->
-<div id="contacts-page" class="page" data-title="Helpful Contacts">
-    <h3>Statewide D&A / Addiction Services</h3>
-    <ul class="contact-list">
-        <li><strong>ADIS (Alcohol and Drug Information Service):</strong> <a href="tel:1800422599">1800 422 599 </a> / <a href="tel:0293618000">(02) 9361 8000</a> (24/7)</li>
-        <li><strong>DASAS (Drug and Alcohol State Advisory Service):</strong> <a href="tel:1800023687">1800 023 687</a> (24/7 line for remote advice from addiction specialists to regional, rural and remote NSW clinicians)</li>
-        <li><strong>Opioid Treatment Line:</strong> <a href="tel:1800642428">1800 642 428</a> (M-F, 9:30am-5pm)</li>
-        <li><strong>Stimulant Treatment Line:</strong> <a href="tel:1800101188">1800 101 188</a> (24/7)</li>
-        <li><strong>Quitline (Smoking Cessation):</strong> <a href="tel:137848">13 78 48</a> (M-F, 8am-8pm; Sat, 9am-5pm)</li>
-        <li><strong>Family Drug Support Line:</strong> <a href="tel:1300368186">1300 368 186</a> (24/7)</li>
-        <li><strong>Gambling Help (G-Line):</strong> <a href="tel:1800633635">1800 633 635</a> (24/7)</li>
-        <li><strong>MotherSafe:</strong> <a href="tel:1800647848">1800 647 848</a> (Medications in pregnancy and lactation advice, M-F 9am-5pm)</li>
-    </ul>
+                <h5>Symptomatic Medications</h5>
+                <p>The following symptomatic medications are recommended for the management of withdrawal symptoms:</p>
+                <ul>
+                    <li><strong>Headache and muscle aches:</strong> Paracetamol 1g oral QID PRN AND/OR Ibuprofen 400mg
+                        oral TDS PRN.</li>
+                    <li><strong>Nausea and vomiting:</strong> Metoclopramide 10mg oral/IM/IV up to TDS PRN OR
+                        Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
+                    <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
+                    <li><strong>Agitation and anxiety:</strong> Diazepam 5-10mg oral up to QID PRN (short course only).
+                    </li>
+                    <li><strong>Severe psychiatric symptoms (psychosis/severe agitation):</strong> Antipsychotics such
+                        as Olanzapine 2.5-5mg oral BD PRN or Haloperidol. Seek specialist psychiatric input.</li>
+                </ul>
+            </div>
 
-    <h3>NSW Local Health District (LHD) D&A Service Intake Lines</h3>
-    <ul class="contact-list">
-        <li><strong>Albury Wodonga Health Network:</strong> <a href="tel:0260581800">(02) 6058 1800</a></li>
-        <li><strong>Central Coast:</strong> <a href="tel:0243944880">(02) 4394 4880</a></li>
-        <li><strong>Far West:</strong> <a href="tel:0880801554">08 8080 1554</a></li>
-        <li><strong>Hunter New England:</strong> <a href="tel:1300660059">1300 660 059</a></li>
-        <li><strong>Illawarra Shoalhaven:</strong> <a href="tel:1300652226">1300 652 226</a></li>
-        <li><strong>Mid North Coast:</strong> <a href="tel:1300662263">1300 662 263</a></li>
-        <li><strong>Murrumbidgee:</strong> <a href="tel:1800800944">1800 800 944</a></li>
-        <li><strong>Nepean Blue Mountains:</strong> <a href="tel:1300661050">1300 661 050</a></li>
-        <li><strong>Northern NSW:</strong> <a href="tel:0266207608">(02) 6620 7608</a> (Lismore) / <a href="tel:0255067010">(02) 5506 7010</a> (Tweed Heads)</li>
-        <li><strong>Northern Sydney:</strong> <a href="tel:1300889788">1300 889 788</a></li>
-        <li><strong>South Eastern Sydney:</strong> <a href="tel:0293328777">(02) 9332 8777</a> (Northern) / <a href="tel:0291132944">(02) 9113 2944</a> (Central)</li>
-        <li><strong>South Western Sydney:</strong> <a href="tel:0296168586">(02) 9616 8586</a></li>
-        <li><strong>Southern NSW:</strong> <a href="tel:1800809423">1800 809 423</a></li>
-        <li><strong>Sydney:</strong> <a href="tel:1800793466">1800 793 466</a></li>
-        <li><strong>Western NSW:</strong> <a href="tel:1300887000">1300 887 000</a></li>
-        <li><strong>Western Sydney:</strong> <a href="tel:0298403355">(02) 9840 3355</a></li>
-    </ul>
+            <!-- GHB Withdrawal Page -->
+            <div id="ghb-withdrawal-page" class="page" data-title="GHB Withdrawal">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <h3>GHB/GBL Withdrawal Syndrome</h3>
+                <p><strong>Onset:</strong> 1-6 hours after last dose.</p>
+                <p><strong>Duration:</strong> 3-14 days.</p>
+                <p><strong>Symptoms:</strong> Tremor, anxiety, tachycardia, hypertension, diaphoresis, insomnia, nausea,
+                    vomiting. Severe cases can rapidly progress to delirium, severe psychosis, and seizures (similar to
+                    severe alcohol withdrawal but faster onset).</p>
+                <p><strong>Key Distinguishing Features:</strong> Extremely rapid onset, sudden and severe delirium, wild
+                    vital sign fluctuations, and massive resistance to standard benzodiazepine doses.</p>
 
-    <h3>General Mental Health</h3>
-    <ul class="contact-list">
-        <li><strong>Mental Health Helpline:</strong> <a href="tel:1800011511">1800 011 511</a> (24/7 crisis support & referral)</li>
-        <li><strong>Lifeline:</strong> <a href="tel:131114">13 11 14</a> (24/7 phone counselling)</li>
-        <li><strong>Suicide Call Back Service:</strong> <a href="tel:1300659467">1300 659 467</a> (Crisis counselling for those at risk of suicide and/or their carers, and those bereaved by suicide)</li>
-        <li><strong>Kids Helpline:</strong> <a href="tel:1800551800">1800 551 800</a> (Counselling for people aged 5-25)</li>
-        <li><strong>13YARN:</strong> <a href="tel:139276">13 92 76</a> (24/7 Aboriginal & Torres Strait Islander crisis support)</li>
-    </ul>
+                <h4>Management</h4>
+                <div class="danger-box">
+                    <strong>🚨 Medical Emergency:</strong> GHB withdrawal can escalate rapidly and unpredictably. Watch
+                    for sudden onset of severe delirium, extreme agitation, and dangerous fluctuations in heart rate
+                    (bradycardia/tachycardia).
+                </div>
+                <p><strong>Inpatient management in a high-dependency setting is often required. Consult addiction
+                        medicine and ICU immediately.</strong> High-dose benzodiazepines are the mainstay of treatment,
+                    often requiring significantly larger doses than standard alcohol withdrawal.</p>
+            </div>
 
-    <h3>Sexual Health and Infectious Diseases</h3>
-    <ul class="contact-list">
-        <li><strong>Sexual Health Checkup:</strong> <a href="tel:1800816925">1800 816 925</a> (Free sexual health check clinics, some vaccinations offered if relevant)</li>
-        <li><strong>Hepatitis Infoline:</strong> <a href="tel:1800803990">1800 803 990</a> (Free information, support and referrals for people with hepatitis including referrals for support with hepatitis C eradication: see also <a href="https://www.hep.org.au">www.hep.org.au</a>)</li>
-    </ul>
+            <!-- Nicotine Withdrawal Page -->
+            <div id="nicotine-withdrawal-page" class="page" data-title="Nicotine Withdrawal">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <h3>Nicotine Withdrawal Syndrome</h3>
+                <p><strong>Onset:</strong> 2-12 hours.</p>
+                <p><strong>Peak:</strong> 1-3 days.</p>
+                <p><strong>Duration:</strong> 3-4 weeks.</p>
+                <p><strong>Symptoms:</strong> Cravings, irritability, anxiety, difficulty concentrating, restlessness,
+                    sleep disturbances, increased appetite/weight gain, depressed mood.</p>
+                <p><strong>Key Distinguishing Features:</strong> Intense cravings, increased appetite, and weight gain.
+                </p>
 
-    <h3>Relationship Crisis / Domestic Violence</h3>
-    <ul class="contact-list">
-        <li><strong>1800RESPECT:</strong> <a href="tel:1800737825">1800 737 825</a> (24/7 national sexual assault, domestic and family violence counselling)</li>
-        <li><strong>MensLine Australia:</strong> <a href="tel:1300789978">1300 789 978</a> (Provides free practical support, information or referral to men with relationship or violence problems including free phone and online counselling. See <a href="https://mensline.org.au">mensline.org.au</a>)</li>
-        <li><strong>NSW Domestic Violence Line:</strong> <a href="tel:1800656463">1800 656 463</a> (Free 24/7 support with domestic violence issues)</li>
-        <li><strong>NSW Sexual Violence Helpline:</strong> <a href="tel:1800424017">1800 424 017</a>(Free 24/7 access to trauma specialist counsellors)</li>    </ul>
+                <h4>Management</h4>
+                <p>Nicotine Replacement Therapy (NRT) in a combination approach (e.g., long-acting patch + fast-acting
+                    oral form) is first-line. Alternatives include Varenicline or Bupropion. Offer brief interventions
+                    and referral to Quitline (13 7848).</p>
 
-    <h3>Housing and Financial Instability</h3>
-    <ul class="contact-list">
-        <li><strong>Link2Home:</strong> <a href="tel:1800152152">1800 152 152</a> (Provides support and information about local homelessness services in NSW)</li>
-        <li><strong>Financial Counselling Australia:</strong> <a href="tel:1300007007">1300 007 007</a> (Provides free financial counselling and support)</li>
-    </ul>
-</div>
+                <h5>Special Considerations</h5>
+                <div class="warning-box">
+                    <strong>⚠️ Drug Interactions (CYP1A2):</strong> Tobacco smoke induces the CYP1A2 enzyme. Abrupt
+                    smoking cessation can significantly <strong>increase</strong> blood levels of medications
+                    metabolized by this enzyme, particularly <strong>olanzapine, clozapine, theophylline, and
+                        warfarin</strong>. Monitor closely for toxicity and consider prophylactic dose reductions in
+                    consultation with pharmacy/psychiatry.
+                </div>
+                <p><strong>Pregnancy:</strong> NRT is generally safer than smoking, though intermittent rapid-acting NRT
+                    (gum, lozenge) is often preferred over continuous patches. Consult local
+                    guidelines.<br><strong>Vaping:</strong> Liquid nicotine vaporisers (e-cigarettes) may be considered
+                    as a second-line harm reduction step-down tool for patients unsuccessful with standard NRT.</p>
+            </div>
+
+            <!-- Volatile Substances Withdrawal Page -->
+            <div id="volatile-withdrawal-page" class="page" data-title="Volatile Substances Withdrawal">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <h3>Volatile Substances (Inhalants) Withdrawal</h3>
+                <p><strong>Onset:</strong> 24-48 hours.</p>
+                <p><strong>Duration:</strong> 2-5 days.</p>
+                <p><strong>Symptoms:</strong> Sleep disturbances, nausea, tremors, irritability, diaphoresis, fleeting
+                    illusions, cravings. Rare complications include seizures or delirium.</p>
+                <p><strong>Key Distinguishing Features:</strong> Fleeting illusions, sleep disturbances, and cravings,
+                    though generally lacks a highly specific classic syndrome compared to other substances.</p>
+
+                <h4>Management</h4>
+                <p>Provide a low-stimulation, safe environment. Treat symptomatically.</p>
+            </div>
+
+            <!-- Helpful Contacts Page -->
+            <div id="contacts-page" class="page" data-title="Helpful Contacts">
+                <h3>Statewide D&A / Addiction Services</h3>
+                <ul class="contact-list">
+                    <li><strong>ADIS (Alcohol and Drug Information Service):</strong> <a href="tel:1800422599">1800 422
+                            599 </a> / <a href="tel:0293618000">(02) 9361 8000</a> (24/7)</li>
+                    <li><strong>DASAS (Drug and Alcohol State Advisory Service):</strong> <a href="tel:1800023687">1800
+                            023 687</a> (24/7 line for remote advice from addiction specialists to regional, rural and
+                        remote NSW clinicians)</li>
+                    <li><strong>Opioid Treatment Line:</strong> <a href="tel:1800642428">1800 642 428</a> (M-F,
+                        9:30am-5pm)</li>
+                    <li><strong>Stimulant Treatment Line:</strong> <a href="tel:1800101188">1800 101 188</a> (24/7)</li>
+                    <li><strong>Quitline (Smoking Cessation):</strong> <a href="tel:137848">13 78 48</a> (M-F, 8am-8pm;
+                        Sat, 9am-5pm)</li>
+                    <li><strong>Family Drug Support Line:</strong> <a href="tel:1300368186">1300 368 186</a> (24/7)</li>
+                    <li><strong>Gambling Help (G-Line):</strong> <a href="tel:1800633635">1800 633 635</a> (24/7)</li>
+                    <li><strong>MotherSafe:</strong> <a href="tel:1800647848">1800 647 848</a> (Medications in pregnancy
+                        and lactation advice, M-F 9am-5pm)</li>
+                </ul>
+
+                <h3>NSW Local Health District (LHD) D&A Service Intake Lines</h3>
+                <ul class="contact-list">
+                    <li><strong>Albury Wodonga Health Network:</strong> <a href="tel:0260581800">(02) 6058 1800</a></li>
+                    <li><strong>Central Coast:</strong> <a href="tel:0243944880">(02) 4394 4880</a></li>
+                    <li><strong>Far West:</strong> <a href="tel:0880801554">08 8080 1554</a></li>
+                    <li><strong>Hunter New England:</strong> <a href="tel:1300660059">1300 660 059</a></li>
+                    <li><strong>Illawarra Shoalhaven:</strong> <a href="tel:1300652226">1300 652 226</a></li>
+                    <li><strong>Mid North Coast:</strong> <a href="tel:1300662263">1300 662 263</a></li>
+                    <li><strong>Murrumbidgee:</strong> <a href="tel:1800800944">1800 800 944</a></li>
+                    <li><strong>Nepean Blue Mountains:</strong> <a href="tel:1300661050">1300 661 050</a></li>
+                    <li><strong>Northern NSW:</strong> <a href="tel:0266207608">(02) 6620 7608</a> (Lismore) / <a
+                            href="tel:0255067010">(02) 5506 7010</a> (Tweed Heads)</li>
+                    <li><strong>Northern Sydney:</strong> <a href="tel:1300889788">1300 889 788</a></li>
+                    <li><strong>South Eastern Sydney:</strong> <a href="tel:0293328777">(02) 9332 8777</a> (Northern) /
+                        <a href="tel:0291132944">(02) 9113 2944</a> (Central)</li>
+                    <li><strong>South Western Sydney:</strong> <a href="tel:0296168586">(02) 9616 8586</a></li>
+                    <li><strong>Southern NSW:</strong> <a href="tel:1800809423">1800 809 423</a></li>
+                    <li><strong>Sydney:</strong> <a href="tel:1800793466">1800 793 466</a></li>
+                    <li><strong>Western NSW:</strong> <a href="tel:1300887000">1300 887 000</a></li>
+                    <li><strong>Western Sydney:</strong> <a href="tel:0298403355">(02) 9840 3355</a></li>
+                </ul>
+
+                <h3>General Mental Health</h3>
+                <ul class="contact-list">
+                    <li><strong>Mental Health Helpline:</strong> <a href="tel:1800011511">1800 011 511</a> (24/7 crisis
+                        support & referral)</li>
+                    <li><strong>Lifeline:</strong> <a href="tel:131114">13 11 14</a> (24/7 phone counselling)</li>
+                    <li><strong>Suicide Call Back Service:</strong> <a href="tel:1300659467">1300 659 467</a> (Crisis
+                        counselling for those at risk of suicide and/or their carers, and those bereaved by suicide)
+                    </li>
+                    <li><strong>Kids Helpline:</strong> <a href="tel:1800551800">1800 551 800</a> (Counselling for
+                        people aged 5-25)</li>
+                    <li><strong>13YARN:</strong> <a href="tel:139276">13 92 76</a> (24/7 Aboriginal & Torres Strait
+                        Islander crisis support)</li>
+                </ul>
+
+                <h3>Sexual Health and Infectious Diseases</h3>
+                <ul class="contact-list">
+                    <li><strong>Sexual Health Checkup:</strong> <a href="tel:1800816925">1800 816 925</a> (Free sexual
+                        health check clinics, some vaccinations offered if relevant)</li>
+                    <li><strong>Hepatitis Infoline:</strong> <a href="tel:1800803990">1800 803 990</a> (Free
+                        information, support and referrals for people with hepatitis including referrals for support
+                        with hepatitis C eradication: see also <a href="https://www.hep.org.au">www.hep.org.au</a>)</li>
+                </ul>
+
+                <h3>Relationship Crisis / Domestic Violence</h3>
+                <ul class="contact-list">
+                    <li><strong>1800RESPECT:</strong> <a href="tel:1800737825">1800 737 825</a> (24/7 national sexual
+                        assault, domestic and family violence counselling)</li>
+                    <li><strong>MensLine Australia:</strong> <a href="tel:1300789978">1300 789 978</a> (Provides free
+                        practical support, information or referral to men with relationship or violence problems
+                        including free phone and online counselling. See <a
+                            href="https://mensline.org.au">mensline.org.au</a>)</li>
+                    <li><strong>NSW Domestic Violence Line:</strong> <a href="tel:1800656463">1800 656 463</a> (Free
+                        24/7 support with domestic violence issues)</li>
+                    <li><strong>NSW Sexual Violence Helpline:</strong> <a href="tel:1800424017">1800 424 017</a>(Free
+                        24/7 access to trauma specialist counsellors)</li>
+                </ul>
+
+                <h3>Housing and Financial Instability</h3>
+                <ul class="contact-list">
+                    <li><strong>Link2Home:</strong> <a href="tel:1800152152">1800 152 152</a> (Provides support and
+                        information about local homelessness services in NSW)</li>
+                    <li><strong>Financial Counselling Australia:</strong> <a href="tel:1300007007">1300 007 007</a>
+                        (Provides free financial counselling and support)</li>
+                </ul>
+            </div>
 
 
 
 
 
-<!-- About Page -->
-<div id="about-page" class="page" data-title="About This App">
-    <h3>About the SUD Toolkit / Withdrawal Management Assistant</h3>
-    <p>This application is a Progressive Web App (PWA) designed for clinical decision support, intended to assist healthcare professionals in managing alcohol and other substance withdrawal syndromes.</p>
-    <p>It provides quick access to summarised guidelines, interactive triage flowcharts, and common clinical calculators in a fast, offline-capable, and installable web app format.</p>
-    
-    <h4>Disclaimer</h4>
-    <p><strong>This application is intended for educational and informational purposes only.</strong></p>
-    <p>It is an informal quality improvement project based on guidelines and operating procedures from various health districts. It is <strong>not a medical device</strong> and is not a substitute for professional clinical judgment, diagnosis, or treatment. The author bears no responsibility for decisions made using it.</p>
-    <p>All information, calculations, and recommendations generated by this tool must be independently verified by a qualified clinician before being used for patient care.</p>
+            <!-- About Page -->
+            <div id="about-page" class="page" data-title="About This App">
+                <h3>About the SUD Toolkit / Withdrawal Management Assistant</h3>
+                <p>This application is a Progressive Web App (PWA) designed for clinical decision support, intended to
+                    assist healthcare professionals in managing alcohol and other substance withdrawal syndromes.</p>
+                <p>It provides quick access to summarised guidelines, interactive triage flowcharts, and common clinical
+                    calculators in a fast, offline-capable, and installable web app format.</p>
 
-    <p><strong>Copyright © Trent Koessler 2025.</strong></p>
-    <p> All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written permission of the publisher, except in the case of brief quotations embodied in critical reviews and certain other non-commercial uses permitted by copyright law.</p>
+                <h4>Disclaimer</h4>
+                <p><strong>This application is intended for educational and informational purposes only.</strong></p>
+                <p>It is an informal quality improvement project based on guidelines and operating procedures from
+                    various health districts. It is <strong>not a medical device</strong> and is not a substitute for
+                    professional clinical judgment, diagnosis, or treatment. The author bears no responsibility for
+                    decisions made using it.</p>
+                <p>All information, calculations, and recommendations generated by this tool must be independently
+                    verified by a qualified clinician before being used for patient care.</p>
 
-    <h4>Version</h4>
-    <p>Current Version: <span class="app-version"></span></p>
-</div>
+                <p><strong>Copyright © Trent Koessler 2025.</strong></p>
+                <p> All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in
+                    any form or by any means, including photocopying, recording, or other electronic or mechanical
+                    methods, without the prior written permission of the publisher, except in the case of brief
+                    quotations embodied in critical reviews and certain other non-commercial uses permitted by copyright
+                    law.</p>
+
+                <h4>Version</h4>
+                <p>Current Version: <span class="app-version"></span></p>
+            </div>
 
         </main>
 
@@ -699,7 +938,10 @@
         <footer class="app-footer">
             <div class="footer-content">
                 <span class="footer-version">Version <span class="app-version"></span></span>
-                <span class="footer-disclaimer" style="font-size: 14px;">Information contained herein is not a substitute for professional medical advice. We recommend seeking assistance from D&A, consultation-liaison addiction, DASAS or similar services for this. All information assumes that patients are adults.</span>
+                <span class="footer-disclaimer" style="font-size: 14px;">Information contained herein is not a
+                    substitute for professional medical advice. We recommend seeking assistance from D&A,
+                    consultation-liaison addiction, DASAS or similar services for this. All information assumes that
+                    patients are adults.</span>
             </div>
         </footer>
 
@@ -712,7 +954,8 @@
             <h3>Diagnostic Criteria for Alcohol Withdrawal</h3>
             <h4>DSM-5 Criteria</h4>
             <p><strong>A.</strong> Cessation of (or reduction in) alcohol use that has been heavy and prolonged.</p>
-            <p><strong>B.</strong> Two (or more) of the following, developing within several hours to a few days after the cessation of (or reduction in) alcohol use described in Criterion A:</p>
+            <p><strong>B.</strong> Two (or more) of the following, developing within several hours to a few days after
+                the cessation of (or reduction in) alcohol use described in Criterion A:</p>
             <ol>
                 <li>Autonomic hyperactivity (e.g., sweating or pulse rate greater than 100 bpm).</li>
                 <li>Increased hand tremor.</li>
@@ -723,16 +966,29 @@
                 <li>Anxiety.</li>
                 <li>Generalized tonic-clonic seizures.</li>
             </ol>
-            <p><strong>C.</strong> The signs or symptoms in Criterion B cause clinically significant distress or impairment in social, occupational, or other important areas of functioning.</p>
-            <p><strong>D.</strong> The signs or symptoms are not attributable to another medical condition and are not better explained by another mental disorder, including intoxication or withdrawal from another substance.</p>
+            <p><strong>C.</strong> The signs or symptoms in Criterion B cause clinically significant distress or
+                impairment in social, occupational, or other important areas of functioning.</p>
+            <p><strong>D.</strong> The signs or symptoms are not attributable to another medical condition and are not
+                better explained by another mental disorder, including intoxication or withdrawal from another
+                substance.</p>
             <p><strong>Specify if:</strong><br>
-            <em>With perceptual disturbances:</em> This specifier applies in the rare instance when hallucinations (usually visual or tactile) occur with intact reality testing, or auditory, visual, or tactile illusions occur in the absence of a delirium.</p>
+                <em>With perceptual disturbances:</em> This specifier applies in the rare instance when hallucinations
+                (usually visual or tactile) occur with intact reality testing, or auditory, visual, or tactile illusions
+                occur in the absence of a delirium.
+            </p>
             <hr style="margin: 20px 0;">
             <h4>ICD-11 Criteria</h4>
             <h5>Essential (Required) Features:</h5>
-            <p>The presence of a clinically significant cluster of symptoms, behaviours, and/or physiological features that occurs upon cessation or reduction in the use of alcohol in individuals who have developed dependence on alcohol or have used alcohol for a prolonged period or in large amounts.</p>
-            <p>Presenting features of Alcohol Withdrawal may include autonomic hyperactivity (e.g., tachycardia, hypertension, perspiration), increased hand tremor, nausea, retching or vomiting, insomnia, anxiety, psychomotor agitation, depressed or dysphoric mood, transient visual, tactile or auditory illusions or hallucinations, and distractibility. Less commonly, Alcohol Withdrawal is complicated by seizures.</p>
-            <p>Onset of Alcohol Withdrawal typically occurs within 6 to 12 hours after last use, as blood alcohol concentrations decline. Symptoms vary in type, severity, onset and duration according to the duration and intensity of alcohol use prior to cessation or reduction of use.</p>
+            <p>The presence of a clinically significant cluster of symptoms, behaviours, and/or physiological features
+                that occurs upon cessation or reduction in the use of alcohol in individuals who have developed
+                dependence on alcohol or have used alcohol for a prolonged period or in large amounts.</p>
+            <p>Presenting features of Alcohol Withdrawal may include autonomic hyperactivity (e.g., tachycardia,
+                hypertension, perspiration), increased hand tremor, nausea, retching or vomiting, insomnia, anxiety,
+                psychomotor agitation, depressed or dysphoric mood, transient visual, tactile or auditory illusions or
+                hallucinations, and distractibility. Less commonly, Alcohol Withdrawal is complicated by seizures.</p>
+            <p>Onset of Alcohol Withdrawal typically occurs within 6 to 12 hours after last use, as blood alcohol
+                concentrations decline. Symptoms vary in type, severity, onset and duration according to the duration
+                and intensity of alcohol use prior to cessation or reduction of use.</p>
             <p>The symptoms are not better accounted for by another medical condition or another mental disorder.</p>
         </div>
     </div>
@@ -742,8 +998,12 @@
         <div class="modal-content">
             <h3>Disclaimer & Terms of Use</h3>
             <p><strong>This application is intended for educational and informational purposes only.</strong></p>
-            <p>It is an informal quality improvement project and is <strong>not a medical device</strong>. It is not a substitute for professional clinical judgment, diagnosis, or treatment. The author bears no responsibility for decisions made using it.</p>
-            <p>All information, calculations, and recommendations generated by this tool must be independently verified by a qualified clinician before being used for patient care. All information assumes that patients are adults.</p>
+            <p>It is an informal quality improvement project and is <strong>not a medical device</strong>. It is not a
+                substitute for professional clinical judgment, diagnosis, or treatment. The author bears no
+                responsibility for decisions made using it.</p>
+            <p>All information, calculations, and recommendations generated by this tool must be independently verified
+                by a qualified clinician before being used for patient care. All information assumes that patients are
+                adults.</p>
             <p>By clicking "Accept", you acknowledge and agree to these terms.</p>
             <div class="button-group" style="justify-content: center; margin-top: 20px;">
                 <button id="accept-disclaimer-btn">Accept and Continue</button>
@@ -753,4 +1013,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
