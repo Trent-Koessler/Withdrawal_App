@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'title': 'Alcohol Intake',
             'type': 'question',
             'text': "What is the patient's average recent daily standard drink (std) intake?",
-            'warning': "<strong>💡 Binge-Drinking Consideration:</strong> If the patient has a binge-drinking pattern rather than continuous daily use, assess for their average recent daily intake during binge episodes. Binge-drinking is less likely to produce physiological dependence and severe withdrawal syndromes.",
+            'warning': "<strong> Binge-Drinking Consideration:</strong> If the patient has a binge-drinking pattern rather than continuous daily use, assess for their average recent daily intake during binge episodes. Binge-drinking is less likely to produce physiological dependence and severe withdrawal syndromes.",
             'options': [
                 { 'label': '≤ 7 Standard Drinks daily', 'next_step': 'ask_seizure_history_under8' },
                 { 'label': '8-14 Standard Drinks daily', 'next_step': 'ask_seizure_history_8to14' },
@@ -344,8 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
             unknown: {
                 title: 'Unknown Tolerance (Test-Dose Protocol)',
                 schedule: [
-                    'NOTE: If the commencement of withdrawal is significantly delayed or the timeline is highly uncertain (e.g. last drink >24-48 hours ago without symptoms), routine weaning regimens are cautioned. Seeking specialist advice first and considering a test-dose protocol to assess tolerance is advised.',
-                    'Test-dose protocol should only be used in consultation with Addiction Medicine or a similar CL service. Administer test-dose: Diazepam 20mg orally once.',
+                    'NOTE: Should only be used in consultation with Addiction Medicine or similar CL service due to risks of test dosing. Administer test-dose: Diazepam 20mg orally once.',
                     'Monitor the patient closely for sedation and clinical response after 1 hour.',
                     'If patient shows signs of sedation (e.g. drowsy, slurred speech, ataxia): the patient has lower/normal tolerance. Manage cautiously with the Mild-Moderate regimen.',
                     'If patient is NOT sedated after 1 hour: the patient has higher/established tolerance. Consider Moderate-Severe schedule or standard CIWA-Ar-based PRN dosing.'
@@ -378,8 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
             unknown: {
                 title: 'Unknown Tolerance (Test-Dose Protocol)',
                 schedule: [
-                    'NOTE: If the commencement of withdrawal is significantly delayed or the timeline is highly uncertain (e.g. last drink >24-48 hours ago without symptoms), routine weaning regimens are cautioned. Seeking specialist advice first and considering a test-dose protocol to assess tolerance is advised.',
-                    'Test-dose protocol should only be used in consultation with Addiction Medicine or a similar CL service. Administer test-dose: Oxazepam 60mg orally once.',
+                    'NOTE: Should only be used in consultation with Addiction Medicine or similar CL service due to risks of test dosing. Administer test-dose: Oxazepam 60mg orally once.',
                     'Monitor the patient closely for sedation and clinical response after 1 hour.',
                     'If patient shows signs of sedation (e.g. drowsy, slurred speech, ataxia): the patient has lower/normal tolerance. Manage cautiously with the Mild-Moderate regimen.',
                     'If patient is NOT sedated after 1 hour: the patient has higher/established tolerance. Consider Moderate-Severe schedule or standard CIWA-Ar-based PRN dosing.'
