@@ -21,6 +21,7 @@ body.modal-open > #app-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    visibility: visible;
 }
 
 /* Header Styles */
@@ -405,6 +406,7 @@ textarea {
     margin-top: 15px;
     margin-bottom: 15px;
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
 }
 

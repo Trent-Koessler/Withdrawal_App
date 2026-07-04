@@ -204,6 +204,12 @@ document.addEventListener('DOMContentLoaded', () => {
         textElement.className = 'flowchart-text';
         textElement.innerText = stepData.text;
         flowchartPage.appendChild(textElement);
+        if (stepData.warning) {
+            const warningElement = document.createElement('div');
+            warningElement.className = 'warning-box';
+            warningElement.innerHTML = stepData.warning;
+            flowchartPage.appendChild(warningElement);
+        }
         const optionsContainer = document.createElement('div');
         optionsContainer.className = 'flowchart-options';
         if (stepData.type === 'question') {
