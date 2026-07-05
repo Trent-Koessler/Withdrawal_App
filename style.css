@@ -161,7 +161,10 @@ body.modal-open > #app-container {
     padding: 10px;
     font-size: 16px;
     cursor: pointer;
-    text-align: center;
+    text-align: center !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     white-space: pre-wrap; /* Allows wrapping with \n */
 }
 
