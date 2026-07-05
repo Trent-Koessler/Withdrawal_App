@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Options Comparison - SUD Toolkit</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        p.subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 700px;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin: 40px 0 20px 0;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            width: 100%;
+            max-width: 1100px;
+            font-weight: 700;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .icon-preview {
+            width: 180px;
+            height: 180px;
+            border-radius: 40px; /* Standard iOS/Android squircle rounded corners */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            margin-bottom: 24px;
+            object-fit: cover;
+        }
+        .badge {
+            background-color: #e2e8f0;
+            color: #475569;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        .badge.highlight {
+            background-color: #10b981;
+            color: #ffffff;
+        }
+        .badge.gold {
+            background-color: #f59e0b;
+            color: #ffffff;
+        }
+        h2 {
+            font-size: 1.25rem;
+            color: #0f172a;
+            margin: 0 0 12px 0;
+            text-align: center;
+            height: 48px;
+            display: flex;
+            align-items: center;
+        }
+        .description {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.5;
+            text-align: center;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        .home-screen-preview {
+            width: 100%;
+            background-color: #1e293b; /* Dark backdrop simulating mobile phone dock */
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+        }
+        .mini-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 9px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .home-screen-text {
+            color: #f8fafc;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>SUD Toolkit Icon Options</h1>
+    <p class="subtitle">Mockup previews showing how the PWA launcher icon will render on mobile home screens. We have adjusted the weaning curve inside: the initial red bars are now significantly taller to emphasize the downward titration schedule.</p>
+
+    <!-- Group 1 -->
+    <div class="section-title">The Refined Launcher Design</div>
+    <div class="container">
+        <!-- Option 2B-Inside-Brain-Tall -->
+        <div class="card" style="border: 2px solid #f59e0b; transform: scale(1.04); width: 340px;">
+            <div class="badge gold">Option 2B-Inside-Brain (Taller Bars)</div>
+            <img class="icon-preview" src="icons/sud_option_2b_hyperbolic_in_brain_tall.png" alt="Option 2B-Inside-Brain Tall Icon">
+            <h2>The Taller-Bars Brain Orbit</h2>
+            <div class="description">
+                <strong>Recommended.</strong> The red vertical bars on the left are significantly taller and thicker, highlighting a clear downward weaning titration curve inside the brain silhouette. Wrapped in the planetary orbit ring.
+            </div>
+            <div class="home-screen-preview">
+                <img class="mini-icon" src="icons/sud_option_2b_hyperbolic_in_brain_tall.png" alt="Mini Icon">
+                <span class="home-screen-text">SUD Toolkit</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group 2 -->
+    <div class="section-title">Reference Designs</div>
+    <div class="container">
+        <!-- Option 2B Refined -->
+        <div class="card">
+            <div class="badge">Option 2B (Refined)</div>
+            <img class="icon-preview" src="icons/sud_option_2b_hyperbolic_in_brain_refined.png" alt="Option 2B Refined Icon">
+            <h2>The Refined Brain Orbit</h2>
+            <div class="description">
+                The human brain outline is larger, and the weaning graph inside shows a steep hyperbolic drop from medium height to near zero.
+            </div>
+            <div class="home-screen-preview">
+                <img class="mini-icon" src="icons/sud_option_2b_hyperbolic_in_brain_refined.png" alt="Mini Icon">
+                <span class="home-screen-text">SUD Toolkit</span>
+            </div>
+        </div>
+
+        <!-- Option 2B Base -->
+        <div class="card">
+            <div class="badge">Option 2B (Base)</div>
+            <img class="icon-preview" src="icons/sud_option_2_hyperbolic.png" alt="Option 2B Icon">
+            <h2>Base Hyperbolic</h2>
+            <div class="description">
+                The base hyperbolic weaning curve showing progressive dose reductions based on receptor occupancy, without any extra design elements.
+            </div>
+            <div class="home-screen-preview">
+                <img class="mini-icon" src="icons/sud_option_2_hyperbolic.png" alt="Mini Icon">
+                <span class="home-screen-text">SUD Toolkit</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
