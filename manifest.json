@@ -1,16 +1,16 @@
 {
   "short_name": "Withdrawal",
   "name": "Withdrawal Management Assistant",
-  "start_url": "/Withdrawal_App/",
+  "start_url": "./",
   "display": "standalone",
   "icons": [
     {
-      "src": "/Withdrawal_App/icons/icon-192x192.png",
+      "src": "icons/icon-192x192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/Withdrawal_App/icons/icon-512x512.png",
+      "src": "icons/icon-512x512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

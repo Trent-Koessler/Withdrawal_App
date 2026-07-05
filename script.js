@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.2.4';
+    const APP_VERSION = '0.2.6';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
@@ -1138,9 +1138,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PWA Service Worker Registration ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            // Use an absolute path for the service worker to avoid issues with subdirectories.
-            // Explicitly set the scope to the app's root directory.
-            navigator.serviceWorker.register('/Withdrawal_App/sw.js', { scope: '/Withdrawal_App/' }).then(registration => {
+            // Use relative path to support hosting on both custom domain root and subdirectories.
+            navigator.serviceWorker.register('sw.js').then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             }, err => {
                 console.log('ServiceWorker registration failed: ', err);
