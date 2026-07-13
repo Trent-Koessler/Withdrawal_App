@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.2.7';
+    const APP_VERSION = '0.2.8';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
