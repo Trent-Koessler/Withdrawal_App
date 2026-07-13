@@ -1,4 +1,4 @@
-const CACHE_NAME = 'withdrawal-app-cache-v17';
+const CACHE_NAME = 'withdrawal-app-cache-v18';
 const urlsToCache = [
     './',
     'index.html',
@@ -6,7 +6,8 @@ const urlsToCache = [
     'script.js',
     'manifest.json',
     'icons/icon-192x192.png',
-    'icons/icon-512x512.png'
+    'icons/icon-512x512.png',
+    'icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', event => {
