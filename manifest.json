@@ -1,6 +1,6 @@
 {
-  "short_name": "Withdrawal",
-  "name": "Withdrawal Management Assistant",
+  "short_name": "SUD Toolkit",
+  "name": "SUD Toolkit",
   "start_url": "./",
   "display": "standalone",
   "icons": [
@@ -19,5 +19,5 @@
   ],
   "background_color": "#ffffff",
   "theme_color": "#f0f0f0",
-  "description": "A clinical helper for managing withdrawal syndromes."
+  "description": "A PWA for education about alcohol and other drug withdrawal syndromes."
 }
