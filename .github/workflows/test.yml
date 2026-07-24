@@ -1,0 +1,22 @@
+name: Tests
+
+# The site deploys straight from main via GitHub Pages, so this is the only gate
+# between a change to the clinical logic and clinicians seeing it.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # No dependencies to install — the suite uses node:test only.
+      - name: Run clinical logic tests
+        run: npm test

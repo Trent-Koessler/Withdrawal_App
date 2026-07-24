@@ -251,6 +251,13 @@ button:hover {
     background-color: var(--secondary-btn-hover-bg);
 }
 
+/* Keyboard focus must stay visible on both themes; the default ring is low
+   contrast against the dark card backgrounds. */
+:focus-visible {
+    outline: 3px solid var(--link-color);
+    outline-offset: 2px;
+}
+
 textarea, input[type="number"] {
     width: 100%;
     background-color: var(--card-bg);
@@ -586,6 +593,8 @@ textarea {
     position: relative;
 }
 
+/* A real <button> for keyboard access, so it must opt out of the global
+   button styling (background, padding, radius) to stay a bare glyph. */
 .close-button {
     color: #aaa;
     position: absolute;
@@ -593,11 +602,18 @@ textarea {
     right: 20px;
     font-size: 28px;
     font-weight: bold;
+    line-height: 1;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
 .close-button:hover,
 .close-button:focus {
     color: var(--text-color);
+    background: none;
     text-decoration: none;
     cursor: pointer;
 }
