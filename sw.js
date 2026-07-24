@@ -1,10 +1,14 @@
-const CACHE_NAME = 'withdrawal-app-cache-v21';
+const CACHE_NAME = 'withdrawal-app-cache-v22';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 const urlsToCache = [
     './',
     'index.html',
     'style.css',
     'script.js',
+    // script.js imports these as ES modules; without them the app cannot boot offline.
+    'data/flowchart.js',
+    'data/regimens.js',
+    'data/scales.js',
     'manifest.json',
     'icons/icon-192x192.png',
     'icons/icon-512x512.png',
