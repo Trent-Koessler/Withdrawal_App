@@ -49,7 +49,7 @@
     <meta name="theme-color" content="#f0f0f0" />
 </head>
 
-<body>
+<body class="preload modal-open">
 
     <div id="app-container">
         <!-- Main Header -->
@@ -398,7 +398,7 @@
                                 <button class="tab-button" data-tab="std-by-volume">Calculate by Custom Volume &
                                     ABV</button>
                             </div>
-                            <div id="std-by-type" class="tab-content">
+                            <div id="std-by-type" class="tab-content active">
                                 <div class="form-grid std-drinks-grid">
                                     <fieldset>
                                         <legend>Beer</legend>
@@ -974,10 +974,11 @@
     </div> <!-- End of #app-container -->
 
     <!-- Criteria Modal -->
-    <div id="criteria-modal" class="modal">
+    <div id="criteria-modal" class="modal" role="dialog" aria-modal="true"
+        aria-labelledby="criteria-modal-title">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h3>Diagnostic Criteria for Alcohol Withdrawal</h3>
+            <button type="button" class="close-button" aria-label="Close">&times;</button>
+            <h3 id="criteria-modal-title">Diagnostic Criteria for Alcohol Withdrawal</h3>
             <h4>DSM-5 Criteria</h4>
             <p><strong>A.</strong> Cessation of (or reduction in) alcohol use that has been heavy and prolonged.</p>
             <p><strong>B.</strong> Two (or more) of the following, developing within several hours to a few days after
@@ -1020,9 +1021,10 @@
     </div>
 
     <!-- Mandatory Disclaimer Modal -->
-    <div id="disclaimer-modal" class="modal" style="display: block;">
+    <div id="disclaimer-modal" class="modal" style="display: block;" role="dialog" aria-modal="true"
+        aria-labelledby="disclaimer-modal-title">
         <div class="modal-content">
-            <h3>Disclaimer & Terms of Use</h3>
+            <h3 id="disclaimer-modal-title">Disclaimer & Terms of Use</h3>
             <p><strong>This application is intended for educational and informational purposes only.</strong></p>
             <p>It is an informal quality improvement project and is <strong>not a medical device</strong>. It is not a
                 substitute for professional clinical judgment, diagnosis, or treatment. The author bears no

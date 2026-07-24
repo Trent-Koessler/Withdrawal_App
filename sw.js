@@ -1,4 +1,5 @@
-const CACHE_NAME = 'withdrawal-app-cache-v20';
+const CACHE_NAME = 'withdrawal-app-cache-v21';
+const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 const urlsToCache = [
     './',
     'index.html',
@@ -13,58 +14,76 @@ const urlsToCache = [
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Opened cache');
-                return cache.addAll(urlsToCache);
-            })
+            .then(cache => cache.addAll(urlsToCache))
+            // Activate this worker as soon as it has installed, rather than waiting
+            // for every existing tab/PWA window to close first.
+            .then(() => self.skipWaiting())
     );
 });
 
 self.addEventListener('activate', event => {
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
+        caches.keys()
+            .then(cacheNames => Promise.all(
                 cacheNames.map(cacheName => {
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
                         return caches.delete(cacheName);
                     }
                 })
-            );
-        })
+            ))
+            // Take control of pages already open, so the new worker applies immediately.
+            .then(() => self.clients.claim())
     );
 });
 
+// Rejects if the network has not responded within `timeout` ms, so a slow
+// connection falls through to the cache instead of hanging.
+function fetchWithTimeout(request, timeout) {
+    return Promise.race([
+        fetch(request),
+        new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Network timeout')), timeout);
+        })
+    ]);
+}
+
+// Network-first, falling back to cache. Every failure path resolves to something:
+// a cached copy, the cached app shell for navigations, or an explicit error
+// response. Nothing is left pending.
+async function networkFirst(request) {
+    const cache = await caches.open(CACHE_NAME);
+
+    try {
+        const response = await fetchWithTimeout(request, NETWORK_TIMEOUT);
+        if (response && response.status === 200) {
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (err) {
+        const cachedResponse = await cache.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+
+        // Offline on a URL we have never cached. For page loads, serve the app
+        // shell so the toolkit still opens; its own assets are precached.
+        if (request.mode === 'navigate') {
+            const shell = await cache.match('index.html') || await cache.match('./');
+            if (shell) {
+                return shell;
+            }
+        }
+
+        return Response.error();
+    }
+}
+
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        new Promise(resolve => {
-            const networkTimeout = 5000; // 5 seconds
-
-            const timeoutPromise = new Promise(resolve => {
-                setTimeout(() => {
-                    caches.open(CACHE_NAME).then(cache => {
-                        cache.match(event.request).then(cachedResponse => {
-                            if (cachedResponse) {
-                                console.log(`Network timed out for ${event.request.url}, serving from cache.`);
-                                resolve(cachedResponse);
-                            }
-                        });
-                    });
-                }, networkTimeout);
-            });
-
-            const networkPromise = fetch(event.request).then(response => {
-                if (response && response.status === 200) {
-                    const responseToCache = response.clone();
-                    caches.open(CACHE_NAME).then(cache => {
-                        cache.put(event.request, responseToCache);
-                    });
-                }
-                return response;
-            });
-
-            // Race the network request against the timeout
-            Promise.race([networkPromise, timeoutPromise]).then(resolve);
-        }).catch(() => caches.match(event.request)) // Fallback for total network failure
-    );
+    // cache.put() rejects on non-GET requests, and there is nothing useful to
+    // serve them from the cache anyway.
+    if (event.request.method !== 'GET') {
+        return;
+    }
+    event.respondWith(networkFirst(event.request));
 });

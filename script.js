@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.2.9';
+    const APP_VERSION = '0.3.0';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
@@ -8,8 +8,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- DISCLAIMER MODAL --- //
+    // The body carries `modal-open` from the markup so the app behind the
+    // disclaimer is blurred and inert from first paint, not just once JS runs.
     const disclaimerModal = document.getElementById('disclaimer-modal');
     const acceptDisclaimerBtn = document.getElementById('accept-disclaimer-btn');
+
+    // Deferred: focus set during DOMContentLoaded is discarded when the browser
+    // finishes loading the document and resets focus to <body>.
+    requestAnimationFrame(() => {
+        if (disclaimerModal.style.display !== 'none') {
+            acceptDisclaimerBtn.focus();
+        }
+    });
 
     acceptDisclaimerBtn.addEventListener('click', () => {
         disclaimerModal.style.display = 'none';
@@ -61,35 +71,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- PAGE NAVIGATION --- //
     const pageTitle = document.getElementById('page-title');
+    const mainContent = document.getElementById('main-content');
     const pages = document.querySelectorAll('.page');
     const navButtons = document.querySelectorAll('[data-page]');
     const homeButton = document.getElementById('home-button');
     const aboutButton = document.getElementById('about-button');
     const feedbackButton = document.getElementById('feedback-button');
 
-    function showPage(pageId) {
+    // Selects a scale tab on the scales page, used for deep links and for the
+    // "Go to X Scale" buttons on the syndrome pages.
+    function selectScaleTab(tabId) {
+        const targetTabButton = document.querySelector(`#scales-page .tab-button[data-tab="${tabId}"]`);
+        if (targetTabButton) {
+            targetTabButton.click();
+            return true;
+        }
+        return false;
+    }
+
+    // `push` adds a history entry so the device Back button steps through the
+    // app instead of leaving it. Route reads (hash on load, popstate) pass false.
+    function showPage(pageId, { push = true, tabId = null } = {}) {
+        const newPage = document.getElementById(pageId);
+        if (!newPage || !newPage.classList.contains('page')) return false;
+
         pages.forEach(page => {
             page.classList.remove('active-page');
         });
-        const newPage = document.getElementById(pageId);
-        if (newPage) {
-            newPage.classList.add('active-page');
-            const button = document.querySelector(`[data-page='${pageId}']`);
-            let title = 'Substance Use Disorder (SUD) Toolkit'; // Default title
-            if (button) {
-                title = button.textContent.replace(/\n/g, ' ');
-            } else if (pageId !== 'home-page') {
-                const pageElement = document.getElementById(pageId);
-                title = pageElement.dataset.title || 'Withdrawal Assistant';
-            }
-            pageTitle.textContent = title;
-            document.title = title + ' - SUD Toolkit';
+        newPage.classList.add('active-page');
 
-            if (pageId === 'alcohol-withdrawal-page') {
-                startFlowchart();
+        const button = document.querySelector(`[data-page='${pageId}']`);
+        let title = 'Substance Use Disorder (SUD) Toolkit'; // Default title
+        if (button) {
+            title = button.textContent.replace(/\n/g, ' ');
+        } else if (pageId !== 'home-page') {
+            title = newPage.dataset.title || 'Withdrawal Assistant';
+        }
+        pageTitle.textContent = title;
+        document.title = title + ' - SUD Toolkit';
+
+        if (pageId === 'alcohol-withdrawal-page') {
+            startFlowchart();
+        }
+
+        if (tabId) {
+            selectScaleTab(tabId);
+        }
+
+        const hash = '#' + pageId + (tabId ? '/' + tabId : '');
+        if (push) {
+            if (location.hash !== hash) {
+                window.history.pushState({ pageId, tabId }, '', hash);
             }
+        } else {
+            window.history.replaceState({ pageId, tabId }, '', hash);
+        }
+
+        // Long pages otherwise keep the previous page's scroll position.
+        mainContent.scrollTop = 0;
+        return true;
+    }
+
+    // Resolves `#page-id` / `#page-id/tab-id` into a view. Falls back to home
+    // for an unknown or empty hash, so a stale bookmark cannot leave a blank app.
+    function applyRouteFromHash() {
+        const [pageId, tabId] = location.hash.replace(/^#\/?/, '').split('/');
+        if (!pageId || !showPage(pageId, { push: false, tabId: tabId || null })) {
+            showPage('home-page', { push: false });
         }
     }
+
+    window.addEventListener('popstate', applyRouteFromHash);
 
     navButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -133,23 +185,21 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('click', (event) => {
             if (event.target == criteriaModal) closeModal();
         });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && criteriaModal.style.display === 'block') {
+                closeModal();
+                if (openCriteriaBtn) openCriteriaBtn.focus();
+            }
+        });
     }
 
     // --- LINK TO SCALE BUTTONS ---
     // Handles buttons on the "Other Syndromes" page that link to specific calculator tabs.
     document.querySelectorAll('[data-link-to-scale]').forEach(button => {
         button.addEventListener('click', () => {
-            const scaleId = button.dataset.linkToScale;
-
-            // 1. Navigate to the main scales page
-            showPage('scales-page');
-
-            // 2. Find and click the correct tab button on that page
-            const targetTabButton = document.querySelector(`#scales-page .tab-button[data-tab="${scaleId}"]`);
-
-            if (targetTabButton) {
-                targetTabButton.click();
-            }
+            // Navigate to the scales page and open the requested tab as a single
+            // history entry, so one Back press returns to the syndrome page.
+            showPage('scales-page', { tabId: button.dataset.linkToScale });
         });
     });
     // =================================================================
@@ -174,10 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const flowchartPage = document.getElementById('alcohol-withdrawal-page');
-    let history = [];
+    let flowchartHistory = [];
 
     function startFlowchart() {
-        history = ['intake_assessment'];
+        flowchartHistory = ['intake_assessment'];
         renderFlowchartStep('intake_assessment');
     }
 
@@ -187,13 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
         flowchartPage.innerHTML = '';
         const breadcrumbs = document.createElement('div');
         breadcrumbs.className = 'breadcrumbs';
-        history.forEach((histStepId, index) => {
+        flowchartHistory.forEach((histStepId, index) => {
             const crumb = document.createElement('button');
             crumb.className = 'breadcrumb-button';
             crumb.textContent = FLOWCHART_LOGIC[histStepId].title;
             crumb.addEventListener('click', () => jumpToStep(index));
             breadcrumbs.appendChild(crumb);
-            if (index < history.length - 1) {
+            if (index < flowchartHistory.length - 1) {
                 const separator = document.createElement('span');
                 separator.textContent = ' > ';
                 breadcrumbs.appendChild(separator);
@@ -218,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.className = 'big-button';
                 button.innerText = option.label;
                 button.addEventListener('click', () => {
-                    history.push(option.next_step);
+                    flowchartHistory.push(option.next_step);
                     renderFlowchartStep(option.next_step);
                 });
                 optionsContainer.appendChild(button);
@@ -260,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navContainer.className = 'flowchart-nav';
         const backButton = document.createElement('button');
         backButton.textContent = 'Back';
-        backButton.disabled = history.length <= 1;
+        backButton.disabled = flowchartHistory.length <= 1;
         backButton.addEventListener('click', goBack);
         const restartButton = document.createElement('button');
         restartButton.textContent = 'Restart';
@@ -271,31 +321,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function goBack() {
-        if (history.length > 1) {
-            history.pop();
-            renderFlowchartStep(history[history.length - 1]);
+        if (flowchartHistory.length > 1) {
+            flowchartHistory.pop();
+            renderFlowchartStep(flowchartHistory[flowchartHistory.length - 1]);
         }
     }
 
     function jumpToStep(index) {
-        history = history.slice(0, index + 1);
-        renderFlowchartStep(history[history.length - 1]);
+        flowchartHistory = flowchartHistory.slice(0, index + 1);
+        renderFlowchartStep(flowchartHistory[flowchartHistory.length - 1]);
     }
 
     // --- TAB NAVIGATION --- //
     document.querySelectorAll('.tab-container').forEach(container => {
         const tabButtons = container.querySelectorAll(':scope > .tab-buttons > .tab-button');
         const tabContents = container.querySelectorAll(':scope > .tab-content');
+
+        function selectTab(button) {
+            if (!button) return;
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            tabContents.forEach(content => content.classList.remove('active'));
+            const activeContent = container.querySelector(`#${button.dataset.tab}`);
+            if (activeContent) activeContent.classList.add('active');
+        }
+
         tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tabId = button.dataset.tab;
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                tabContents.forEach(content => content.classList.remove('active'));
-                const activeContent = container.querySelector(`#${tabId}`);
-                if (activeContent) activeContent.classList.add('active');
-            });
+            button.addEventListener('click', () => selectTab(button));
         });
+
+        // Sync panels to whichever button is marked active in the markup. Without
+        // this the panel only gains .active on click, so a tab flagged active in
+        // HTML but whose panel is not renders an empty container on first view.
+        selectTab(container.querySelector(':scope > .tab-buttons > .tab-button.active') || tabButtons[0]);
     });
 
     // =================================================================
@@ -866,7 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ]
             },
             {
-                displayName: "GI Upset", instruction: "Over last half-hour", radio_name: "cows-gi", options: [
+                displayName: "GI Upset", instruction: "Over last half-hour", radioName: "cows-gi", options: [
                     { value: 0, label: "<b>0:</b> No GI symptoms" }, { value: 1, label: "<b>1:</b> Stomach cramps" }, { value: 2, label: "<b>2:</b> Nausea or loose stool" },
                     { value: 3, label: "<b>3:</b> Vomiting or diarrhoea" }, { value: 5, label: "<b>5:</b> Multiple episodes of diarrhoea or vomiting" }
                 ]
@@ -1134,6 +1192,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         severityLogic: (score) => "N/A" // No severity levels provided, for monitoring only.
     });
+
+    // --- INITIAL ROUTE --- //
+    // Runs last so a deep link like #scales-page/cows lands on a fully built
+    // calculator. Also seeds a history entry, so the first Back press has
+    // somewhere to go rather than leaving the app.
+    applyRouteFromHash();
 
     // --- PWA Service Worker Registration ---
     if ('serviceWorker' in navigator) {

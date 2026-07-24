@@ -1,0 +1,12 @@
+# Dependencies (test tooling only — the app itself ships no dependencies)
+node_modules/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Logs
+*.log
+npm-debug.log*
