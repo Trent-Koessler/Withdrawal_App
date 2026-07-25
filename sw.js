@@ -1,4 +1,4 @@
-const CACHE_NAME = 'withdrawal-app-cache-v23';
+const CACHE_NAME = 'withdrawal-app-cache-v24';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 const urlsToCache = [
     './',
