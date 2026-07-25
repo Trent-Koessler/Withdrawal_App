@@ -1,249 +1,117 @@
-"""Rebuild the SUD Toolkit icon as clean vector geometry.
+#!/usr/bin/env python3
+"""Export the app icon PNGs and favicon from icons/icon.svg.
 
-The brain outline is traced from the original PNG (so the silhouette stays
-faithful), simplified, and fitted with Catmull-Rom -> cubic Bezier. Everything
-inside it - the capsule, three bottles and five tablets - is authored from
-scratch as parametric shapes at the positions measured from the original.
+icons/icon.svg is the source of truth - edit that, then run this to regenerate
+the raster sizes the manifest and index.html reference.
+
+    python3 tools/build-icon.py
+
+Needs a headless Chromium to rasterise, and Pillow (pip install pillow). Point
+CHROME at a binary if it is not on PATH:
+
+    CHROME=/usr/bin/chromium python3 tools/build-icon.py
+
+Outputs:
+    icons/icon-192x192.png     manifest (also used maskable)
+    icons/icon-512x512.png     manifest (also used maskable)
+    icons/apple-touch-icon.png 180x180, iOS home screen
+    favicon.ico                16/32/48, legacy browser requests
+
+The artwork sits at 74% of the frame. Its furthest point is ~195px from
+centre against a 205px maskable safe radius, so it survives a circular
+launcher mask. If you enlarge the artwork further, re-check that margin or
+drop "maskable" from the manifest purpose.
 """
-import json, math, sys
-from collections import deque
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
 
-sys.setrecursionlimit(20000)
-SIZE = 512
-STROKE = 13.0            # measured stroke width of the brain outline
-SCALE = 1.20             # headroom before leaving the maskable safe zone is 1.246
+ROOT = Path(__file__).resolve().parent.parent
+SVG = ROOT / 'icons' / 'icon.svg'
 
-BG = '#0c1015'
-STROKE_TOP = '#d7e9ef'
-STROKE_BOT = '#b3c4d0'
-
-# ---------------------------------------------------------------- brain path
-solid = json.load(open('/tmp/solid.json'))
-H, W = len(solid), len(solid[0])
-
-
-def erode(mask, r):
-    """Erode by a disc of radius r, via two 1-D passes (separable, r=chebyshev)."""
-    out = [[False] * W for _ in range(H)]
-    # horizontal min
-    tmp = [[False] * W for _ in range(H)]
-    for y in range(H):
-        row = mask[y]
-        for x in range(W):
-            lo, hi = max(0, x - r), min(W - 1, x + r)
-            tmp[y][x] = all(row[i] for i in range(lo, hi + 1))
-    for y in range(H):
-        for x in range(W):
-            lo, hi = max(0, y - r), min(H - 1, y + r)
-            out[y][x] = all(tmp[i][x] for i in range(lo, hi + 1))
-    return out
-
-
-def trace(mask):
-    start = None
-    for y in range(H):
-        for x in range(W):
-            if mask[y][x]:
-                start = (x, y)
-                break
-        if start:
-            break
-    nbr = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
-    g = lambda x, y: 0 <= x < W and 0 <= y < H and mask[y][x]
-    pts = [start]
-    cur, b = start, 4
-    for _ in range(300000):
-        hit = False
-        for k in range(8):
-            d = (b + 1 + k) % 8
-            nx, ny = cur[0] + nbr[d][0], cur[1] + nbr[d][1]
-            if g(nx, ny):
-                b = (d + 5) % 8
-                cur = (nx, ny)
-                pts.append(cur)
-                hit = True
-                break
-        if not hit or (len(pts) > 10 and cur == start):
-            break
-    if pts[-1] == pts[0]:
-        pts.pop()
-    return pts
-
-
-def rdp(pts, eps):
-    if len(pts) < 3:
-        return pts
-    x1, y1 = pts[0]
-    x2, y2 = pts[-1]
-    dx, dy = x2 - x1, y2 - y1
-    n = math.hypot(dx, dy)
-    dmax, idx = -1, 0
-    for i in range(1, len(pts) - 1):
-        x0, y0 = pts[i]
-        d = abs(dy * x0 - dx * y0 + x2 * y1 - y2 * x1) / n if n > 1e-9 \
-            else math.hypot(x0 - x1, y0 - y1)
-        if d > dmax:
-            dmax, idx = d, i
-    if dmax > eps:
-        return rdp(pts[:idx + 1], eps)[:-1] + rdp(pts[idx:], eps)
-    return [pts[0], pts[-1]]
-
-
-def smooth_closed(pts, passes=3, win=7):
-    """Moving average around a closed polyline - removes pixel stair-stepping."""
-    n = len(pts)
-    half = win // 2
-    for _ in range(passes):
-        out = []
-        for i in range(n):
-            sx = sy = 0.0
-            for k in range(-half, half + 1):
-                q = pts[(i + k) % n]
-                sx += q[0]
-                sy += q[1]
-            out.append((sx / win, sy / win))
-        pts = out
-    return pts
-
-
-def resample_closed(pts, count):
-    """Evenly spaced points along the closed curve, so curvature is uniform."""
-    n = len(pts)
-    seg = [math.hypot(pts[(i + 1) % n][0] - pts[i][0], pts[(i + 1) % n][1] - pts[i][1])
-           for i in range(n)]
-    total = sum(seg)
-    step = total / count
-    out, acc, i, t = [], 0.0, 0, 0.0
-    target = 0.0
-    dist = 0.0
-    for i in range(n):
-        while target <= dist + seg[i] and len(out) < count:
-            f = (target - dist) / seg[i] if seg[i] > 1e-9 else 0.0
-            a, b = pts[i], pts[(i + 1) % n]
-            out.append((a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f))
-            target += step
-        dist += seg[i]
-    return out
-
-
-def catmull_rom_path(pts, tension=6.0):
-    """Closed smooth path through every point."""
-    n = len(pts)
-    d = [f'M {pts[0][0]:.1f} {pts[0][1]:.1f}']
-    for i in range(n):
-        p0 = pts[(i - 1) % n]
-        p1 = pts[i]
-        p2 = pts[(i + 1) % n]
-        p3 = pts[(i + 2) % n]
-        c1 = (p1[0] + (p2[0] - p0[0]) / tension, p1[1] + (p2[1] - p0[1]) / tension)
-        c2 = (p2[0] - (p3[0] - p1[0]) / tension, p2[1] - (p3[1] - p1[1]) / tension)
-        d.append(f'C {c1[0]:.1f} {c1[1]:.1f} {c2[0]:.1f} {c2[1]:.1f} {p2[0]:.1f} {p2[1]:.1f}')
-    d.append('Z')
-    return ' '.join(d)
-
-
-centre_mask = erode(solid, int(round(STROKE / 2)))
-brain_pts = resample_closed(smooth_closed(trace(centre_mask)), 76)
-BRAIN_D = catmull_rom_path(brain_pts)
-
-# ---------------------------------------------------------------- inner marks
-def bottle(cx, y_top, y_base, w):
-    """Body with curved shoulders, a neck and a cap - one closed path."""
-    h = y_base - y_top
-    nw = w * 0.38                       # neck width
-    lip_h = max(3.5, h * 0.055)         # the lip / cap at the very top
-    y_neck_top = y_top + lip_h
-    y_sh_top = y_top + h * 0.26         # neck meets shoulder
-    y_sh_bot = y_top + h * 0.42         # shoulder meets body
-    k = (y_sh_bot - y_sh_top) * 0.6     # S-curve control reach
-    r = w * 0.17                        # rounded base corners
-    L, R = cx - w / 2, cx + w / 2
-    nl, nr = cx - nw / 2, cx + nw / 2
-    return (
-        f'M {L:.1f} {y_base - r:.1f} '
-        f'L {L:.1f} {y_sh_bot:.1f} '
-        f'C {L:.1f} {y_sh_bot - k:.1f} {nl:.1f} {y_sh_top + k:.1f} {nl:.1f} {y_sh_top:.1f} '
-        f'L {nl:.1f} {y_neck_top:.1f} L {nr:.1f} {y_neck_top:.1f} '
-        f'L {nr:.1f} {y_sh_top:.1f} '
-        f'C {nr:.1f} {y_sh_top + k:.1f} {R:.1f} {y_sh_bot - k:.1f} {R:.1f} {y_sh_bot:.1f} '
-        f'L {R:.1f} {y_base - r:.1f} '
-        f'Q {R:.1f} {y_base:.1f} {R - r:.1f} {y_base:.1f} '
-        f'L {L + r:.1f} {y_base:.1f} '
-        f'Q {L:.1f} {y_base:.1f} {L:.1f} {y_base - r:.1f} Z'
-    ), (nl - w * 0.045, y_top, nw + w * 0.09, lip_h)
-
-
-def stadium(cx, y0, y1, w):
-    """Rounded tablet: stadium when tall, ellipse-like when nearly square."""
-    h = y1 - y0
-    r = min(w, h) / 2
-    L, R = cx - w / 2, cx + w / 2
-    return (f'M {L:.1f} {y0 + r:.1f} '
-            f'Q {L:.1f} {y0:.1f} {cx - w / 2 + r:.1f} {y0:.1f} '
-            f'L {R - r:.1f} {y0:.1f} Q {R:.1f} {y0:.1f} {R:.1f} {y0 + r:.1f} '
-            f'L {R:.1f} {y1 - r:.1f} Q {R:.1f} {y1:.1f} {R - r:.1f} {y1:.1f} '
-            f'L {L + r:.1f} {y1:.1f} Q {L:.1f} {y1:.1f} {L:.1f} {y1 - r:.1f} Z')
-
-
-# Measured from the original, left to right.
-CAPSULE = dict(cx=144.5, y0=224, y1=273, w=18, colour='#b81c2a')
-BOTTLES = [
-    dict(cx=173.0, y_top=171, y_base=293, w=27, colour='#b71c2a'),
-    dict(cx=206.0, y_top=147, y_base=299, w=27, colour='#cf372a'),
-    dict(cx=239.0, y_top=201, y_base=299, w=27, colour='#f0a622'),
+PNGS = [
+    (512, ROOT / 'icons' / 'icon-512x512.png'),
+    (192, ROOT / 'icons' / 'icon-192x192.png'),
+    (180, ROOT / 'icons' / 'apple-touch-icon.png'),
 ]
-TABLETS = [
-    dict(cx=268.5, y0=238, y1=300, w=20, colour='#eda626'),
-    dict(cx=293.5, y0=251, y1=300, w=18, colour='#8ac141'),
-    dict(cx=318.0, y0=262, y1=300, w=19, colour='#55b147'),
-    dict(cx=346.0, y0=273, y1=299, w=25, colour='#3ca649'),
-    dict(cx=372.0, y0=281, y1=298, w=17, colour='#2f9f49'),
-]
+ICO = ROOT / 'favicon.ico'
+ICO_SIZES = [(16, 16), (32, 32), (48, 48)]
 
-marks = []
-# capsule: outlined upper half, solid lower half (matches the original)
-cap_d = stadium(CAPSULE['cx'], CAPSULE['y0'], CAPSULE['y1'], CAPSULE['w'])
-seam_y = CAPSULE['y0'] + (CAPSULE['y1'] - CAPSULE['y0']) * 0.5
-marks.append(f'''  <clipPath id="capLower">
-    <rect x="{CAPSULE['cx'] - CAPSULE['w']:.1f}" y="{seam_y:.1f}" width="{CAPSULE['w'] * 2:.1f}" height="{CAPSULE['y1'] - seam_y + 2:.1f}"/>
-  </clipPath>
-  <path d="{cap_d}" fill="none" stroke="{CAPSULE['colour']}" stroke-width="3.4"/>
-  <path d="{cap_d}" fill="{CAPSULE['colour']}" clip-path="url(#capLower)"/>''')
 
-for b in BOTTLES:
-    d, cap = bottle(b['cx'], b['y_top'], b['y_base'], b['w'])
-    marks.append(f'  <path d="{d}" fill="{b["colour"]}"/>')
-    marks.append(f'  <rect x="{cap[0]:.1f}" y="{cap[1]:.1f}" width="{cap[2]:.1f}" '
-                 f'height="{cap[3]:.1f}" rx="1.3" fill="{b["colour"]}"/>')
+def find_chrome():
+    if os.environ.get('CHROME'):
+        return os.environ['CHROME']
+    for name in ('chromium', 'chromium-browser', 'google-chrome',
+                 'google-chrome-stable', 'chrome'):
+        path = shutil.which(name)
+        if path:
+            return path
+    for path in ('/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+                 '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+                 '/Applications/Chromium.app/Contents/MacOS/Chromium'):
+        if Path(path).exists():
+            return path
+    sys.exit('No Chromium found. Set CHROME=/path/to/chromium and retry.')
 
-for t in TABLETS:
-    mid = (t['y0'] + t['y1']) / 2
-    marks.append(f'  <path d="{stadium(t["cx"], t["y0"], t["y1"], t["w"])}" fill="{t["colour"]}"/>')
-    marks.append(f'  <rect x="{t["cx"] - t["w"] / 2 - 1:.1f}" y="{mid - 1.4:.1f}" '
-                 f'width="{t["w"] + 2:.1f}" height="2.8" fill="{BG}"/>')
 
-MARKS = '\n'.join(marks)
+def rasterise(chrome, size, out):
+    """Render the SVG at `size` and crop to exactly size x size.
 
-# The artwork is centred on (261,256) in the source; scale about that point.
-ART_CX, ART_CY = 261.0, 256.0
+    Chromium's --window-size is the window, not the viewport, so the captured
+    image is shorter than requested and gets white-padded at the bottom. Render
+    into a deliberately taller window and crop, which is insensitive to how much
+    chrome any given build reserves.
+    """
+    from PIL import Image
 
-svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SIZE} {SIZE}" width="{SIZE}" height="{SIZE}" role="img" aria-label="SUD Toolkit">
-  <title>SUD Toolkit</title>
-  <defs>
-    <linearGradient id="stroke" x1="0" y1="0" x2="0.35" y2="1">
-      <stop offset="0" stop-color="{STROKE_TOP}"/>
-      <stop offset="1" stop-color="{STROKE_BOT}"/>
-    </linearGradient>
-  </defs>
-  <rect width="{SIZE}" height="{SIZE}" fill="{BG}"/>
-  <g transform="translate({ART_CX} {ART_CY}) scale({SCALE}) translate({-ART_CX} {-ART_CY})">
-    <path d="{BRAIN_D}" fill="none" stroke="url(#stroke)" stroke-width="{STROKE}"
-          stroke-linejoin="round" stroke-linecap="round"/>
-{MARKS}
-  </g>
-</svg>
-'''
+    # Size via CSS rather than rewriting the markup. Editing width/height with a
+    # string replace also hits the background <rect width="512" height="512">,
+    # which then covers only part of the viewBox.
+    svg = SVG.read_text(encoding='utf-8')
+    with tempfile.TemporaryDirectory() as tmp:
+        page = Path(tmp) / 'icon.html'
+        page.write_text(
+            '<!doctype html><meta charset="utf-8">'
+            '<style>html,body{margin:0;padding:0;overflow:hidden}'
+            f'svg{{display:block;width:{size}px;height:{size}px}}</style>' + svg,
+            encoding='utf-8')
+        shot = Path(tmp) / 'shot.png'
+        cmd = [chrome, '--headless', '--disable-gpu', '--hide-scrollbars',
+               f'--screenshot={shot}', f'--window-size={size},{size + 300}']
+        # Chromium refuses to run sandboxed as root (e.g. in a container).
+        if hasattr(os, 'geteuid') and os.geteuid() == 0:
+            cmd.append('--no-sandbox')
+        cmd.append(page.as_uri())
 
-open('/tmp/icon_vector.svg', 'w').write(svg)
-print('brain path points:', len(brain_pts))
-print('svg bytes:', len(svg))
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if not shot.exists():
+            sys.exit(f'chromium failed to render {out.name}\n'
+                     f'{res.stderr.strip()[:800]}')
+
+        im = Image.open(shot).convert('RGBA')
+        if im.width < size or im.height < size:
+            sys.exit(f'rendered {im.size}, too small to crop to {size}x{size}')
+        im.crop((0, 0, size, size)).save(out)
+
+
+def main():
+    if not SVG.exists():
+        sys.exit(f'missing {SVG}')
+    chrome = find_chrome()
+    print(f'chromium: {chrome}')
+
+    for size, out in PNGS:
+        rasterise(chrome, size, out)
+        print(f'  wrote {out.relative_to(ROOT)} ({size}x{size})')
+
+    from PIL import Image
+    Image.open(PNGS[0][1]).convert('RGBA').save(ICO, sizes=ICO_SIZES)
+    print(f'  wrote {ICO.relative_to(ROOT)} '
+          f'({", ".join(f"{w}x{h}" for w, h in ICO_SIZES)})')
+
+
+if __name__ == '__main__':
+    main()
