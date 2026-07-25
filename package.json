@@ -1,6 +1,6 @@
 {
   "name": "sud-toolkit",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "private": true,
   "description": "Clinical decision support PWA for alcohol and other drug withdrawal. The app itself ships no dependencies; this file exists so the clinical data modules can be unit tested.",
   "type": "module",
