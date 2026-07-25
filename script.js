@@ -3,7 +3,7 @@ import { REGIMEN_CONFIG } from './data/regimens.js';
 import { SCALES } from './data/scales.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.3.0';
+    const APP_VERSION = '0.3.1';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //

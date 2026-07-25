@@ -1,4 +1,4 @@
-const CACHE_NAME = 'withdrawal-app-cache-v22';
+const CACHE_NAME = 'withdrawal-app-cache-v23';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 const urlsToCache = [
     './',
@@ -10,6 +10,8 @@ const urlsToCache = [
     'data/regimens.js',
     'data/scales.js',
     'manifest.json',
+    'favicon.ico',
+    'icons/icon.svg',
     'icons/icon-192x192.png',
     'icons/icon-512x512.png',
     'icons/apple-touch-icon.png'
