@@ -219,9 +219,10 @@ the app exposed to Findings 3–6.
    corporate proxy's stale copy (Finding 6).
 4. Use `AbortController` in `fetchWithTimeout` (minor, above).
 
-### D. Ship a self-diagnosing `?diag` panel — best next step for ground truth
+### D. Ship a self-diagnosing `?diag` panel — IMPLEMENTED, see below
 
-Add a small panel, activated by `?diag`, that reports from the affected machine:
+Now built (index.html, before `</body>`). A panel activated by `?diag` that
+reports from the affected machine:
 
 - whether `style.css` appears in `document.styleSheets`, and its `cssRules.length`
   (0 or a thrown error ⇒ blocked by MIME/`nosniff` — Finding 5)
@@ -237,6 +238,44 @@ Add a small panel, activated by `?diag`, that reports from the affected machine:
 
 A clinician can open `sudtoolkit.org/?diag` on an affected terminal and send a
 screenshot. That turns the ranked list above into a single confirmed cause.
+
+#### How to use it
+
+1. On an affected NSW Health terminal, open **https://sudtoolkit.org/?diag**
+2. A white panel covers the screen. Press **Copy report**, or screenshot it.
+3. Send it back.
+
+If the panel does not appear, press **Ctrl+F5** — the service worker may have
+served an older cached `index.html`. Needing the hard refresh is itself evidence
+for Finding 3.
+
+The panel is dormant without `?diag`, so normal users never see it.
+
+#### Verified behaviour
+
+Exercised in headless Chromium against a local server that impersonates a
+corporate filter (200 + HTML block page for `style.css`, with `nosniff` as
+GitHub Pages sends it):
+
+- **Healthy load** — reports `--bg-color: #f0f0f0`, 84 rules parsed,
+  `content-type: text/css`.
+- **Filtered load** — reports `--bg-color: (EMPTY)`, `rule count: UNREADABLE
+  (SecurityError)`, `#app-container visibility: hidden`, and
+  `*** The network returned HTML, not CSS ***`. Chromium logs *"Refused to apply
+  style … strict MIME checking is enabled"*, confirming **Finding 5** is a real
+  mechanism and **Finding 8** turns it into a blank app.
+- **Filtered load, second visit** — the service worker has stored the block page
+  under the `style.css` key and the panel prints `*** POISONED CACHE - HTML is
+  stored where CSS should be ***`. **Finding 4 is reachable in practice, not just
+  in theory.**
+- Without `?diag`: no panel, no console errors, disclaimer and navigation
+  unaffected; `npm test` 27/27.
+
+#### Do not bump `CACHE_NAME` when deploying this
+
+Changing the service worker version wipes the cache — including the poisoned
+`style.css` entry the panel is trying to find. Ship the panel on the current
+`v24` first, read the result, *then* bump as part of the fix.
 
 ### E. Defensive fallback (cheap, do it regardless)
 
