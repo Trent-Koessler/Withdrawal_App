@@ -1042,6 +1042,261 @@
     </div>
 
     <script type="module" src="script.js"></script>
+
+    <!--
+      Load diagnostics. Dormant unless the URL carries ?diag, so normal users
+      never see it. Its job is to explain, from an affected machine, why the page
+      looked unstyled: whether style.css was applied at all, what the corporate
+      proxy actually returned for it, and whether the service worker has cached
+      something that is not CSS. See docs/FOUC-DIAGNOSIS.md.
+
+      Deliberately ES5 with no module syntax and no arrow functions: one of the
+      candidate causes is the page rendering in IE mode, where module scripts do
+      not run at all. This has to survive the failure it is trying to report.
+    -->
+    <script>
+        (function () {
+            if (location.search.indexOf('diag') === -1 && location.hash.indexOf('diag') === -1) {
+                return;
+            }
+
+            var lines = [];
+            function add(label, value) { lines.push(label + ': ' + value); }
+            function head(title) { lines.push('', '--- ' + title + ' ---'); }
+            function safe(fn, onError) {
+                try { return fn(); } catch (e) { return onError + ' (' + (e && e.name ? e.name : 'error') + ')'; }
+            }
+            function firstBytes(text) {
+                return text.slice(0, 90).replace(/\s+/g, ' ');
+            }
+            function looksLikeHtml(text) {
+                return /^\s*<(!doctype|html)/i.test(text);
+            }
+
+            function collectEnvironment() {
+                head('ENVIRONMENT');
+                add('Time', new Date().toString());
+                add('URL', location.href);
+                add('User agent', navigator.userAgent);
+                // Module scripts and CSS custom properties both fail here, which
+                // together account for the entire symptom.
+                add('IE / Trident engine', /Trident|MSIE/.test(navigator.userAgent)
+                    ? 'YES - CSS variables and module scripts do not work in this mode'
+                    : 'no');
+                add('Online', navigator.onLine ? 'yes' : 'no');
+                add('localStorage', safe(function () {
+                    localStorage.setItem('__diag', '1');
+                    localStorage.removeItem('__diag');
+                    return 'available';
+                }, 'BLOCKED'));
+                add('Saved theme', safe(function () {
+                    return localStorage.getItem('theme') || '(none - light)';
+                }, 'unreadable'));
+                // script.js stamps the version into .app-version on DOMContentLoaded,
+                // so an empty value means the module never executed.
+                var versionEl = document.querySelector('.app-version');
+                add('script.js executed', versionEl && versionEl.textContent
+                    ? 'yes (v' + versionEl.textContent + ')'
+                    : 'NO - the app will not be interactive');
+            }
+
+            function collectStyling() {
+                head('STYLING');
+                var rootStyles = getComputedStyle(document.documentElement);
+                var bgVar = safe(function () {
+                    return (rootStyles.getPropertyValue('--bg-color') || '').replace(/^\s+|\s+$/g, '');
+                }, 'unreadable');
+                add('--bg-color resolves to', bgVar || '(EMPTY - stylesheet not applied, or custom properties unsupported)');
+                add('Custom property support', (window.CSS && CSS.supports && CSS.supports('--a', '0')) ? 'yes' : 'NO');
+                add('Computed body background', getComputedStyle(document.body).backgroundColor);
+                add('Expected background', document.documentElement.getAttribute('data-theme') === 'dark'
+                    ? 'rgb(43, 43, 43)' : 'rgb(240, 240, 240)');
+                add('#app-container visibility', getComputedStyle(document.getElementById('app-container')).visibility
+                    + ' (hidden here means style.css never applied)');
+
+                var sheets = document.styleSheets;
+                var sheet = null;
+                for (var i = 0; i < sheets.length; i++) {
+                    if (sheets[i].href && sheets[i].href.indexOf('style.css') !== -1) { sheet = sheets[i]; }
+                }
+                add('style.css in document.styleSheets', sheet ? 'yes' : 'NO - never loaded, or rejected by the browser');
+                if (sheet) {
+                    add('style.css enabled', sheet.disabled ? 'DISABLED' : 'enabled');
+                    // A rule count of 0 on a sheet that did load is the signature of a
+                    // Content-Type the browser refused under nosniff.
+                    add('style.css rule count', safe(function () {
+                        var rules = sheet.cssRules || sheet.rules;
+                        return rules ? rules.length : '(null)';
+                    }, 'UNREADABLE'));
+                }
+            }
+
+            function collectTiming() {
+                head('LOAD TIMING');
+                if (!window.performance || !performance.getEntriesByType) {
+                    add('Performance API', 'unavailable');
+                    return;
+                }
+                var nav = performance.getEntriesByType('navigation')[0];
+                if (nav) {
+                    add('DOMContentLoaded', Math.round(nav.domContentLoadedEventEnd) + ' ms');
+                    add('Load event', Math.round(nav.loadEventEnd) + ' ms');
+                }
+                var entries = performance.getEntriesByType('resource');
+                var reported = 0;
+                for (var i = 0; i < entries.length; i++) {
+                    var e = entries[i];
+                    if (e.name.indexOf('style.css') === -1 && e.name.indexOf('script.js') === -1) { continue; }
+                    reported++;
+                    // transferSize 0 with a non-zero decoded size means it came from a
+                    // cache rather than the wire.
+                    add(e.name.split('/').pop(),
+                        Math.round(e.duration) + ' ms'
+                        + ', transferred ' + (e.transferSize != null ? e.transferSize : '?') + ' B'
+                        + ', decoded ' + (e.decodedBodySize != null ? e.decodedBodySize : '?') + ' B'
+                        + ', status ' + (e.responseStatus != null ? e.responseStatus : 'n/a')
+                        + ', protocol ' + (e.nextHopProtocol || '?'));
+                }
+                if (!reported) { add('style.css / script.js', 'no resource timing entries found'); }
+            }
+
+            // Everything below needs promises, so it is skipped on engines that
+            // would have already been identified by the IE check above.
+            function collectServiceWorker(done) {
+                head('SERVICE WORKER & CACHE');
+                if (!('serviceWorker' in navigator)) { add('Service worker', 'unsupported'); return done(); }
+                add('Controller', navigator.serviceWorker.controller
+                    ? navigator.serviceWorker.controller.scriptURL
+                    : 'NONE - this page is not controlled by the service worker');
+                if (!window.caches || !window.Promise) { add('Cache API', 'unavailable'); return done(); }
+
+                caches.keys().then(function (names) {
+                    add('Cache names', names.length ? names.join(', ') : '(none)');
+                    var chain = Promise.resolve();
+                    names.forEach(function (name) {
+                        chain = chain.then(function () {
+                            return caches.open(name).then(function (cache) {
+                                return cache.match('style.css');
+                            }).then(function (res) {
+                                if (!res) { add(name, 'style.css NOT cached'); return; }
+                                add(name, 'style.css cached, status ' + res.status
+                                    + ', content-type ' + (res.headers.get('content-type') || '(none)'));
+                                return res.clone().text().then(function (text) {
+                                    add('  first bytes', firstBytes(text));
+                                    if (looksLikeHtml(text)) {
+                                        add('  VERDICT', '*** POISONED CACHE - HTML is stored where CSS should be ***');
+                                    }
+                                });
+                            });
+                        });
+                    });
+                    return chain;
+                }).then(done, function (err) {
+                    add('Cache probe failed', err);
+                    done();
+                });
+            }
+
+            function collectLiveFetch(done) {
+                head('LIVE FETCH OF style.css');
+                if (!window.fetch || !window.Promise) { add('fetch', 'unavailable'); return done(); }
+                // A stable query string so repeated runs reuse one cache entry
+                // rather than accumulating junk.
+                fetch('style.css?diagprobe=1', { cache: 'no-store' }).then(function (res) {
+                    add('HTTP status', res.status + ' ' + res.statusText);
+                    add('Content-Type', res.headers.get('content-type') || '(none)');
+                    return res.text().then(function (text) {
+                        add('Body length', text.length + ' bytes');
+                        add('Body starts', firstBytes(text));
+                        if (looksLikeHtml(text)) {
+                            add('VERDICT', '*** The network returned HTML, not CSS - a proxy is intercepting this file ***');
+                        }
+                    });
+                }).then(done, function (err) {
+                    add('Fetch FAILED', err);
+                    done();
+                });
+            }
+
+            function render() {
+                var report = 'SUD Toolkit load diagnostics' + '\n' + lines.join('\n');
+
+                var panel = document.createElement('div');
+                panel.id = 'diag-panel';
+                // Fully inline styles: this panel has to be readable in exactly the
+                // situation where the stylesheet is missing.
+                panel.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483647;'
+                    + 'background:#ffffff;color:#111111;overflow:auto;padding:16px;'
+                    + 'font-family:Consolas,Menlo,monospace;font-size:13px;line-height:1.45;'
+                    + 'border-top:6px solid #dc3545;box-sizing:border-box;';
+
+                var heading = document.createElement('div');
+                heading.style.cssText = 'font-weight:bold;font-size:15px;margin-bottom:10px;';
+                heading.appendChild(document.createTextNode('Load diagnostics — screenshot or copy this and send it back'));
+                panel.appendChild(heading);
+
+                var buttons = document.createElement('div');
+                buttons.style.cssText = 'margin-bottom:12px;';
+                var copyBtn = document.createElement('button');
+                copyBtn.style.cssText = 'background:#007BFF;color:#fff;border:0;border-radius:4px;padding:8px 14px;'
+                    + 'font-size:14px;cursor:pointer;margin-right:8px;';
+                copyBtn.appendChild(document.createTextNode('Copy report'));
+                copyBtn.onclick = function () {
+                    output.focus();
+                    output.select();
+                    var copied = safe(function () { return document.execCommand('copy'); }, false);
+                    copyBtn.firstChild.nodeValue = copied ? 'Copied' : 'Press Ctrl+C';
+                };
+                var closeBtn = document.createElement('button');
+                closeBtn.style.cssText = 'background:#6c757d;color:#fff;border:0;border-radius:4px;padding:8px 14px;'
+                    + 'font-size:14px;cursor:pointer;';
+                closeBtn.appendChild(document.createTextNode('Close'));
+                closeBtn.onclick = function () { panel.parentNode.removeChild(panel); };
+                buttons.appendChild(copyBtn);
+                buttons.appendChild(closeBtn);
+                panel.appendChild(buttons);
+
+                // A textarea rather than <pre> so the text can be selected and copied
+                // on machines where clipboard access is restricted by policy.
+                var output = document.createElement('textarea');
+                output.id = 'diag-report';
+                output.readOnly = true;
+                output.value = report;
+                output.style.cssText = 'width:100%;height:70vh;box-sizing:border-box;padding:10px;'
+                    + 'font-family:Consolas,Menlo,monospace;font-size:12px;line-height:1.45;'
+                    + 'border:1px solid #ced4da;border-radius:4px;background:#f8f9fa;color:#111111;'
+                    + 'white-space:pre;';
+                panel.appendChild(output);
+
+                document.body.appendChild(panel);
+            }
+
+            function run() {
+                collectEnvironment();
+                collectStyling();
+                collectTiming();
+                collectServiceWorker(function () {
+                    collectLiveFetch(render);
+                });
+            }
+
+            // Run after load so resource timings are complete, but do not wait
+            // forever: a stalled subresource is one of the things being measured.
+            var started = false;
+            function start() {
+                if (started) { return; }
+                started = true;
+                run();
+            }
+            if (document.readyState === 'complete') {
+                start();
+            } else {
+                // A tick after the load event, otherwise loadEventEnd is still 0.
+                window.addEventListener('load', function () { setTimeout(start, 0); });
+            }
+            setTimeout(start, 12000);
+        })();
+    </script>
 </body>
 
 </html>
