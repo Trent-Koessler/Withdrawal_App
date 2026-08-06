@@ -1,9 +1,10 @@
-const CACHE_NAME = 'withdrawal-app-cache-v24';
+const CACHE_NAME = 'withdrawal-app-cache-v25';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
+// style.css is deliberately absent: it is inlined into index.html by
+// tools/build-css.py, so the app never requests it as a separate file.
 const urlsToCache = [
     './',
     'index.html',
-    'style.css',
     'script.js',
     // script.js imports these as ES modules; without them the app cannot boot offline.
     'data/flowchart.js',
@@ -17,10 +18,36 @@ const urlsToCache = [
     'icons/apple-touch-icon.png'
 ];
 
+// cache.addAll() is atomic: a single non-OK response rejects the whole batch,
+// the install fails, and the app ends up with no offline support at all. A
+// corporate web filter answering 403 for one asset was enough to do exactly
+// that. Cache each entry independently so one blocked file costs only itself.
+async function precache(cache) {
+    const results = await Promise.all(urlsToCache.map(async url => {
+        try {
+            // Bypass the HTTP cache so install cannot store a stale copy that a
+            // caching proxy happens to be holding.
+            const response = await fetch(new Request(url, { cache: 'reload' }));
+            if (!response.ok) {
+                return `${url} (HTTP ${response.status})`;
+            }
+            await cache.put(url, response);
+            return null;
+        } catch (err) {
+            return `${url} (${err})`;
+        }
+    }));
+
+    const failed = results.filter(Boolean);
+    if (failed.length) {
+        console.warn('[sw] precache incomplete:', failed.join(', '));
+    }
+}
+
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(urlsToCache))
+            .then(precache)
             // Activate this worker as soon as it has installed, rather than waiting
             // for every existing tab/PWA window to close first.
             .then(() => self.skipWaiting())
@@ -54,6 +81,21 @@ function fetchWithTimeout(request, timeout) {
     ]);
 }
 
+// A web filter can answer with HTTP 200 and an HTML block page. Storing that
+// under the script or stylesheet key would persist the outage across reloads —
+// and survive going offline — so only cache a response whose content type
+// matches what was actually requested.
+function isCacheable(request, response) {
+    if (!response || response.status !== 200 || response.type !== 'basic') {
+        return false;
+    }
+    const expected = { script: 'javascript', style: 'css', document: 'html' }[request.destination];
+    if (!expected) {
+        return true; // images, manifest, fonts: nothing useful to check.
+    }
+    return (response.headers.get('content-type') || '').includes(expected);
+}
+
 // Network-first, falling back to cache. Every failure path resolves to something:
 // a cached copy, the cached app shell for navigations, or an explicit error
 // response. Nothing is left pending.
@@ -62,7 +104,7 @@ async function networkFirst(request) {
 
     try {
         const response = await fetchWithTimeout(request, NETWORK_TIMEOUT);
-        if (response && response.status === 200) {
+        if (isCacheable(request, response)) {
             cache.put(request, response.clone());
         }
         return response;
