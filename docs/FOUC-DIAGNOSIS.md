@@ -3,9 +3,82 @@
 Symptom: the toolkit flashes unstyled on NSW Health workstations, but looks fine
 on personal machines and phones.
 
-This document records what was found by reading the code, ranked by how much
-each finding is likely contributing. Nothing here has been changed yet — see
-"Options" at the end.
+---
+
+## RESOLVED — confirmed cause
+
+A `?diag` report from an affected terminal (Chrome 150 / Windows 10,
+2026-08-06) settled it:
+
+```
+style.css: 69 ms, transferred 300 B, decoded 0 B, status 403
+--bg-color resolves to: (EMPTY)
+style.css in document.styleSheets: yes
+style.css rule count: 0
+#app-container visibility: hidden
+LIVE FETCH: HTTP 403 Forbidden, Content-Type text/html, 15495 bytes
+  <!--# bDLJMt6M0s7P7DZfPsTJZQ7tTqZTL4MtGrjfFKsd--> <!DOCTYPE HTML PUBLIC ...
+```
+
+**Something in the NSW Health network path returns HTTP 403 with an HTML block
+page for `style.css`, while allowing `index.html` through.** The stylesheet
+element exists and is enabled, but parsed to **0 rules**, so every colour,
+layout and component style in the app was missing. It is not a *flash* on those
+machines — the page never gets styled at all.
+
+### It was also silently destroying offline mode
+
+`sw.js` precached with `cache.addAll(urlsToCache)`, and `style.css` was in that
+list. `addAll` is atomic: one non-OK response rejects the whole batch, so the
+403 made the service worker **install fail every time**. That is exactly what
+the report shows — `Controller: NONE`, `Cache names: (none)`. These terminals
+had no PWA caching and no offline capability at all, and nothing surfaced it.
+
+### What was ruled out
+
+- **Not IE mode** (Finding 7) — Chrome 150, `Custom property support: yes`.
+- **Not the service worker's network-first policy or a poisoned cache**
+  (Findings 3, 4) — no worker was ever installed, for the reason above. Both
+  remain real hazards and are fixed anyway, but neither caused this.
+- **Not storage policy** — `localStorage: available`.
+
+### The fix
+
+`style.css` is now **inlined into `index.html`** by `tools/build-css.py`. A
+request that is never made cannot be blocked, and the document itself is
+permitted through the filter. This also removes Findings 1, 2, 5, 6 and 8 as a
+class, because there is no longer a second request to be slow, mis-typed, stale
+or rejected.
+
+Supporting changes:
+
+- The service worker precaches each entry independently, so one blocked asset
+  costs only itself instead of failing the whole install (Finding 4's sibling).
+- Runtime caching validates `Content-Type` against `request.destination`, so a
+  200 block page can never be stored where CSS or JS should be.
+- The obsolete "critical CSS" block is gone, including
+  `#app-container { visibility: hidden }`, which was converting a stylesheet
+  failure into a blank screen.
+- `<meta name="theme-color">` now follows the active theme.
+- `localStorage` access in the head script is wrapped in `try`/`catch`.
+
+`style.css` remains the source of truth. `npm test` fails if the inlined copy
+drifts, or if a `<link rel="stylesheet">` is reintroduced.
+
+### Still worth doing
+
+Open **https://sudtoolkit.org/style.css** directly on an affected terminal. The
+15 KB block page almost certainly names the filter product, the category it
+matched, and a reference ID — which is what NSW Health IT need in order to
+allow-list the domain. The app no longer depends on that happening, but the
+403 indicates `sudtoolkit.org` is at least partly filtered, and that may affect
+other things later.
+
+---
+
+The original code-reading analysis follows, kept for the record. It was written
+before the `?diag` result came back, so its ranking reflects what was likely,
+not what was true.
 
 ## Background: why a corporate SOE changes the picture
 

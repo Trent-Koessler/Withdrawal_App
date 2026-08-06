@@ -334,6 +334,25 @@ describe('deployment invariants', () => {
         }
     });
 
+    // The NSW Health web filter returns 403 for style.css as a separate request,
+    // so it is inlined into index.html by tools/build-css.py. These guard the
+    // two ways that arrangement can silently rot.
+    test('index.html inlines the current style.css', () => {
+        const html = read('index.html');
+        const region = html.match(/<!-- BEGIN style\.css -->([\s\S]*?)<!-- END style\.css -->/);
+        assert.ok(region, 'the inlined style.css markers are missing from index.html');
+
+        const inlined = region[1].match(/<style>\n([\s\S]*?)\n {4}<\/style>/);
+        assert.ok(inlined, 'no <style> block between the style.css markers');
+        assert.equal(inlined[1], read('style.css').replace(/\n+$/, ''),
+            'index.html is out of date — run: python3 tools/build-css.py');
+    });
+
+    test('index.html does not link style.css as a separate request', () => {
+        assert.ok(!/<link[^>]+rel=["']stylesheet["']/.test(read('index.html')),
+            'a linked stylesheet is blocked by the NSW Health filter — inline it instead');
+    });
+
     test('every data-page target resolves to a real page element', () => {
         const html = read('index.html');
         const targets = new Set([...html.matchAll(/data-page="([^"]+)"/g)].map((m) => m[1]));
