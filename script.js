@@ -1,6 +1,7 @@
 import { FLOWCHART_LOGIC } from './data/flowchart.js';
 import { REGIMEN_CONFIG } from './data/regimens.js';
 import { SCALES } from './data/scales.js';
+import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const APP_VERSION = '0.3.2';
@@ -650,6 +651,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // 7. Set initial state
         updateCalculatorState();
     }
+
+    // --- SHARED SYMPTOMATIC MEDICATION BLOCKS --- //
+    // One structure rendered into each substance page's placeholder, so a dose
+    // correction lands everywhere at once instead of on whichever page was open.
+    document.querySelectorAll('[data-symptomatic]').forEach(host => {
+        const set = SYMPTOMATIC[host.dataset.symptomatic];
+        if (!set) {
+            console.warn('no symptomatic set named', host.dataset.symptomatic);
+            return;
+        }
+        const items = set.items.map(item =>
+            `<h5>${item.symptom}</h5><ul>${item.lines.map(l => `<li>${l}</li>`).join('')}</ul>`).join('');
+        host.classList.add('shared-block');
+        host.innerHTML = `<h4>${set.title}</h4>`
+            + (set.intro ? `<p>${set.intro}</p>` : '')
+            + items
+            + `<h5>Rules that apply to all of the above</h5><ul>`
+            + SYMPTOMATIC_UNIVERSAL.map(rule => `<li>${rule}</li>`).join('')
+            + `</ul>`;
+    });
 
     // --- SETUP ALL CALCULATORS ---
     SCALES.forEach(setupCalculator);
