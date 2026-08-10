@@ -157,7 +157,7 @@ describe('scale structure', () => {
 });
 
 describe('benzodiazepine regimens', () => {
-    const SEVERITIES = ['mild', 'moderate', 'severe', 'unknown'];
+    const SEVERITIES = ['mild', 'symptom', 'moderate', 'severe', 'unknown'];
 
     // A cell renders either a schedule or a `routing` card. The routing shape
     // exists so a combination that must not produce doses (severe withdrawal on
@@ -206,12 +206,17 @@ describe('benzodiazepine regimens', () => {
         }
     });
 
-    test('mild regimens carry a symptom-triggered alternative', () => {
+    // The dose table used to be duplicated: once under Mild-Moderate and
+    // nowhere else. It now lives only in the symptom-triggered severity, and
+    // the mild cell points at it — so assert the pointer, not a second copy.
+    test('mild regimens point at the symptom-triggered alternative', () => {
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
             const st = REGIMEN_CONFIG[benzo].mild.symptom_triggered;
-            assert.ok(st, `${benzo} mild has no symptom_triggered block`);
-            assert.ok(st.doses.length > 0);
-            assert.ok(st.review.includes('Medical review'));
+            assert.ok(st, `${benzo} mild has no symptom_triggered pointer`);
+            assert.ok(/Symptom-Triggered regimen/i.test(st.note),
+                `${benzo} mild does not tell the user where the dosing table is`);
+            assert.ok(!st.doses,
+                `${benzo} mild carries its own copy of the dose table again — it will drift`);
         }
     });
 });

@@ -357,6 +357,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    // Shared by the regimen panel and the monitoring/equivalence tables. Wrapped
+    // so a wide table scrolls inside its own box rather than widening the page
+    // on a phone, which is where this app is mostly read.
+    function renderClinicalTable({ headers, rows, caption }) {
+        const head = headers.map(h => `<th scope="col">${h}</th>`).join('');
+        const body = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+        return `<div class="clinical-table-wrap"><table class="clinical-table">`
+            + (caption ? `<caption>${caption}</caption>` : '')
+            + `<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
     function updateRegimenDisplay() {
         if (!regimenDisplayDiv) return;
 
@@ -378,11 +389,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Shown before the doses, never after: a caveat that qualifies a whole
         // schedule is useless underneath it.
-        if (data.caveat) {
-            displayHTML += `<div class="warning-box">${data.caveat}</div>`;
+        // An array: a cell can carry more than one (an oxazepam symptom-triggered
+        // regimen is both converted and conditional on the care setting).
+        (data.caveat || []).forEach(caveat => {
+            displayHTML += `<div class="warning-box">${caveat}</div>`;
+        });
+
+        // A score-banded dose table (symptom-triggered dosing, monitoring
+        // frequency). Rendered above the instructions because the table is the
+        // regimen and the instructions qualify it.
+        if (data.table) {
+            displayHTML += renderClinicalTable(data.table);
         }
 
-        displayHTML += `<b>Scheduled Dosing:</b><ul>`;
+        displayHTML += `<b>${data.table ? 'Notes' : 'Scheduled Dosing'}:</b><ul>`;
         data.schedule.forEach((s, index) => {
             if (typeof s === 'string') {
                 displayHTML += `<li>${s}</li>`;
@@ -412,18 +432,13 @@ document.addEventListener('DOMContentLoaded', () => {
             displayHTML += `</ul>`;
         }
 
-        // Add alternative symptom-triggered regimen for mild/moderate cases
+        // Points at the Symptom-Triggered regimen rather than restating its dose
+        // table, which used to be a second copy that could drift from the first.
         if (selectedSeverity === 'mild' && data.symptom_triggered) {
             const st = data.symptom_triggered;
             displayHTML += `<hr style="margin: 20px 0;">`;
-            displayHTML += `<h3>Alternative: ${st.title}</h3>`;
+            displayHTML += `<h3>${st.title}</h3>`;
             displayHTML += `<p><i>${st.note}</i></p>`;
-            displayHTML += `<b>Dosing based on score:</b><ul>`;
-            st.doses.forEach(dose_info => {
-                displayHTML += `<li>${dose_info}</li>`;
-            });
-            displayHTML += `</ul>`;
-            displayHTML += `<p><b>${st.review}</b></p>`;
         }
 
         regimenDisplayDiv.innerHTML = displayHTML;

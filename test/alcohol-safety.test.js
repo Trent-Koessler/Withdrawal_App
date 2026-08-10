@@ -161,20 +161,24 @@ describe('P0-05 — oxazepam is never loaded and never routed by conversion alon
         assert.ok(/DASAS|addiction/i.test(text), 'no specialist contact is offered');
     });
 
-    test('every converted oxazepam schedule carries the conversion caveat', () => {
+    const CONVERSION = /approximate/i;
+
+    test('every oxazepam cell that renders doses carries the conversion caveat', () => {
         for (const [severity, cell] of Object.entries(REGIMEN_CONFIG.Oxazepam)) {
             if (!cell || typeof cell !== 'object' || !cell.schedule) continue;
-            assert.ok(cell.caveat, `Oxazepam/${severity} shows a schedule with no conversion caveat`);
-            assert.ok(/approximate/i.test(cell.caveat) && /slower step-down/i.test(cell.caveat)
-                && /titrated against response/i.test(cell.caveat),
-                `Oxazepam/${severity} caveat does not state the ratio is approximate, that dosing is more frequent with a slower taper, and that it must be titrated`);
+            const caveats = (cell.caveat || []).join('\n');
+            assert.ok(CONVERSION.test(caveats),
+                `Oxazepam/${severity} shows doses with no conversion caveat`);
+            assert.ok(/slower step-down/i.test(caveats) && /titrated against response/i.test(caveats),
+                `Oxazepam/${severity} caveat does not state that dosing is more frequent with a slower taper and must be titrated`);
         }
     });
 
-    test('diazepam schedules are not given a conversion caveat they do not need', () => {
-        for (const cell of Object.values(REGIMEN_CONFIG.Diazepam)) {
+    test('diazepam cells never carry a conversion caveat they do not need', () => {
+        for (const [severity, cell] of Object.entries(REGIMEN_CONFIG.Diazepam)) {
             if (!cell || typeof cell !== 'object') continue;
-            assert.ok(!cell.caveat, 'the conversion caveat belongs only to converted schedules');
+            assert.ok(!CONVERSION.test((cell.caveat || []).join('\n')),
+                `Diazepam/${severity} carries a conversion caveat; it is not a converted schedule`);
         }
     });
 });
@@ -255,5 +259,40 @@ describe('P0-08 — the 80 mg statement is a ladder, not a ceiling', () => {
             'the general notes still read as a hard ceiling at 80 mg');
         assert.ok(/maximum of 120mg in 24 hours/.test(special.replace(/\s+/g, ' ')),
             'the general notes do not reach the 120 mg rung');
+    });
+});
+
+describe('P1-01 — symptom-triggered dosing is offered as its own regimen', () => {
+    test('both benzodiazepines have a symptom-triggered cell', () => {
+        for (const benzo of Object.keys(REGIMEN_CONFIG)) {
+            const cell = REGIMEN_CONFIG[benzo].symptom;
+            assert.ok(cell, `${benzo} has no symptom-triggered regimen`);
+            assert.ok(cell.table, `${benzo} symptom-triggered has no dose table`);
+        }
+    });
+
+    test('the table carries the NSWCG bands, doses and monitoring frequencies', () => {
+        const { table } = REGIMEN_CONFIG.Diazepam.symptom;
+        assert.deepEqual(table.headers, ['CIWA-Ar', 'AWS', 'Dose', 'Monitoring']);
+        assert.deepEqual(table.rows.map((r) => r[2]),
+            ['0-5mg diazepam', '10mg diazepam', '20mg diazepam']);
+        assert.deepEqual(table.rows.map((r) => r[3]),
+            ['4-6 hourly', '2-4 hourly', 'hourly']);
+    });
+
+    test('the 80 mg medical review threshold is stated', () => {
+        assert.ok(/exceeds 80mg in 24 hours/.test(textOf(REGIMEN_CONFIG.Diazepam.symptom)),
+            'symptom-triggered dosing must state the 80 mg medical review point');
+    });
+
+    test('NSWCG framing and the hybrid alternative are both given', () => {
+        const cell = REGIMEN_CONFIG.Diazepam.symptom;
+        assert.ok(/uncomplicated withdrawal/i.test(cell.caveat), 'the framing for when to use it is missing');
+        assert.ok(/hybrid/i.test(cell.caveat), 'the hybrid option for complex inpatients is missing');
+    });
+
+    test('the regimens tab exposes it as a selectable severity', () => {
+        assert.ok(/data-severity="symptom"/.test(read('index.html')),
+            'no button selects the symptom-triggered regimen');
     });
 });

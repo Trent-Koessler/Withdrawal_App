@@ -1,13 +1,48 @@
 // Extracted verbatim from script.js so this clinical data can be unit tested.
 // Content is unchanged; only the surrounding declaration differs.
 
-const symptomTriggeredNote = (drugName) => `Dose no more frequently than q4hrly. For unclear alcohol intake or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements. Monitor the amount of ${drugName} used and reassess requirements regularly.`;
+// Retained as the pointer shown under Mild-Moderate. The dosing table itself
+// now lives in one place — the Symptom-Triggered regimen — so the two cannot
+// drift apart.
+const symptomTriggeredNote = (drugName) => `For unclear alcohol intake, or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements, symptom-triggered dosing is an alternative to this fixed schedule. Monitor the amount of ${drugName} used and reassess requirements regularly. <b>Select the Symptom-Triggered regimen above for the full dosing and monitoring table.</b>`;
 
 // Shown above any oxazepam schedule. The 1:3 ratio is a rough equivalence, and
 // the taper *shape* below it was designed around diazepam's self-tapering
 // kinetics — which is the part that does not transfer, and the part a converted
 // table silently hides.
 const OXAZEPAM_CONVERSION_CAVEAT = `<b>Conversion caveat.</b> Diazepam 10mg &asymp; oxazepam 30mg is an <b>approximate</b> ratio, not an equivalence. Oxazepam has no long-acting active metabolites, so it needs <b>more frequent administration and a slower step-down</b> than a diazepam taper of the same shape. Treat the schedule below as a starting point to be <b>titrated against response</b>, not a fixed course to complete. <span class="src-tag src-nswcg-adapted">NSWCG-adapted §5.6.3 — rationale: NSWCG gives the equivalence ratio and advises careful titration for this group, but publishes no oxazepam taper table; converting the diazepam schedule is a local step and the resulting shape is not guideline-derived.</span>`;
+
+// NSWCG Table 5.4 / 5.6. The dose column is drug-specific; the score bands and
+// the monitoring frequency are not, so they are written once here.
+const symptomTriggeredTable = (doses) => ({
+    headers: ['CIWA-Ar', 'AWS', 'Dose', 'Monitoring'],
+    rows: [
+        ['&lt; 10', '&lt; 4', doses[0], '4-6 hourly'],
+        ['10-20', '4-14', doses[1], '2-4 hourly'],
+        ['&gt; 20', '&gt; 14', doses[2], 'hourly']
+    ]
+});
+
+// Symptom-triggered dosing is the regimen NSWCG §5.4.4 calls ideal for
+// uncomplicated withdrawal reviewed frequently by skilled clinicians — i.e. the
+// one a specialist withdrawal unit would reach for first. It was absent from
+// this app entirely, surviving only as a sub-block under Mild-Moderate.
+const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
+    title: `Symptom-Triggered (${drug})`,
+    caveat: [...extraCaveats, `<b>When this regimen is appropriate.</b> Symptom-triggered dosing suits <b>uncomplicated withdrawal</b> in patients without co-occurring conditions, in an inpatient setting with <b>frequent review by skilled clinicians</b>. Where those conditions do not hold — complex inpatients with co-occurring conditions — a <b>hybrid</b> regimen (a fixed schedule reviewed daily, plus PRN) is often the most appropriate choice. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`],
+    table: symptomTriggeredTable(doses),
+    schedule: [
+        `Score the patient at the interval shown for their current band, and give the dose for that band. There is no fixed daily total to complete. <span class="src-tag src-nswcg">NSWCG Table 5.4, Table 5.6</span>`,
+        `<b>Medical review required</b> for rising scores, or for severe withdrawal not responding to medication. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+        `<b>Medical review required if the total dose exceeds ${reviewMax} in 24 hours.</b> <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+        `Dose no more frequently than q4hrly. <span class="src-tag src-local">LOCAL — rationale: local practice caps dosing frequency to limit stacking of doses whose peak effect has not yet been observed; NSWCG sets a monitoring frequency but no minimum dosing interval.</span>`
+    ]
+    // TODO(clinical): the local q4hrly minimum dosing interval sits awkwardly
+    // against hourly monitoring at CIWA-Ar > 20 — a patient scoring above 20 is
+    // reassessed hourly but cannot be redosed for four hours. Should the q4hrly
+    // floor be relaxed in the highest band, or should that band always route to
+    // the loading/severe pathway instead?
+});
 
 // TODO(clinical): should the elderly/frail have a separately authored reduced
 // oxazepam schedule rather than a converted one? A converted schedule starts
@@ -22,16 +57,11 @@ export const REGIMEN_CONFIG = {
             schedule: [{ dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' }],
             prn: [{ range: '10-15', dose: 10 }, { range: '15-20', dose: 20 }],
             symptom_triggered: {
-                title: 'Symptom-Triggered Regimen',
-                note: symptomTriggeredNote('diazepam'),
-                doses: [
-                    'CIWA-Ar score < 10 or AWS score < 4: 0-5 mg diazepam',
-                    'CIWA-Ar 10-20 or AWS 4-14: 10 mg diazepam',
-                    'CIWA-Ar > 20 or AWS > 14: 20 mg diazepam'
-                ],
-                review: 'Medical review required if total dose exceeds 80mg in 24 hours.'
+                title: 'Alternative: Symptom-Triggered Regimen',
+                note: symptomTriggeredNote('diazepam')
             }
         },
+        symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
         moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', dose: 10 }, { range: '15-20', dose: 20 }] },
         // TODO(clinical): confirm the preferred Day 2 default after a loading day —
         // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
@@ -70,21 +100,16 @@ export const REGIMEN_CONFIG = {
         name: "Oxazepam",
         mild: {
             title: 'Mild-Moderate (CIWA 10-15)',
-            caveat: OXAZEPAM_CONVERSION_CAVEAT,
+            caveat: [OXAZEPAM_CONVERSION_CAVEAT],
             schedule: [{ dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' }],
             prn: [{ range: '10-15', dose: 30 }, { range: '15-20', dose: 60 }],
             symptom_triggered: {
-                title: 'Symptom-Triggered Regimen',
-                note: symptomTriggeredNote('oxazepam'),
-                doses: [
-                    'CIWA-Ar score < 10 or AWS score < 4: 0-15 mg oxazepam',
-                    'CIWA-Ar 10-20 or AWS 4-14: 30 mg oxazepam',
-                    'CIWA-Ar > 20 or AWS > 14: 60 mg oxazepam'
-                ],
-                review: 'Medical review required if total dose exceeds 240mg in 24 hours.'
+                title: 'Alternative: Symptom-Triggered Regimen',
+                note: symptomTriggeredNote('oxazepam')
             }
         },
-        moderate: { title: 'Moderate-Severe (CIWA 15-20)', caveat: OXAZEPAM_CONVERSION_CAVEAT, schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', dose: 30 }, { range: '15-20', dose: 60 }] },
+        symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),
+        moderate: { title: 'Moderate-Severe (CIWA 15-20)', caveat: [OXAZEPAM_CONVERSION_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', dose: 30 }, { range: '15-20', dose: 60 }] },
         // Deliberately has no schedule. The population that needs oxazepam —
         // decompensated liver disease, respiratory insufficiency, elderly/frail,
         // cerebral trauma — is precisely the population NSWCG §5.6.3 says must not
@@ -101,7 +126,7 @@ export const REGIMEN_CONFIG = {
         },
         unknown: {
             title: 'Unknown Tolerance (Test-Dose Protocol)',
-            caveat: OXAZEPAM_CONVERSION_CAVEAT,
+            caveat: [OXAZEPAM_CONVERSION_CAVEAT],
             schedule: [
                 'NOTE: Should only be used in consultation with Addiction Medicine or similar CL service due to risks of test dosing. Administer test-dose: Oxazepam 60mg orally once.',
                 'Monitor the patient closely for sedation and clinical response after 1 hour.',
