@@ -461,3 +461,49 @@ describe('P1-07 — setting is decided before the drug chart', () => {
         }
     });
 });
+
+describe('P1-08 — severe / delirium content', () => {
+    const html = read('index.html');
+    const special = html.slice(html.indexOf('<div id="special-cases"'),
+        html.indexOf('id="ambulatory-guidelines-page"'));
+
+    test('DT is presented as a diagnosis of exclusion with the differential listed', () => {
+        assert.ok(/diagnosis of exclusion/i.test(special), 'DT is not framed as a diagnosis of exclusion');
+        // Flattened: the markup wraps, so a differential can straddle a newline.
+        const flat = special.replace(/\s+/g, ' ');
+        for (const cause of ['subdural haematoma', "Wernicke's encephalopathy", 'hepatic encephalopathy',
+            'hypoxia', 'sepsis', 'metabolic disturbance', 'head injury']) {
+            assert.ok(flat.includes(cause), `differential missing: ${cause}`);
+        }
+    });
+
+    test('the counterintuitive dose-reduction advice is present and prominent', () => {
+        assert.ok(/dose reduction rather\s+than escalation/i.test(special),
+            'the advice to consider reducing benzodiazepines in persistent delirium is missing');
+        assert.ok(/high-dose benzodiazepines can themselves produce delirium/i.test(special),
+            'the reason for it is not given, which is what makes it actionable');
+    });
+
+    test('non-oral escalation options are given', () => {
+        assert.ok(/IV\s+midazolam infusion/i.test(special.replace(/\s+/g, ' ')), 'IV midazolam option missing');
+        assert.ok(/IM lorazepam/i.test(special), 'IM lorazepam fallback missing');
+        assert.ok(/light sleep, readily rousable/i.test(special), 'the sedation target is missing');
+    });
+
+    test('prophylactic anticonvulsants are explicitly stated to have no benefit', () => {
+        assert.ok(/no benefit/i.test(special) && /phenytoin/i.test(special)
+            && /carbamazepine/i.test(special) && /sodium valproate/i.test(special),
+            'the anticonvulsant non-recommendation is missing or incomplete');
+    });
+
+    test('severe chronic airflow limitation excludes loading', () => {
+        const cal = special.slice(special.indexOf('chronic airflow limitation'));
+        assert.ok(/Do not use loading regimens/i.test(cal), 'loading is not excluded for severe CAL');
+        assert.ok(/temazepam or oxazepam/i.test(cal), 'the short-acting alternatives are missing');
+    });
+
+    test('DT patients are stated to be unable to self-discharge', () => {
+        assert.ok(/[Ss]elf-discharge is not acceptable/.test(special),
+            'the statement that DT patients are mentally disordered is missing');
+    });
+});
