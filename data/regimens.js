@@ -72,6 +72,38 @@ const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
     // the loading/severe pathway instead?
 });
 
+// Not in NSWCG at all — this protocol is original to this site. NSWCG's own
+// answer to uncertain tolerance is symptom-triggered dosing, which yields the
+// same information from a smaller first dose, so the reason for preferring a
+// test dose locally has to be stated rather than assumed.
+const testDoseCell = (drug, testDose, reducedDose, extraCaveats = []) => ({
+    title: 'Unknown Tolerance (Test-Dose Protocol)',
+    caveat: [...extraCaveats,
+        `<b>This protocol is local, not guideline.</b> NSWCG does not describe a test-dose protocol. Its answer to uncertain tolerance is <b>symptom-triggered dosing</b>, which produces the same information about tolerance from a smaller first dose and is the safer default where frequent skilled review is available. <span class="src-tag src-local">LOCAL — rationale: a single observed test dose is preferred locally where review is not frequent enough to run a symptom-triggered regimen safely, because it establishes tolerance at a known time under direct observation rather than across a shift; where frequent review IS available, use symptom-triggered dosing instead.</span>`],
+    schedule: [
+        `<b>Only in consultation</b> with Addiction Medicine or a similar CL service, given the risks of test dosing.`,
+        `<b>Standard test dose:</b> ${drug} ${testDose} orally, once.`,
+        `<b>Reduced test dose — ${drug} ${reducedDose} orally, once</b> — for elderly or frail patients, hepatic impairment, or where intake may have been over-reported. ${testDose} is a substantial dose if the history is wrong in that direction. <span class="src-tag src-local">LOCAL — rationale: the reduced dose is a local safety modification to a local protocol; there is no guideline source for either figure.</span>`,
+        `<b>Reassess at 1 hour, and again at 2 hours.</b> Absence of sedation at 1 hour is weak evidence of tolerance on its own: oral absorption is variable and 1 hour is approximately peak, so a patient who is going to be sedated may not be yet. <span class="src-tag src-local">LOCAL — rationale: the original protocol assessed only at 1 hour; the 2-hour reassessment is added locally to catch delayed absorption.</span>`,
+        `<b>Assess sedation with a charted scale</b>, not an impression, so the finding is reproducible between assessors and across shifts.`,
+        `<b>If sedated</b> (drowsy, slurred speech, ataxia): lower or normal tolerance. Manage cautiously with the Mild-Moderate regimen, or the Sub-Mild option if the score is below that band.`,
+        `<b>If not sedated at 2 hours</b>: higher or established tolerance. Consider the Moderate-Severe schedule, or symptom-triggered dosing.`
+    ],
+    prn: [
+        'Monitor the patient closely for signs of toxicity or escalating withdrawal.',
+        'Consult a Drug & Alcohol specialist service if withdrawal severity remains unclear.'
+    ]
+    // TODO(clinical): confirm the reduced test dose figure for elderly, frail,
+    // hepatic impairment or suspected over-reported intake — is half the standard
+    // test dose right, and are those the right four triggers for using it?
+    // TODO(clinical): should the assessment point move to 2 hours only, rather
+    // than assessing at both 1 and 2 hours? Oral diazepam peaks at about 1 hour,
+    // so a 1-hour reading is at best a partial answer.
+    // TODO(clinical): which charted sedation scale should be used to define
+    // "sedated" here — e.g. a Ramsay/RASS-style scale, or the local sedation
+    // score already charted on the ward? The descriptive list is not reproducible.
+});
+
 // TODO(clinical): should the elderly/frail have a separately authored reduced
 // oxazepam schedule rather than a converted one? A converted schedule starts
 // them at 30mg qid, which is a substantial dose for the population it is aimed
@@ -122,19 +154,7 @@ export const REGIMEN_CONFIG = {
                 `<b>Persistent agitation or hallucinations, or more than 120mg in 24 hours</b> — specialist advice required: DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
             ]
         },
-        unknown: {
-            title: 'Unknown Tolerance (Test-Dose Protocol)',
-            schedule: [
-                'NOTE: Should only be used in consultation with Addiction Medicine or similar CL service due to risks of test dosing. Administer test-dose: Diazepam 20mg orally once.',
-                'Monitor the patient closely for sedation and clinical response after 1 hour.',
-                'If patient shows signs of sedation (e.g. drowsy, slurred speech, ataxia): the patient has lower/normal tolerance. Manage cautiously with the Mild-Moderate regimen.',
-                'If patient is NOT sedated after 1 hour: the patient has higher/established tolerance. Consider Moderate-Severe schedule or standard CIWA-Ar-based PRN dosing.'
-            ],
-            prn: [
-                'Monitor patient closely for signs of toxicity or escalating withdrawal.',
-                'Consult Drug & Alcohol specialist service if withdrawal severity is unclear.'
-            ]
-        }
+        unknown: testDoseCell('Diazepam', '20mg', '10mg')
     },
     "Oxazepam": {
         name: "Oxazepam",
@@ -165,19 +185,6 @@ export const REGIMEN_CONFIG = {
                 `<b>Contact specialist advice now:</b> DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §2.6, §5.6.2</span>`
             ]
         },
-        unknown: {
-            title: 'Unknown Tolerance (Test-Dose Protocol)',
-            caveat: [OXAZEPAM_CONVERSION_CAVEAT],
-            schedule: [
-                'NOTE: Should only be used in consultation with Addiction Medicine or similar CL service due to risks of test dosing. Administer test-dose: Oxazepam 60mg orally once.',
-                'Monitor the patient closely for sedation and clinical response after 1 hour.',
-                'If patient shows signs of sedation (e.g. drowsy, slurred speech, ataxia): the patient has lower/normal tolerance. Manage cautiously with the Mild-Moderate regimen.',
-                'If patient is NOT sedated after 1 hour: the patient has higher/established tolerance. Consider Moderate-Severe schedule or standard CIWA-Ar-based PRN dosing.'
-            ],
-            prn: [
-                'Monitor patient closely for signs of toxicity or escalating withdrawal.',
-                'Consult Drug & Alcohol specialist service if withdrawal severity is unclear.'
-            ]
-        }
+        unknown: testDoseCell('Oxazepam', '60mg', '30mg', [OXAZEPAM_CONVERSION_CAVEAT])
     }
 };

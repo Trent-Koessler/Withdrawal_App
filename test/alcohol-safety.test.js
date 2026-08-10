@@ -507,3 +507,41 @@ describe('P1-08 — severe / delirium content', () => {
             'the statement that DT patients are mentally disordered is missing');
     });
 });
+
+describe('P1-09 — the test-dose protocol declares itself as local', () => {
+    for (const benzo of ['Diazepam', 'Oxazepam']) {
+        const cell = REGIMEN_CONFIG[benzo].unknown;
+
+        test(`${benzo}: the protocol is tagged LOCAL with a rationale`, () => {
+            const caveats = cell.caveat.join('\n');
+            assert.ok(/src-local/.test(caveats),
+                'a protocol absent from NSWCG must not read as guideline content');
+            assert.ok(/rationale:/i.test(caveats), 'no rationale given for preferring it');
+        });
+
+        test(`${benzo}: NSWCG's own answer to uncertain tolerance is stated`, () => {
+            assert.ok(/symptom-triggered/i.test(cell.caveat.join('\n')),
+                'the guideline alternative (symptom-triggered dosing, smaller first dose) is not offered');
+        });
+
+        test(`${benzo}: a reduced test dose exists for the at-risk groups`, () => {
+            const text = textOf(cell);
+            assert.ok(/Reduced test dose/i.test(text), 'no reduced test dose offered');
+            for (const group of [/elderly or frail/i, /hepatic impairment/i, /over-reported/i]) {
+                assert.ok(group.test(text), `reduced-dose trigger missing: ${group}`);
+            }
+        });
+
+        test(`${benzo}: assessment is not left at 1 hour alone`, () => {
+            const text = textOf(cell);
+            assert.ok(/again at 2 hours/i.test(text), 'no 2-hour reassessment');
+            assert.ok(/weak evidence of tolerance/i.test(text),
+                'the limits of a 1-hour reading are not stated');
+        });
+
+        test(`${benzo}: sedation is assessed with a charted scale`, () => {
+            assert.ok(/charted scale/i.test(textOf(cell)),
+                'sedation is still defined by a descriptive list, which is not reproducible');
+        });
+    }
+});
