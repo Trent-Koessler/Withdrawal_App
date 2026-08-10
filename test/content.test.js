@@ -884,3 +884,39 @@ describe('AUTH-02 — versioning and review metadata', () => {
             'safety changes must come before housekeeping, or the reader stops before reaching them');
     });
 });
+describe('AUTH-03 — contributors and clinical review', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="contributors-page"'),
+        html.indexOf('<!-- Sources and Attribution -->'));
+
+    test('the review register exists and is honest about its current state', () => {
+        assert.ok(page.length > 500, 'the contributors page is missing');
+        assert.ok(/No section of this site has yet completed external clinical review/.test(page),
+            'an empty register that does not say it is empty implies review has happened');
+    });
+
+    test('the register has a row per content area, with reviewer, capacity and date', () => {
+        for (const col of ['Reviewer', 'Capacity', 'Date']) {
+            assert.ok(page.includes(`>${col}<`), `register column missing: ${col}`);
+        }
+        const rows = [...page.matchAll(/<tr><td>/g)].length;
+        assert.ok(rows >= 12, `only ${rows} sections in the review register`);
+    });
+
+    test('the author and clinical owner is named', () => {
+        assert.ok(/Dr Trent Koessler/.test(page), 'the clinical owner is not named');
+        assert.ok(/every departure from published guidance, are his/.test(page.replace(/\s+/g, ' ')),
+            'ownership of the departures should be explicit, since they are the point of the tagging');
+    });
+
+    test('what review means is defined, and does not imply endorsement', () => {
+        const flat = page.replace(/\s+/g, ' ');
+        assert.ok(/not<\/strong> endorsement by the reviewer's employer/.test(flat),
+            'named reviewers imply institutional endorsement unless that is disclaimed');
+    });
+
+    test('reviewers are still to be identified', () => {
+        const comments = [...page.matchAll(/<!--[\s\S]*?-->/g)].map((m) => m[0]).join('\n');
+        assert.ok(/TODO\(review\):/.test(comments), 'no record of the reviewers still to be approached');
+    });
+});

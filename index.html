@@ -2964,6 +2964,87 @@ textarea {
                     modules with a CI-gated test suite; stylesheet inlined to survive the NSW Health web filter;
                     application icon rebuilt; renamed to SUD Toolkit.</p>
 
+                <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-page="contributors-page">Contributors &amp; Clinical Review</button>
+                </div>
+
+            </div>
+
+            <!-- Contributors and Clinical Review -->
+            <div id="contributors-page" class="page" data-title="Contributors & Clinical Review">
+                <h3>Contributors and Clinical Review</h3>
+
+                <p>Who wrote each part of this site, who has reviewed it, in what capacity, and when. A clinical tool
+                    that does not say who stands behind it is asking to be trusted on the strength of its layout.</p>
+
+                <h4>Author and clinical owner</h4>
+                <ul class="contact-list">
+                    <li><strong>Dr Trent Koessler</strong> — author and clinical owner. All clinical content
+                        decisions, including every departure from published guidance, are his.</li>
+                </ul>
+
+                <h4>Review status by section</h4>
+                <div class="warning-box">
+                    <strong>⚠️ No section of this site has yet completed external clinical review.</strong> The table
+                    below is the register that review will be recorded in. Until a row says otherwise, treat the
+                    content as authored but not independently reviewed.
+                </div>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Section</th>
+                                <th scope="col">Reviewer</th>
+                                <th scope="col">Capacity</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Alcohol — inpatient regimens</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Alcohol — ambulatory withdrawal</td><td>Not yet reviewed</td><td>—</td><td>—</td>
+                            </tr>
+                            <tr><td>Alcohol — special cases and delirium</td><td>Not yet reviewed</td><td>—</td>
+                                <td>—</td></tr>
+                            <tr><td>Opioids</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Benzodiazepines</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Cannabis</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Psychostimulants</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>GHB</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Gabapentinoids</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Nicotine and volatile substances</td><td>Not yet reviewed</td><td>—</td><td>—</td>
+                            </tr>
+                            <tr><td>Assessment, risk and care planning</td><td>Not yet reviewed</td><td>—</td>
+                                <td>—</td></tr>
+                            <tr><td>Screening and consumption history</td><td>Not yet reviewed</td><td>—</td><td>—</td>
+                            </tr>
+                            <tr><td>Specific population groups</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Scales and calculators</td><td>Not yet reviewed</td><td>—</td><td>—</td></tr>
+                            <tr><td>Capacity, consent and involuntary pathways</td>
+                                <td>Not yet written — see that page</td><td>—</td><td>—</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- TODO(review): identify and approach reviewers for each section above. Addiction medicine for the
+                     substance pathways, addiction psychiatry for the co-occurring mental health and risk content, an
+                     emergency or general medicine reviewer for the acute alcohol pathways, and a senior D&A nurse
+                     for the monitoring, observation and ward-workflow content. -->
+
+                <h4>What review means here</h4>
+                <p>A reviewer named against a section has read that section in full and confirmed that its clinical
+                    content is safe and appropriate for the setting the site describes, or has had their objections
+                    addressed. Review is <strong>not</strong> endorsement by the reviewer's employer, and it does not
+                    transfer responsibility for the content away from the author.</p>
+
+                <h4>Outstanding clinical decisions</h4>
+                <p>Points where this site deliberately presents an unresolved question rather than a single answer are
+                    recorded in the source as <code>TODO(clinical)</code> markers and listed by
+                    <code>npm run check:todos</code>. They are not hidden: where one affects what a clinician would do,
+                    the page says so at the point of use.</p>
+
+                <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-page="sources-page">Sources &amp; Attribution</button>
+                    <button class="big-button" data-page="changelog-page">Changelog</button>
+                </div>
             </div>
 
             <!-- Sources and Attribution -->
@@ -3063,6 +3144,7 @@ textarea {
                     "content last reviewed" date in its footer.</p>
                 <div class="button-container" style="margin: 20px 0;">
                     <button class="big-button" data-page="changelog-page">Changelog</button>
+                    <button class="big-button" data-page="contributors-page">Contributors &amp; Clinical Review</button>
                 </div>
             </div>
 
