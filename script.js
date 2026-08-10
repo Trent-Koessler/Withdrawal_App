@@ -364,7 +364,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = config[selectedSeverity];
         const b_name = config.name;
 
-        let displayHTML = `<h3>${data.title}</h3><b>Scheduled Dosing:</b><ul>`;
+        // A `routing` cell is one where no regimen should be rendered at all —
+        // severe withdrawal on oxazepam, for instance. Returning advice instead
+        // of a dose table is the point, so bail out before the schedule loop
+        // rather than rendering an empty one.
+        if (data.routing) {
+            regimenDisplayDiv.innerHTML = `<h3>${data.title}</h3>`
+                + data.routing.map(item => `<div class="routing-card">${item}</div>`).join('');
+            return;
+        }
+
+        let displayHTML = `<h3>${data.title}</h3>`;
+
+        // Shown before the doses, never after: a caveat that qualifies a whole
+        // schedule is useless underneath it.
+        if (data.caveat) {
+            displayHTML += `<div class="warning-box">${data.caveat}</div>`;
+        }
+
+        displayHTML += `<b>Scheduled Dosing:</b><ul>`;
         data.schedule.forEach((s, index) => {
             if (typeof s === 'string') {
                 displayHTML += `<li>${s}</li>`;

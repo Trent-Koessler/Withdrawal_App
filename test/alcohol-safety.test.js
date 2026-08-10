@@ -137,3 +137,44 @@ describe('P0-04 — escalation and de-escalation criteria exist', () => {
             'the converse of the sedation rule is missing');
     });
 });
+
+describe('P0-05 — oxazepam is never loaded and never routed by conversion alone', () => {
+    // A routing card may (and does) explain why loading is not used, so the rule
+    // is about what is presented as a dose to give, i.e. the schedule and PRN.
+    test('no oxazepam dosing instruction anywhere describes loading', () => {
+        for (const [severity, cell] of Object.entries(REGIMEN_CONFIG.Oxazepam)) {
+            if (!cell || typeof cell !== 'object') continue;
+            const dosing = [...(cell.schedule || []), ...(cell.prn || [])]
+                .filter((s) => typeof s === 'string').join('\n');
+            assert.ok(!/loading|load\b/i.test(dosing),
+                `Oxazepam/${severity} gives a loading instruction; loading is a diazepam concept in NSWCG §5.4.4 and the oxazepam population is the one §5.6.3 excludes from it`);
+        }
+    });
+
+    test('severe + oxazepam routes to specialist advice instead of a schedule', () => {
+        const cell = REGIMEN_CONFIG.Oxazepam.severe;
+        assert.ok(cell.routing, 'severe + oxazepam still renders a dose schedule');
+        assert.ok(!cell.schedule, 'severe + oxazepam must not carry a schedule at all');
+        const text = textOf(cell);
+        assert.ok(/15-30mg/.test(text), 'the titration range NSWCG §5.6.3 gives is missing');
+        assert.ok(/HDU/.test(text), 'the HDU / escalation options are missing');
+        assert.ok(/DASAS|addiction/i.test(text), 'no specialist contact is offered');
+    });
+
+    test('every converted oxazepam schedule carries the conversion caveat', () => {
+        for (const [severity, cell] of Object.entries(REGIMEN_CONFIG.Oxazepam)) {
+            if (!cell || typeof cell !== 'object' || !cell.schedule) continue;
+            assert.ok(cell.caveat, `Oxazepam/${severity} shows a schedule with no conversion caveat`);
+            assert.ok(/approximate/i.test(cell.caveat) && /slower step-down/i.test(cell.caveat)
+                && /titrated against response/i.test(cell.caveat),
+                `Oxazepam/${severity} caveat does not state the ratio is approximate, that dosing is more frequent with a slower taper, and that it must be titrated`);
+        }
+    });
+
+    test('diazepam schedules are not given a conversion caveat they do not need', () => {
+        for (const cell of Object.values(REGIMEN_CONFIG.Diazepam)) {
+            if (!cell || typeof cell !== 'object') continue;
+            assert.ok(!cell.caveat, 'the conversion caveat belongs only to converted schedules');
+        }
+    });
+});
