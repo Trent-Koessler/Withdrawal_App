@@ -82,3 +82,25 @@ describe('P0-02 — no fixed time gate on the inpatient pathway', () => {
             'the Severe band is defined by CIWA > 20 and is unreachable if CIWA-Ar cannot be commenced');
     });
 });
+
+describe('P0-03 — the ambulatory rule is stricter and self-consistent', () => {
+    const html = read('index.html');
+    const ambulatory = html.slice(
+        html.indexOf('id="ambulatory-guidelines-page"'),
+        html.indexOf('id="scales-page"'));
+
+    test('initiation states the 8-hour contraindication', () => {
+        assert.ok(/past 8 hours/.test(ambulatory) && /contraindication to commencing/i.test(ambulatory),
+            'the NSWCG App 6 initiation rule is missing from the ambulatory pathway');
+    });
+
+    test('no stray 6-hour window survives on the ambulatory pathway', () => {
+        assert.ok(!/6\+?\s*hours/i.test(ambulatory),
+            'a 6-hour window is left on the ambulatory pathway — it belongs to neither pathway now');
+    });
+
+    test('the two pathways state different rules on purpose', () => {
+        assert.ok(/stricter than the inpatient pathway/i.test(ambulatory),
+            'the ambulatory/inpatient divergence should be explicit, or it reads as an inconsistency');
+    });
+});
