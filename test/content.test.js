@@ -791,3 +791,43 @@ describe('AUTH-07 — capacity and consent scaffold', () => {
             'this section needs medico-legal review, not only clinical review');
     });
 });
+
+describe('AUTH-04 — attribution and reuse', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="sources-page"'), html.indexOf('<!-- About Page -->'));
+    const about = html.slice(html.indexOf('id="about-page"'), html.indexOf('</main>'));
+
+    test('the all-rights-reserved notice no longer covers derived clinical content', () => {
+        assert.ok(!/All rights reserved\. No part of this publication may be reproduced/.test(about),
+            'the blanket reservation sat awkwardly against guideline-derived content');
+        assert.ok(/not over clinical material derived from those guidelines/.test(about.replace(/\s+/g, ' ')),
+            'the About page does not scope the copyright claim');
+    });
+
+    test('the NSWCG reuse terms are stated', () => {
+        const flat = page.replace(/\s+/g, ' ');
+        assert.ok(/study or training/.test(flat), 'the permitted purpose is missing');
+        assert.ok(/acknowledgement of the source/.test(flat), 'the acknowledgement condition is missing');
+        assert.ok(/not for commercial\s*<\/strong>?\s*use|not for commercial use/.test(flat),
+            'the commercial-use exclusion is missing');
+    });
+
+    test('every source document is listed', () => {
+        for (const source of ['NSW Health', 'Turning Point', 'Queensland Health', 'SA Health', 'WA Health',
+            'New Zealand Ministry of Health', 'Therapeutic Guidelines', 'ANZCA Faculty of Pain Medicine']) {
+            assert.ok(page.includes(source), `source missing from attribution page: ${source}`);
+        }
+    });
+
+    test('the page explains the tagging system to a reader, not only to a developer', () => {
+        assert.ok(/src-nswcg-adapted/.test(page) && /src-local/.test(page) && /src-other/.test(page),
+            'the four tag kinds should be shown as examples, since they appear throughout the site');
+        assert.ok(/the source document is authoritative/.test(page.replace(/\s+/g, ' ')),
+            'the precedence rule between this site and its sources is not stated');
+    });
+
+    test('non-endorsement is explicit', () => {
+        assert.ok(/has reviewed, approved or endorsed it/.test(page.replace(/\s+/g, ' ')),
+            'listing organisations without disclaiming endorsement implies it');
+    });
+});
