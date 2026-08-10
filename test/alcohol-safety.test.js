@@ -212,3 +212,21 @@ describe('P0-06 — DASAS is reachable from Sydney metro too', () => {
         assert.ok(/Sydney metropolitan/.test(html), 'the metro catchment is not named');
     });
 });
+
+describe('P0-07 — thiamine route', () => {
+    const html = read('index.html');
+    const thiamine = html.slice(html.indexOf('<div id="thiamine"'),
+        html.indexOf('<div id="benzo-choice"'));
+
+    test('IM is no longer offered as freely interchangeable with IV', () => {
+        assert.ok(!/IV\/IM|IM\/IV/.test(thiamine),
+            'thiamine still lists IV/IM as one interchangeable route');
+    });
+
+    test('the coagulopathy caveat is stated', () => {
+        assert.ok(/thrombocytopenia/i.test(thiamine) && /coagulopathy/i.test(thiamine),
+            'the reason IM may be unsafe is not given');
+        assert.ok(/prefer(?:s|ring)? the IV route|prefer IV/i.test(thiamine),
+            'no preference for the IV route is stated');
+    });
+});
