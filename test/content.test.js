@@ -541,3 +541,43 @@ describe('P2-10 — psychostimulant pathway depth', () => {
             'the AWQ note still invites the inference that a score selects a dose');
     });
 });
+
+describe('P2-11 — cannabis pathway additions', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="cannabis-withdrawal-page"'),
+        html.indexOf('<!-- Psychostimulants Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('prevalence and the strongest predictor are stated', () => {
+        assert.ok(/50% of regular or dependent users/.test(flat), 'the prevalence figure is missing');
+        assert.ok(/80-90% in inpatient settings/.test(flat), 'the inpatient figure is missing');
+        assert.ok(/[Dd]aily use is\s*<\/strong>?\s*the strongest predictor|Daily use is the strongest predictor/.test(flat),
+            'the strongest predictor is not named');
+    });
+
+    test('both reduction strategies are described with who suits each', () => {
+        assert.ok(/[Aa]brupt cessation<\/strong> suits/.test(flat), 'abrupt cessation guidance missing');
+        assert.ok(/[Gg]radual reduction<\/strong> suits/.test(flat), 'gradual reduction guidance missing');
+    });
+
+    test('supportive care is specific', () => {
+        assert.ok(/2-3 L\/day/.test(flat), 'hydration target missing');
+        assert.ok(/[Aa]void caffeine/.test(flat), 'the caffeine advice is missing');
+        assert.ok(/[Ee]xercise may help/.test(flat), 'exercise is missing');
+    });
+
+    test('medicinal cannabis tapering includes planning for the underlying condition', () => {
+        assert.ok(/THC-based medicines over several weeks/.test(flat), 'the taper duration is missing');
+        assert.ok(/alternative management for\s*the underlying condition|alternative management for the underlying condition/.test(flat),
+            'stopping the medicine without replacing its purpose is the failure mode here');
+    });
+
+    test('synthetic cannabinoids are distinguished', () => {
+        assert.ok(/higher receptor\s*<\/strong>?\s*affinity|higher receptor affinity/.test(flat),
+            'the pharmacological difference is missing');
+        for (const sx of ['palpitations', 'dyspnoea', 'chest pain']) {
+            assert.ok(flat.includes(sx), `synthetic cannabinoid feature missing: ${sx}`);
+        }
+        assert.ok(/within an hour/.test(flat), 'the faster onset is missing');
+    });
+});
