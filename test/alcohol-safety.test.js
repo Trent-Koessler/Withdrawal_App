@@ -230,3 +230,30 @@ describe('P0-07 — thiamine route', () => {
             'no preference for the IV route is stated');
     });
 });
+
+describe('P0-08 — the 80 mg statement is a ladder, not a ceiling', () => {
+    test('both thresholds are surfaced in the Severe cell itself', () => {
+        const text = textOf(REGIMEN_CONFIG.Diazepam.severe);
+        assert.ok(/80mg in 24 hours/.test(text), 'the 80 mg review threshold is not in the Severe cell');
+        assert.ok(/120mg in 24 hours/.test(text),
+            'the 120 mg maximum is not in the Severe cell — it must not live only in general notes');
+    });
+
+    test('80 mg is presented as a review threshold rather than a ceiling', () => {
+        const text = textOf(REGIMEN_CONFIG.Diazepam.severe);
+        assert.ok(/review threshold, not a ceiling/i.test(text),
+            'the Severe cell does not say 80 mg is a review point rather than a limit');
+        assert.ok(/10-20mg 2-hourly PRN/.test(text),
+            'the second rung of the ladder (10-20 mg 2-hourly PRN) is missing');
+    });
+
+    test('the general notes carry the same ladder, not the old ceiling wording', () => {
+        const html = read('index.html');
+        const special = html.slice(html.indexOf('<div id="special-cases"'),
+            html.indexOf('id="ambulatory-guidelines-page"'));
+        assert.ok(!/exceeds 80mg, contact specialist/i.test(special.replace(/\s+/g, ' ')),
+            'the general notes still read as a hard ceiling at 80 mg');
+        assert.ok(/maximum of 120mg in 24 hours/.test(special.replace(/\s+/g, ' ')),
+            'the general notes do not reach the 120 mg rung');
+    });
+});
