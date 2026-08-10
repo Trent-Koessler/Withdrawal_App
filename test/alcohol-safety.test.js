@@ -389,3 +389,26 @@ describe('P1-04 — something exists below the Mild-Moderate band', () => {
             'no button selects the sub-mild option');
     });
 });
+
+describe('P1-05 — band selection carries risk modifiers, not intake alone', () => {
+    const html = read('index.html');
+    const regimens = html.slice(html.indexOf('<div id="regimens"'),
+        html.indexOf('<div id="special-cases"'));
+
+    test('the standard-drink split is tagged as local practice', () => {
+        assert.ok(/standard drinks per\s+day split is not from NSWCG/.test(regimens),
+            'the drink-count entry point is not disclosed as local');
+    });
+
+    test('all five NSWCG risk factors are listed as band modifiers', () => {
+        for (const factor of [
+            /[Pp]revious severe withdrawal/,
+            /BAL on arrival/,
+            /[Cc]oexisting medical conditions/,
+            /[Ss]eizures early in withdrawal/,
+            /other CNS depressants/,
+        ]) {
+            assert.ok(factor.test(regimens), `risk factor missing: ${factor}`);
+        }
+    });
+});

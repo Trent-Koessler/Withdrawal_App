@@ -1023,6 +1023,28 @@ textarea {
                                 Regularly review the patient and adjust as per clinical judgement.</p>
                         </div>
                         <div class="clinical-block">
+                            <h4>Choosing a band</h4>
+                            <p>The standard-drink split above is the default entry point.
+                                <span class="src-tag src-local">LOCAL — rationale: the ≤14 / ≥15 standard drinks per
+                                    day split is not from NSWCG, which states severity is difficult to predict
+                                    (§5.1.1) and gives risk factors rather than an intake threshold; the split is
+                                    retained because it is usable at the bedside and matches local practice.</span></p>
+                            <p><strong>Move the patient up a band regardless of reported intake if any of the
+                                    following NSWCG risk factors are present:</strong>
+                                <span class="src-tag src-nswcg">NSWCG §5.1.1</span></p>
+                            <ul>
+                                <li>Previous severe withdrawal.</li>
+                                <li>Higher BAL on arrival, or presenting already in withdrawal.</li>
+                                <li>Coexisting medical conditions.</li>
+                                <li>Seizures early in withdrawal.</li>
+                                <li>Co-occurring dependence on other CNS depressants.</li>
+                            </ul>
+                            <!-- TODO(clinical): should PAWSS be used for inpatient band selection, for consistency
+                                 with the ambulatory pathway, which already uses it as an inclusion criterion? Using
+                                 two different band-selection methods across the two pathways is the current state. -->
+                        </div>
+
+                        <div class="clinical-block">
                             <h4>Monitoring</h4>
                             <div class="clinical-table-wrap">
                                 <table class="clinical-table">
