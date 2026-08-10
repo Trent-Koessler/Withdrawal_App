@@ -1,6 +1,6 @@
 import { FLOWCHART_LOGIC } from './data/flowchart.js';
 import { REGIMEN_CONFIG } from './data/regimens.js';
-import { SCALES } from './data/scales.js';
+import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
@@ -587,6 +587,17 @@ document.addEventListener('DOMContentLoaded', () => {
             itemsHtml += `</fieldset>`;
         });
         itemsContainer.innerHTML = itemsHtml;
+
+        // Caveats sit immediately above the score, not below it and not on a
+        // separate page: the calculator's own output is what invites the
+        // misreading they exist to prevent.
+        const caveats = [...SCALE_CAVEATS_UNIVERSAL, ...(config.caveats || [])];
+        const caveatNode = document.createElement('div');
+        caveatNode.className = 'scale-caveats';
+        caveatNode.innerHTML = `<h4>What this scale can and cannot tell you</h4><ul>`
+            + caveats.map(c => `<li>${c}</li>`).join('')
+            + `</ul>`;
+        calculatorNode.insertBefore(caveatNode, calculatorNode.querySelector('.results-grid'));
 
         // Add reference if it exists
         if (config.reference) {

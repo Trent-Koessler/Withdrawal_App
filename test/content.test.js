@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from '../data/symptomatic.js';
 import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
-import { SCALES } from '../data/scales.js';
+import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -535,10 +535,13 @@ describe('P2-10 — psychostimulant pathway depth', () => {
         assert.ok(/Document the advice you gave/.test(flat), 'the prompt to document is missing');
     });
 
+    // Introduced here as a note; AUTH-05 moved it into the shared caveat
+    // structure so the other monitoring-only scales carry it too.
     test('the AWQ calculator states it cannot drive a medication decision', () => {
         const awq = SCALES.find((s) => s.id === 'awq');
-        assert.ok(/not validated for linking a score to a medication decision/i.test(awq.note),
-            'the AWQ note still invites the inference that a score selects a dose');
+        const shown = [awq.note, ...(awq.caveats || [])].join('\n');
+        assert.ok(/not validated for linking a score to a medication decision/i.test(shown),
+            'the AWQ calculator still invites the inference that a score selects a dose');
     });
 });
 
@@ -666,5 +669,45 @@ describe('P2-14 — consumption history method', () => {
 
     test('ATOP is linked', () => {
         assert.ok(/ATOP/.test(flat) && /health\.nsw\.gov\.au/.test(flat), 'ATOP is not linked');
+    });
+});
+
+describe('AUTH-05 — scale caveats live inside the calculators', () => {
+    test('the universal caveat states what a scale is not', () => {
+        const text = SCALE_CAVEATS_UNIVERSAL.join('\n');
+        assert.ok(/do not diagnose withdrawal/i.test(text), 'the non-diagnostic statement is missing');
+        assert.ok(/do not override clinical judgement/i.test(text), 'the judgement statement is missing');
+        assert.ok(/already been diagnosed/i.test(text),
+            'the scale must be framed as measuring severity of a diagnosed syndrome');
+    });
+
+    test('CIWA-Ar and AWS carry the three alcohol-specific caveats', () => {
+        for (const id of ['ciwa-ar', 'aws']) {
+            const text = (SCALES.find((s) => s.id === id).caveats || []).join('\n');
+            assert.ok(/multiple pathologies/i.test(text), `${id}: the multiple-pathology caveat is missing`);
+            assert.ok(/head injury or CVA/i.test(text), `${id}: the consciousness caveat is missing`);
+            assert.ok(/[Rr]e-evaluate regularly/.test(text), `${id}: the re-evaluation caveat is missing`);
+        }
+    });
+
+    test('the monitoring-only scales say they cannot drive a dose', () => {
+        for (const id of ['ciwa-b', 'nsw-cws', 'cwas', 'awq']) {
+            const text = (SCALES.find((s) => s.id === id).caveats || []).join('\n');
+            assert.ok(/not validated for linking a score to a medication decision/i.test(text),
+                `${id}: the UI invites the score-to-dose inference and nothing rules it out`);
+        }
+    });
+
+    test('COWS states why it is preferred and how often to score it', () => {
+        const text = (SCALES.find((s) => s.id === 'cows').caveats || []).join('\n');
+        assert.ok(/preferred over SOWS/i.test(text), 'the SOWS comparison is missing');
+        assert.ok(/6-hourly/.test(text), 'the inpatient scoring frequency is missing');
+    });
+
+    test('the caveats render in the calculator, above the score', () => {
+        const js = read('script.js');
+        assert.ok(/scale-caveats/.test(js), 'no caveat node is built');
+        assert.ok(/insertBefore\(caveatNode, calculatorNode\.querySelector\('\.results-grid'\)\)/.test(js),
+            'caveats must sit above the results grid, not after it');
     });
 });
