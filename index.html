@@ -1008,8 +1008,30 @@ textarea {
                             <p>Ensure CIWA-Ar is done q2hrly at least initially for all patients commenced on a regimen.
                                 Regularly review the patient and adjust as per clinical judgement.</p>
                         </div>
-                        <p> Do not give regular or PRN doses if patient is sedated. If multiple doses are not able to be
-                            given, review regular dosing schedule.</p>
+                        <!-- Placed once, above #regimen-display, so it renders under every severity
+                             rather than being repeated per severity and drifting between them. -->
+                        <div class="escalation-box">
+                            <h4>Escalation triggers</h4>
+                            <p><strong>Escalate — move up a schedule and request medical review if any of:</strong></p>
+                            <ul>
+                                <li>Both daily PRN doses have been used and the patient remains symptomatic.</li>
+                                <li>Two consecutive CIWA-Ar scores in the band <em>above</em> the current schedule.</li>
+                                <li>CIWA-Ar rising on days 3-4 of an established taper.</li>
+                                <li>Total diazepam <strong>&ge; 80mg in 24 hours</strong> &rarr; medical officer review
+                                    to exclude other pathology. <span class="src-tag src-nswcg">NSWCG §5.4.4</span></li>
+                                <li>Any seizure, delirium, hallucinations, or hyperthermia &rarr; treat as severe; see
+                                    Special Cases.</li>
+                            </ul>
+                            <p><strong>De-escalate / withhold if sedated:</strong> do not give regular or PRN doses if
+                                the patient is sedated — withhold the dose and review the regular schedule. If multiple
+                                doses are withheld, the schedule is too high.</p>
+                            <p><em>"Max twice daily PRN" is a review trigger, not a ceiling to sit at. A patient using
+                                    both PRN doses and still symptomatic needs a different schedule, not a longer wait.</em>
+                                <span class="src-tag src-local">LOCAL — rationale: NSWCG gives escalation thresholds but
+                                    no exit criteria from a fixed schedule, and the Mild-Mod band's higher PRN trigger
+                                    (CIWA 15-20) overlaps the Mod-Sev band entirely, so a patient scoring 17 could
+                                    otherwise stay on a 10mg qid backbone indefinitely.</span></p>
+                        </div>
                         <p
                             style="background-color: var(--warning-bg); color: var(--warning-text); border-left: 4px solid var(--warning-border); padding: 10px 15px; border-radius: 0 4px 4px 0; font-size: 14.5px; line-height: 1.4; margin-bottom: 15px;">
                             <strong>⚠️ Delayed or Uncertain Commencement:</strong> If the commencement of withdrawal is

@@ -104,3 +104,36 @@ describe('P0-03 — the ambulatory rule is stricter and self-consistent', () => 
             'the ambulatory/inpatient divergence should be explicit, or it reads as an inconsistency');
     });
 });
+
+describe('P0-04 — escalation and de-escalation criteria exist', () => {
+    const html = read('index.html');
+    const regimens = html.slice(html.indexOf('<div id="regimens"'),
+        html.indexOf('<div id="special-cases"'));
+
+    test('the escalation block sits above the rendered regimen, not inside one severity', () => {
+        const box = regimens.indexOf('class="escalation-box"');
+        const display = regimens.indexOf('id="regimen-display"');
+        assert.ok(box !== -1, 'no escalation block on the regimens tab');
+        assert.ok(box < display,
+            'the escalation block must precede #regimen-display so it renders under every severity');
+    });
+
+    test('all four escalation triggers are present', () => {
+        for (const trigger of [
+            /[Bb]oth daily PRN doses/,          // the gap the spec called out
+            /[Tt]wo consecutive CIWA-Ar scores/,
+            /rising on days 3-4/,
+            /80mg in 24 hours/,
+        ]) {
+            assert.ok(trigger.test(regimens), `escalation trigger missing: ${trigger}`);
+        }
+    });
+
+    test('the sedation withhold rule is retained, not replaced', () => {
+        const flat = regimens.replace(/\s+/g, ' ');
+        assert.ok(/do not give regular or PRN doses if the patient is sedated/i.test(flat),
+            'the pre-existing sedation caveat was dropped');
+        assert.ok(/multiple doses are withheld, the schedule is too high/i.test(flat),
+            'the converse of the sedation rule is missing');
+    });
+});
