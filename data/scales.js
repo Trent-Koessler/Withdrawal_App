@@ -438,7 +438,7 @@ export const SCALES = [
         name: 'Amphetamine Withdrawal Questionnaire (AWQ)',
         reference: "Srisurapanont, M., Jarusuraisin, N., and Jittiwutikan, J. Amphetamine withdrawal: Reliability, validity and factor structure of a measure. Australian and New Zealand Journal of Psychiatry, 1999. 33(1): 89-93",
         relatedPage: { id: 'stimulant-withdrawal-page', title: 'Psychostimulant Withdrawal Guidelines' },
-        note: 'This is a monitoring tool. Higher scores indicate greater severity.',
+        note: 'This is a monitoring tool. Higher scores indicate greater severity. <b>It is not validated for linking a score to a medication decision</b> — do not use the total to choose or justify a dose.',
         items: [
             {
                 displayName: "1. Craving for amphetamine", radioName: "awq-craving", options: [

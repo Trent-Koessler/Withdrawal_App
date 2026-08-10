@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from '../data/symptomatic.js';
 import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
+import { SCALES } from '../data/scales.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -496,5 +497,47 @@ describe('P2-09 — opioid pathway depth', () => {
     test('pain management on buprenorphine is addressed', () => {
         assert.ok(/[Ff]ull agonists remain effective for analgesia/.test(flat),
             'the point that buprenorphine need not be ceased to treat pain is missing');
+    });
+});
+
+describe('P2-10 — psychostimulant pathway depth', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="stimulant-withdrawal-page"'),
+        html.indexOf('<!-- Gabapentinoid Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('the three-phase model is given with time courses for both drugs', () => {
+        for (const phase of ['Crash', 'Withdrawal', 'Extinction']) {
+            assert.ok(flat.includes(phase), `phase missing: ${phase}`);
+        }
+        assert.ok(/Methamphetamine/.test(flat) && /Cocaine/.test(flat),
+            'the time courses do not distinguish methamphetamine from cocaine');
+    });
+
+    test('the complications table covers all three systems', () => {
+        for (const c of ['Seizures', 'cardiomyopathy', 'rhabdomyolysis', 'Hyperpyrexia', 'psychosis']) {
+            assert.ok(flat.includes(c), `complication missing: ${c}`);
+        }
+    });
+
+    test('physical assessment and consumption units are stated', () => {
+        assert.ok(/nutrition, hydration, weight loss, skin integrity and dental health/.test(flat),
+            'the physical assessment set is missing');
+        assert.ok(/'points' \(approximately 0\.1g\)/.test(flat), 'consumption units missing');
+        assert.ok(/days used in the past 28/.test(flat), 'the 28-day frame is missing');
+    });
+
+    test('driving advice carries the Austroads periods and the disclosure obligation', () => {
+        assert.ok(/unfit for an unconditional licence/.test(flat), 'the licence status is missing');
+        assert.ok(/3 months<\/strong>/.test(flat) && /1 month<\/strong>/.test(flat),
+            'the commercial and private conditional-licence periods are missing');
+        assert.ok(/legal obligation to disclose/.test(flat), 'the disclosure obligation is missing');
+        assert.ok(/Document the advice you gave/.test(flat), 'the prompt to document is missing');
+    });
+
+    test('the AWQ calculator states it cannot drive a medication decision', () => {
+        const awq = SCALES.find((s) => s.id === 'awq');
+        assert.ok(/not validated for linking a score to a medication decision/i.test(awq.note),
+            'the AWQ note still invites the inference that a score selects a dose');
     });
 });
