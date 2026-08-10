@@ -278,3 +278,33 @@ describe('P2-03 — benzodiazepine framework', () => {
             'carbamazepine and pregabalin should be named as unsupported, not simply omitted');
     });
 });
+
+describe('P2-05 — continuing care and relapse prevention', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="continuing-care-page"'),
+        html.indexOf('<!-- Helpful Contacts Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('AUD pharmacotherapy is named', () => {
+        assert.ok(/naltrexone, acamprosate and\s*<\/strong>?\s*disulfiram|naltrexone, acamprosate and disulfiram/.test(flat),
+            'the three AUD relapse-prevention agents are not named');
+        assert.ok(/Australian\s*Guidelines for the Treatment of Alcohol Problems/.test(flat),
+            'no pointer to the guideline that actually carries the dosing');
+    });
+
+    test('the opioid non-recommendations are explicit', () => {
+        assert.ok(/[Oo]ral naltrexone is not supported/.test(flat), 'oral naltrexone non-recommendation missing');
+        assert.ok(/implants are not approved in Australia/.test(flat), 'implant status missing');
+        assert.ok(/cannot be recommended/.test(flat), 'rapid naltrexone-assisted withdrawal warning missing');
+        assert.ok(/robust evidence base/.test(flat), 'OAT evidence base missing');
+    });
+
+    test('reduced-tolerance safety planning is part of completion', () => {
+        assert.ok(/[Tt]olerance is lowest at the point of completion/.test(flat),
+            'the completion-point overdose risk is not surfaced');
+    });
+
+    test('it is reachable from the home page', () => {
+        assert.ok(/data-page="continuing-care-page"/.test(html), 'nothing navigates to continuing care');
+    });
+});
