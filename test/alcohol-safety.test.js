@@ -545,3 +545,26 @@ describe('P1-09 — the test-dose protocol declares itself as local', () => {
         });
     }
 });
+
+describe('P1-10 — incomplete taper at discharge', () => {
+    const html = read('index.html');
+
+    test('both pathways specify 24-hourly staged supply', () => {
+        for (const [name, section] of [
+            ['inpatient', html.slice(html.indexOf('<div id="regimens"'), html.indexOf('<div id="special-cases"'))],
+            ['ambulatory', html.slice(html.indexOf('<div id="ambulatory-meds"'), html.indexOf('<div id="ambulatory-escalation"'))],
+        ]) {
+            const flat = section.replace(/\s+/g, ' ');
+            assert.ok(/24 hours of medication at a time|24 hours of medication<\/strong> at a time/.test(flat),
+                `${name}: staged supply is not specified as 24 hours at a time`);
+            assert.ok(/[Ll]imit benzodiazepine use to 5-7 days/.test(flat),
+                `${name}: the 5-7 day limit is missing`);
+        }
+    });
+
+    test('the risks of unsupervised self-medication are spelled out', () => {
+        const flat = html.replace(/\s+/g, ' ');
+        assert.ok(/overdose, undiagnosed complications, and failure to complete/.test(flat),
+            'the three risks a patient should be told about are not enumerated');
+    });
+});
