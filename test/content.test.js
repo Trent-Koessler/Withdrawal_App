@@ -711,3 +711,42 @@ describe('AUTH-05 — scale caveats live inside the calculators', () => {
             'caveats must sit above the results grid, not after it');
     });
 });
+
+describe('AUTH-06 — the EMR copy function exports a plan', () => {
+    const html = read('index.html');
+    const js = read('script.js');
+
+    test('the regimens tab offers a plan export', () => {
+        assert.ok(/id="plan-summary"/.test(html), 'no plan textarea');
+        assert.ok(/id="copy-plan-btn"/.test(html), 'no copy button');
+    });
+
+    test('the plan covers every section the spec names', () => {
+        const summary = js.slice(js.indexOf('function buildPlanSummary'), js.indexOf('// Shared by the regimen panel'));
+        for (const section of ['REGIMEN', 'MONITORING', 'ESCALATION', 'DISCHARGE', 'THIAMINE']) {
+            assert.ok(summary.includes(section), `plan section missing: ${section}`);
+        }
+    });
+
+    test('sections are selected by id, not by position', () => {
+        const summary = js.slice(js.indexOf('function buildPlanSummary'), js.indexOf('// Shared by the regimen panel'));
+        assert.ok(!/querySelectorAll\([^)]*\)\[\d\]/.test(summary),
+            'positional selection breaks silently when a block is reordered');
+        for (const id of ['block-band-selection', 'block-monitoring', 'block-escalation', 'block-discharge']) {
+            assert.ok(html.includes(`id="${id}"`), `index.html has no #${id} for the plan export to find`);
+            assert.ok(summary.includes(id), `buildPlanSummary does not read #${id}`);
+        }
+    });
+
+    test('source tags survive into the copied text', () => {
+        assert.ok(/querySelectorAll\('\.src-tag'\)/.test(js),
+            'the exporter must convert source chips, not drop them — provenance has to survive the paste');
+        assert.ok(/\[\$\{tag\.textContent\.trim\(\)\}\]/.test(js), 'tags should render as [NSWCG §x.y]');
+    });
+
+    test('the exported plan carries its own disclaimer', () => {
+        assert.ok(/decision support, not a prescription/.test(js),
+            'a block of text pasted into an EMR outlives its context and needs to say what it is');
+        assert.ok(/Adult patients only/.test(js), 'the adults-only limit must travel with the plan');
+    });
+});

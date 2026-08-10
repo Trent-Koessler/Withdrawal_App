@@ -1012,7 +1012,7 @@ textarea {
                                 <small>Local protocol | test dose, reassess at 1 and 2 hours</small>
                             </button>
                         </div>
-                        <div class="clinical-block">
+                        <div class="clinical-block" id="block-interpreting-score">
                             <h4>Interpreting CIWA-Ar early</h4>
                             <p>Check BAC before commencing. CIWA-Ar is unreliable while the patient is intoxicated —
                                 intoxication and withdrawal features overlap. <strong>A rising score with a falling BAL
@@ -1026,7 +1026,7 @@ textarea {
                             <p>Ensure CIWA-Ar is done q2hrly at least initially for all patients commenced on a regimen.
                                 Regularly review the patient and adjust as per clinical judgement.</p>
                         </div>
-                        <div class="clinical-block">
+                        <div class="clinical-block" id="block-band-selection">
                             <h4>Choosing a band</h4>
                             <p>The standard-drink split above is the default entry point.
                                 <span class="src-tag src-local">LOCAL — rationale: the ≤14 / ≥15 standard drinks per
@@ -1048,7 +1048,7 @@ textarea {
                                  two different band-selection methods across the two pathways is the current state. -->
                         </div>
 
-                        <div class="clinical-block">
+                        <div class="clinical-block" id="block-monitoring">
                             <h4>Monitoring</h4>
                             <div class="clinical-table-wrap">
                                 <table class="clinical-table">
@@ -1076,7 +1076,7 @@ textarea {
 
                         <!-- Placed once, above #regimen-display, so it renders under every severity
                              rather than being repeated per severity and drifting between them. -->
-                        <div class="escalation-box">
+                        <div class="escalation-box" id="block-escalation">
                             <h4>Escalation triggers</h4>
                             <p><strong>Escalate — move up a schedule and request medical review if any of:</strong></p>
                             <ul>
@@ -1106,7 +1106,7 @@ textarea {
                             cautioned. Seeking specialist clinical advice first and considering a test-dose protocol to
                             assess tolerance is advised.
                         </p>
-                        <div class="clinical-block">
+                        <div class="clinical-block" id="block-discharge">
                             <h4>If the taper is incomplete at discharge</h4>
                             <p><strong>Staged supply — 24 hours of medication at a time.</strong> Self-medication is a
                                 risk during alcohol withdrawal, particularly with minimal supervision.
@@ -1119,6 +1119,17 @@ textarea {
                         </div>
 
                         <div id="regimen-display"></div>
+
+                        <div class="clinical-block">
+                            <h4>Copy this plan to the EMR</h4>
+                            <p>Copies the selected regimen with its doses and taper, the monitoring frequency, the
+                                escalation thresholds, the thiamine regimen and the discharge rules — with source tags
+                                intact, so the paste says where each part came from.</p>
+                            <textarea id="plan-summary" readonly aria-label="Plan summary for the EMR"></textarea>
+                            <div class="button-group">
+                                <button id="copy-plan-btn">Copy plan</button>
+                            </div>
+                        </div>
                     </div>
                     <div id="special-cases" class="tab-content">
                         <h3>Special Cases</h3>
