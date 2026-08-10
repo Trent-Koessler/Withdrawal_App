@@ -12,6 +12,17 @@ const symptomTriggeredNote = (drugName) => `For unclear alcohol intake, or antic
 // table silently hides.
 const OXAZEPAM_CONVERSION_CAVEAT = `<b>Conversion caveat.</b> Diazepam 10mg &asymp; oxazepam 30mg is an <b>approximate</b> ratio, not an equivalence. Oxazepam has no long-acting active metabolites, so it needs <b>more frequent administration and a slower step-down</b> than a diazepam taper of the same shape. Treat the schedule below as a starting point to be <b>titrated against response</b>, not a fixed course to complete. <span class="src-tag src-nswcg-adapted">NSWCG-adapted §5.6.3 — rationale: NSWCG gives the equivalence ratio and advises careful titration for this group, but publishes no oxazepam taper table; converting the diazepam schedule is a local step and the resulting shape is not guideline-derived.</span>`;
 
+// Many NSW wards chart AWS rather than CIWA-Ar, so no band in this app is
+// expressed in CIWA-Ar alone. NSWCG Table 5.6 maps CIWA-Ar <10 / 10-20 / >20 to
+// AWS <4 / 4-14 / >14 — which is coarser than the local CIWA bands, so AWS 4-14
+// covers both fixed schedules and cannot separate them.
+const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> NSWCG maps CIWA-Ar &lt; 10 / 10-20 / &gt; 20 to AWS &lt; 4 / 4-14 / &gt; 14. Those bands are <b>coarser</b> than the CIWA-Ar bands this app uses to separate Mild-Moderate from Moderate-Severe: <b>AWS 4-14 spans both</b>. An AWS score alone will not choose between the two fixed schedules — use reported intake, risk factors and clinical assessment for that, and use AWS to track severity within the schedule you choose. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6 — rationale: NSWCG publishes the three-band AWS mapping but no AWS equivalent for the local CIWA-Ar 10-15 / 15-20 split, so the overlap is stated rather than a finer mapping being invented.</span>`;
+
+// TODO(clinical): how should a ward that charts AWS only choose between the
+// Mild-Moderate and Moderate-Severe fixed schedules? Both sit inside AWS 4-14.
+// Options include defaulting to Mild-Moderate with escalation, or requiring a
+// CIWA-Ar at band selection even where AWS is charted thereafter.
+
 // NSWCG Table 5.4 / 5.6. The dose column is drug-specific; the score bands and
 // the monitoring frequency are not, so they are written once here.
 const symptomTriggeredTable = (doses) => ({
@@ -53,22 +64,23 @@ export const REGIMEN_CONFIG = {
     "Diazepam": {
         name: "Diazepam",
         mild: {
-            title: 'Mild-Moderate (CIWA 10-15)',
+            title: 'Mild-Moderate (CIWA-Ar 10-15 | AWS 4-14)',
+            caveat: [AWS_BAND_CAVEAT],
             schedule: [{ dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' }],
-            prn: [{ range: '10-15', dose: 10 }, { range: '15-20', dose: 20 }],
+            prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }],
             symptom_triggered: {
                 title: 'Alternative: Symptom-Triggered Regimen',
                 note: symptomTriggeredNote('diazepam')
             }
         },
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
-        moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', dose: 10 }, { range: '15-20', dose: 20 }] },
+        moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }] },
         // TODO(clinical): confirm the preferred Day 2 default after a loading day —
         // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
         // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
         // while local practice has used the latter; only one should be the default.
         severe: {
-            title: 'Severe (CIWA > 20)',
+            title: 'Severe (CIWA-Ar > 20 | AWS > 14)',
             schedule: [
                 `<b>Day 1 — loading.</b> Diazepam 20mg hourly until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
                 `<b>Day 2 onward — do not repeat a loading day.</b> Following loading, no further loading diazepam is generally needed once the patient is settled: diazepam's long-acting active metabolites are the reason loading works, and a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
@@ -99,24 +111,24 @@ export const REGIMEN_CONFIG = {
     "Oxazepam": {
         name: "Oxazepam",
         mild: {
-            title: 'Mild-Moderate (CIWA 10-15)',
-            caveat: [OXAZEPAM_CONVERSION_CAVEAT],
+            title: 'Mild-Moderate (CIWA-Ar 10-15 | AWS 4-14)',
+            caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT],
             schedule: [{ dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' }],
-            prn: [{ range: '10-15', dose: 30 }, { range: '15-20', dose: 60 }],
+            prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }],
             symptom_triggered: {
                 title: 'Alternative: Symptom-Triggered Regimen',
                 note: symptomTriggeredNote('oxazepam')
             }
         },
         symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),
-        moderate: { title: 'Moderate-Severe (CIWA 15-20)', caveat: [OXAZEPAM_CONVERSION_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', dose: 30 }, { range: '15-20', dose: 60 }] },
+        moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }] },
         // Deliberately has no schedule. The population that needs oxazepam —
         // decompensated liver disease, respiratory insufficiency, elderly/frail,
         // cerebral trauma — is precisely the population NSWCG §5.6.3 says must not
         // receive a loading regimen, so a severe-withdrawal oxazepam regimen is a
         // combination that should never render as a set of numbers to follow.
         severe: {
-            title: 'Severe (CIWA > 20) — oxazepam',
+            title: 'Severe (CIWA-Ar > 20 | AWS > 14) — oxazepam',
             routing: [
                 `<b>There is no oxazepam regimen for severe withdrawal.</b> Loading is a diazepam concept: it works because of diazepam's long-acting active metabolites, which oxazepam does not have. Converting a diazepam loading dose would give roughly 240mg of oxazepam to the patients least able to tolerate it. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>Instead:</b> titrate oxazepam <b>15-30mg</b> carefully against response — do not follow a fixed schedule. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,

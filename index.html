@@ -985,19 +985,19 @@ textarea {
                         <div class="button-group">
                             <button class="regimen-severity-btn active" data-severity="mild">
                                 <strong>Mild-Mod</strong><br>
-                                <small>e.g. CIWA 10-15 | ≤ 14 standard drinks/day</small>
+                                <small>e.g. CIWA-Ar 10-15 / AWS 4-14 | ≤ 14 standard drinks/day</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="symptom">
                                 <strong>Symptom-Triggered</strong><br>
-                                <small>Dose to the score | uncomplicated withdrawal, frequent skilled review</small>
+                                <small>Dose to the CIWA-Ar or AWS score | uncomplicated withdrawal, frequent skilled review</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="moderate">
                                 <strong>Mod-Sev</strong><br>
-                                <small>e.g. CIWA 15-20 | ≥ 15 standard drinks/day</small>
+                                <small>e.g. CIWA-Ar 15-20 / AWS 4-14 | ≥ 15 standard drinks/day</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="severe">
                                 <strong>Severe</strong><br>
-                                <small>e.g. CIWA &gt; 20 | ≥ 15 drinks/day + complex features</small>
+                                <small>e.g. CIWA-Ar &gt; 20 / AWS &gt; 14 | ≥ 15 drinks/day + complex features</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="unknown">
                                 <strong>Unknown Tolerance</strong><br>
@@ -1025,8 +1025,8 @@ textarea {
                             <p><strong>Escalate — move up a schedule and request medical review if any of:</strong></p>
                             <ul>
                                 <li>Both daily PRN doses have been used and the patient remains symptomatic.</li>
-                                <li>Two consecutive CIWA-Ar scores in the band <em>above</em> the current schedule.</li>
-                                <li>CIWA-Ar rising on days 3-4 of an established taper.</li>
+                                <li>Two consecutive CIWA-Ar (or AWS) scores in the band <em>above</em> the current schedule.</li>
+                                <li>CIWA-Ar (or AWS) rising on days 3-4 of an established taper.</li>
                                 <li>Total diazepam <strong>&ge; 80mg in 24 hours</strong> &rarr; medical officer review
                                     to exclude other pathology. <span class="src-tag src-nswcg">NSWCG §5.4.4</span></li>
                                 <li>Any seizure, delirium, hallucinations, or hyperthermia &rarr; treat as severe; see
@@ -1196,8 +1196,9 @@ textarea {
                             </li>
                             <li><b>Medical Officer Review Triggers:</b>
                                 <ul>
-                                    <li>Nursing staff should call the AOD medical officer if CIWA-Ar score is &gt;20 or
-                                        other complications arise.</li>
+                                    <li>Nursing staff should call the AOD medical officer if the CIWA-Ar score is
+                                        &gt;20 (or AWS &gt;14) or other complications arise.
+                                        <span class="src-tag src-nswcg">NSWCG Table 5.6</span></li>
                                     <li>If any concerns arise (e.g., high CIWA-Ar score, positive BAL, signs of
                                         delirium), the patient should be referred to a medical officer for review and
                                         the detox protocol should be ceased.</li>

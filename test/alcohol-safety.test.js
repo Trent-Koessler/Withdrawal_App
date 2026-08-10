@@ -121,7 +121,7 @@ describe('P0-04 — escalation and de-escalation criteria exist', () => {
     test('all four escalation triggers are present', () => {
         for (const trigger of [
             /[Bb]oth daily PRN doses/,          // the gap the spec called out
-            /[Tt]wo consecutive CIWA-Ar scores/,
+            /[Tt]wo consecutive CIWA-Ar \(or AWS\) scores/,
             /rising on days 3-4/,
             /80mg in 24 hours/,
         ]) {
@@ -294,5 +294,48 @@ describe('P1-01 — symptom-triggered dosing is offered as its own regimen', () 
     test('the regimens tab exposes it as a selectable severity', () => {
         assert.ok(/data-severity="symptom"/.test(read('index.html')),
             'no button selects the symptom-triggered regimen');
+    });
+});
+
+describe('P1-02 — no band is expressed in CIWA-Ar only', () => {
+    test('every severity title gives both scales', () => {
+        for (const benzo of Object.keys(REGIMEN_CONFIG)) {
+            for (const [severity, cell] of Object.entries(REGIMEN_CONFIG[benzo])) {
+                if (!cell || typeof cell !== 'object' || !cell.title) continue;
+                if (!/CIWA/i.test(cell.title)) continue;
+                assert.ok(/AWS/.test(cell.title),
+                    `${benzo}/${severity} title "${cell.title}" gives a CIWA-Ar band with no AWS equivalent`);
+            }
+        }
+    });
+
+    test('every PRN trigger gives both scales', () => {
+        for (const benzo of Object.keys(REGIMEN_CONFIG)) {
+            for (const [severity, cell] of Object.entries(REGIMEN_CONFIG[benzo])) {
+                for (const entry of (cell && cell.prn) || []) {
+                    if (typeof entry === 'string') continue;
+                    assert.ok(entry.aws,
+                        `${benzo}/${severity} PRN trigger at CIWA ${entry.range} has no AWS band`);
+                }
+            }
+        }
+    });
+
+    test('the severity selector and escalation triggers name both scales', () => {
+        const html = read('index.html');
+        const regimens = html.slice(html.indexOf('<div id="regimens"'),
+            html.indexOf('<div id="special-cases"'));
+        const ciwaOnly = [...regimens.matchAll(/CIWA-Ar?[^<]{0,30}/g)]
+            .map((m) => m[0])
+            .filter((s) => /\d/.test(s));
+        assert.ok(ciwaOnly.length > 0, 'no CIWA bands found at all — the selector is broken');
+        assert.ok(/AWS 4-14/.test(regimens) && /AWS &gt; 14/.test(regimens),
+            'the severity buttons do not carry AWS equivalents');
+    });
+
+    test('the AWS/CIWA band overlap is stated rather than papered over', () => {
+        const caveats = REGIMEN_CONFIG.Diazepam.mild.caveat.join('\n');
+        assert.ok(/AWS 4-14<\/b> spans both|AWS 4-14 spans both/.test(caveats),
+            'AWS 4-14 covers both fixed schedules; presenting a clean mapping would be an invented equivalence');
     });
 });

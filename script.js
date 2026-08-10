@@ -426,7 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof p === 'string') {
                     displayHTML += `<li>${p}</li>`;
                 } else {
-                    displayHTML += `<li>CIWA ${p.range}: extra ${b_name} ${p.dose}mg PRN</li>`;
+                    const band = p.aws ? `CIWA-Ar ${p.range} / AWS ${p.aws}` : `CIWA-Ar ${p.range}`;
+                    displayHTML += `<li>${band}: extra ${b_name} ${p.dose}mg PRN</li>`;
                 }
             });
             displayHTML += `</ul>`;
