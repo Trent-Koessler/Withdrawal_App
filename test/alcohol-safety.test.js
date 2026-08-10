@@ -339,3 +339,26 @@ describe('P1-02 — no band is expressed in CIWA-Ar only', () => {
             'AWS 4-14 covers both fixed schedules; presenting a clean mapping would be an invented equivalence');
     });
 });
+
+describe('P1-03 — monitoring is specified, not left to "q2hrly at least initially"', () => {
+    const html = read('index.html');
+    const regimens = html.slice(html.indexOf('<div id="regimens"'),
+        html.indexOf('<div id="special-cases"'));
+
+    test('the severity-linked observation frequency table is present', () => {
+        for (const freq of ['4-6 hourly', '2-4 hourly', 'hourly']) {
+            assert.ok(regimens.includes(freq), `monitoring frequency "${freq}" missing`);
+        }
+    });
+
+    test('the observation set is enumerated', () => {
+        for (const obs of ['temperature', 'pulse rate and rhythm', 'blood pressure', 'hydration']) {
+            assert.ok(new RegExp(obs, 'i').test(regimens), `observation "${obs}" missing`);
+        }
+    });
+
+    test('minimum investigations are named', () => {
+        assert.ok(/FBC, magnesium, UEC, LFT/.test(regimens),
+            'the minimum investigation set is missing');
+    });
+});
