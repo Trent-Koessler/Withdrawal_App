@@ -178,3 +178,37 @@ describe('P0-05 — oxazepam is never loaded and never routed by conversion alon
         }
     });
 });
+
+describe('P0-06 — DASAS is reachable from Sydney metro too', () => {
+    const sources = ['index.html', 'data/regimens.js'];
+
+    test('every mention of the regional DASAS number offers the metro number', () => {
+        for (const file of sources) {
+            const text = read(file).replace(/\s+/g, ' ');
+            // Count blocks mentioning the 1800 number and check each has the metro
+            // number nearby, so a new inline mention cannot ship with only one.
+            const mentions = [...text.matchAll(/1800\s?023\s?687/g)];
+            for (const m of mentions) {
+                const window = text.slice(Math.max(0, m.index - 400), m.index + 400);
+                assert.ok(/\(?02\)?\s?8382\s?1006|0283821006/.test(window),
+                    `${file}: a DASAS mention near offset ${m.index} gives only the regional number`);
+            }
+        }
+    });
+
+    test('both numbers are tel: links wherever they appear', () => {
+        for (const file of sources) {
+            const text = read(file);
+            if (!/1800\s?023\s?687/.test(text)) continue;
+            assert.ok(text.includes('tel:1800023687'), `${file}: regional DASAS number is not a tel: link`);
+            assert.ok(text.includes('tel:0283821006'), `${file}: metro DASAS number is not a tel: link`);
+        }
+    });
+
+    test('the contacts directory distinguishes the two catchments', () => {
+        const html = read('index.html').replace(/\s+/g, ' ');
+        assert.ok(/1800 023 687<\/a> — regional, rural and remote NSW/.test(html)
+            || /regional, rural and remote NSW/.test(html), 'catchments not labelled');
+        assert.ok(/Sydney metropolitan/.test(html), 'the metro catchment is not named');
+    });
+});
