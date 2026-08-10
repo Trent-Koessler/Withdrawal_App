@@ -22,7 +22,20 @@ export const REGIMEN_CONFIG = {
             }
         },
         moderate: { title: 'Moderate-Severe (CIWA 15-20)', schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', dose: 10 }, { range: '15-20', dose: 20 }] },
-        severe: { title: 'Severe (CIWA > 20)', schedule: [`Loading Dose: 20mg hourly until sedated or total dose reaches 80mg.`, "Then commence Moderate-Severe schedule."], prn: ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."] },
+        // TODO(clinical): confirm the preferred Day 2 default after a loading day —
+        // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
+        // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
+        // while local practice has used the latter; only one should be the default.
+        severe: {
+            title: 'Severe (CIWA > 20)',
+            schedule: [
+                `<b>Day 1 — loading.</b> Diazepam 20mg hourly until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+                `<b>Day 2 onward — do not repeat a loading day.</b> Following loading, no further loading diazepam is generally needed once the patient is settled: diazepam's long-acting active metabolites are the reason loading works, and a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+                `<b>Preferred handover:</b> symptom-triggered dosing in a reducing regimen (see the Symptom-Triggered regimen). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+                `<b>Alternative handover:</b> if a fixed schedule is preferred, commence at the <b>Day 2 row</b> of the Moderate-Severe schedule — diazepam 15mg qid — and taper from there as written. Do not start that schedule at its Day 1 row. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+            ],
+            prn: ["Manage in HDU.", "Review if total > 80mg diazepam equivalent."]
+        },
         unknown: {
             title: 'Unknown Tolerance (Test-Dose Protocol)',
             schedule: [
