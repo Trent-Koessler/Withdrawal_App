@@ -23,6 +23,23 @@ const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> NSWCG maps CIWA-Ar &lt;
 // Options include defaulting to Mild-Moderate with escalation, or requiring a
 // CIWA-Ar at band selection even where AWS is charted thereafter.
 
+// The lowest band in this app starts at CIWA-Ar 10-15 / <=14 standard drinks a
+// day, so a genuinely mild withdrawal received 40mg of diazepam on Day 1 with
+// nothing gentler available. NSWCG Table 5.5 notes milder cases may respond to
+// half the ambulatory regimen doses.
+const subMildCell = (drug, halved, extraCaveats = []) => ({
+    title: `Sub-Mild (CIWA-Ar &lt; 10 | AWS &lt; 4)`,
+    caveat: [...extraCaveats, `<b>Two options, and they are not equivalent.</b> A patient below the Mild-Moderate band does not automatically need a fixed schedule. Decide between supportive care with symptom-triggered dosing, and a halved fixed schedule, before prescribing. <span class="src-tag src-nswcg">NSWCG Table 5.5, §5.4.4</span>`],
+    schedule: [
+        `<b>Option A — supportive care and symptom-triggered dosing only.</b> No scheduled benzodiazepine. Monitor 4-6 hourly, treat to the score using the Symptom-Triggered regimen, and reassess. This is the NSWCG-preferred approach for uncomplicated withdrawal with frequent review. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+        `<b>Option B — halved fixed schedule.</b> NSWCG Table 5.5 notes that milder cases may respond to <b>half</b> the ambulatory regimen doses. Applied to the schedule used here, that is: ${halved}. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.5 — rationale: NSWCG states milder cases may respond to half the ambulatory doses but publishes no sub-mild table, so the halved figures are derived from this site's own ambulatory regimen and inherit its local provenance.</span>`,
+        `<b>Either way:</b> escalate to the Mild-Moderate schedule if the score enters that band, and review daily. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+    ]
+    // TODO(clinical): which of these two should be the default for CIWA-Ar < 10 —
+    // supportive care with symptom-triggered dosing only, or the halved fixed
+    // schedule? Both are presented until this is decided; only one should be.
+});
+
 // NSWCG Table 5.4 / 5.6. The dose column is drug-specific; the score bands and
 // the monitoring frequency are not, so they are written once here.
 const symptomTriggeredTable = (doses) => ({
@@ -73,6 +90,7 @@ export const REGIMEN_CONFIG = {
                 note: symptomTriggeredNote('diazepam')
             }
         },
+        submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
         moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }] },
         // TODO(clinical): confirm the preferred Day 2 default after a loading day —
@@ -120,6 +138,7 @@ export const REGIMEN_CONFIG = {
                 note: symptomTriggeredNote('oxazepam')
             }
         },
+        submild: subMildCell('oxazepam', 'oxazepam 15mg qid on Day 1, 15mg tds on Day 2, 15mg bd on Day 3, 7.5mg bd on Day 4, then 7.5mg nocte on Day 5', [OXAZEPAM_CONVERSION_CAVEAT]),
         symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),
         moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }] },
         // Deliberately has no schedule. The population that needs oxazepam —

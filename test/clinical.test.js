@@ -157,7 +157,7 @@ describe('scale structure', () => {
 });
 
 describe('benzodiazepine regimens', () => {
-    const SEVERITIES = ['mild', 'symptom', 'moderate', 'severe', 'unknown'];
+    const SEVERITIES = ['submild', 'mild', 'symptom', 'moderate', 'severe', 'unknown'];
 
     // A cell renders either a schedule or a `routing` card. The routing shape
     // exists so a combination that must not produce doses (severe withdrawal on

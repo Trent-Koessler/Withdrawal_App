@@ -362,3 +362,30 @@ describe('P1-03 — monitoring is specified, not left to "q2hrly at least initia
             'the minimum investigation set is missing');
     });
 });
+
+describe('P1-04 — something exists below the Mild-Moderate band', () => {
+    test('a sub-mild cell exists for both benzodiazepines', () => {
+        for (const benzo of Object.keys(REGIMEN_CONFIG)) {
+            assert.ok(REGIMEN_CONFIG[benzo].submild, `${benzo} has nothing below Mild-Moderate`);
+        }
+    });
+
+    test('both options are offered and neither is presented as settled', () => {
+        const text = textOf(REGIMEN_CONFIG.Diazepam.submild);
+        assert.ok(/supportive care and symptom-triggered dosing only/i.test(text),
+            'the supportive-care-only option is missing');
+        assert.ok(/half<\/b> the ambulatory regimen doses|half the ambulatory regimen doses/i.test(text),
+            'the NSWCG Table 5.5 half-dose option is missing');
+    });
+
+    test('the halved schedule is tagged as derived, not as guideline dosing', () => {
+        const caveats = [...REGIMEN_CONFIG.Diazepam.submild.schedule].join('\n');
+        assert.ok(/src-nswcg-adapted/.test(caveats),
+            'the halved figures are derived from a local ambulatory regimen and must not be tagged as NSWCG dosing');
+    });
+
+    test('it is reachable from the severity selector', () => {
+        assert.ok(/data-severity="submild"/.test(read('index.html')),
+            'no button selects the sub-mild option');
+    });
+});
