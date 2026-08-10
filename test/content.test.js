@@ -750,3 +750,44 @@ describe('AUTH-06 — the EMR copy function exports a plan', () => {
         assert.ok(/Adult patients only/.test(js), 'the adults-only limit must travel with the plan');
     });
 });
+
+describe('AUTH-07 — capacity and consent scaffold', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="capacity-page"'),
+        html.indexOf('<!-- Specific Population Groups -->'));
+
+    test('the page exists and is reachable', () => {
+        assert.ok(page.length > 500, 'the capacity scaffold is missing');
+        assert.ok(/data-page="capacity-page"/.test(html), 'nothing navigates to it');
+    });
+
+    test('all five topics are scaffolded', () => {
+        for (const topic of ['Capacity assessment in intoxication and withdrawal',
+            'Consent and cognitive impairment', 'When the Mental Health Act applies',
+            'The IDAT pathway', 'Guardianship and substitute decision-making']) {
+            assert.ok(page.includes(topic), `scaffold heading missing: ${topic}`);
+        }
+    });
+
+    test('it says plainly that it is empty', () => {
+        assert.ok(/This section is a scaffold. No content has been written yet/.test(page),
+            'an empty section that does not say it is empty reads as coverage');
+        assert.ok(/contact your Local Health District/.test(page.replace(/\s+/g, ' ')),
+            'a clinician landing here with a live question needs somewhere to go');
+    });
+
+    test('no clinical or legal content has been drafted', () => {
+        // Each topic must be a heading followed by "To be written", not prose.
+        const placeholders = [...page.matchAll(/<em>To be written\.<\/em>/g)];
+        assert.equal(placeholders.length, 5,
+            'every scaffolded topic should be an explicit placeholder — the spec forbids drafting this content');
+    });
+
+    test('each topic carries a TODO(clinical) inside an HTML comment', () => {
+        const comments = [...page.matchAll(/<!--[\s\S]*?-->/g)].map((m) => m[0]).join('\n');
+        assert.equal([...comments.matchAll(/TODO\(clinical\):/g)].length, 5,
+            'each of the five topics needs its own recorded question');
+        assert.ok(/TODO\(review\):/.test(comments),
+            'this section needs medico-legal review, not only clinical review');
+    });
+});
