@@ -632,3 +632,39 @@ describe('P2-12 / P2-14 — the standard drinks calculator asks the right questi
             'the prompt should route the user to the custom volume tab, or it is only a warning');
     });
 });
+
+describe('P2-14 — consumption history method', () => {
+    const html = read('index.html');
+    const panel = html.slice(html.indexOf('<div id="consumption-history"'),
+        html.indexOf('<section id="aws"'));
+    const flat = panel.replace(/\s+/g, ' ');
+
+    test('it sits with the standard drinks calculator, not on a page of its own', () => {
+        const stdDrinks = html.slice(html.indexOf('<section id="std-drinks"'), html.indexOf('<section id="aws"'));
+        assert.ok(/data-tab="consumption-history"/.test(stdDrinks),
+            'the method should be a tab beside the calculator it makes useful');
+    });
+
+    test('the retrospective week method is given as steps', () => {
+        assert.ok(/[Ss]tart from the most recent use/.test(flat), 'the starting point is missing');
+        assert.ok(/[Ll]ink consumption to activities/.test(flat), 'the activity-linking step is missing');
+        assert.ok(/[Cc]over each day of the past week/.test(flat), 'the day-by-day step is missing');
+        assert.ok(/whether that week was typical/.test(flat), 'the typicality check is missing');
+    });
+
+    test('the per-drug record set is complete', () => {
+        for (const field of [/Quantity, frequency, duration of use, and pattern/, /Time and amount of last use/,
+            /Route of administration/, /Average daily consumption/, /prescribed dose and the/]) {
+            assert.ok(field.test(flat), `record field missing: ${field}`);
+        }
+    });
+
+    test('the alcohol plus benzodiazepine combination is flagged', () => {
+        assert.ok(/[Cc]ross-tolerance/.test(flat), 'the cross-tolerance mechanism is missing');
+        assert.ok(/more severe and more protracted/.test(flat), 'the consequence is not stated');
+    });
+
+    test('ATOP is linked', () => {
+        assert.ok(/ATOP/.test(flat) && /health\.nsw\.gov\.au/.test(flat), 'ATOP is not linked');
+    });
+});

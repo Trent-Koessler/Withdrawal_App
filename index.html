@@ -1432,6 +1432,8 @@ textarea {
                                     Types</button>
                                 <button class="tab-button" data-tab="std-by-volume">Calculate by Custom Volume &
                                     ABV</button>
+                                <button class="tab-button" data-tab="consumption-history">Consumption History
+                                    Method</button>
                             </div>
                             <div id="std-by-type" class="tab-content active">
                                 <div class="clinical-block">
@@ -1539,6 +1541,51 @@ textarea {
                                     <button class="reset-btn">Reset</button>
                                 </div>
                                 <textarea id="volume-result" readonly></textarea>
+                            </div>
+                            <div id="consumption-history" class="tab-content">
+                                <h3>Taking a Consumption History</h3>
+                                <p>A number is only as good as the history behind it. This is the method that turns
+                                    the calculator above from arithmetic into a history-taking tool.
+                                    <span class="src-tag src-nswcg">NSWCG App 8</span></p>
+
+                                <h4>The retrospective week method</h4>
+                                <ol>
+                                    <li><strong>Start from the most recent use</strong> and work backwards.</li>
+                                    <li><strong>Link consumption to activities</strong> — what the patient was doing,
+                                        who they were with, where they were. People recall events more reliably than
+                                        quantities.</li>
+                                    <li><strong>Cover each day of the past week</strong>, one at a time.</li>
+                                    <li><strong>Then ask whether that week was typical.</strong> If it was not, ask
+                                        what a typical week looks like and what made this one different.</li>
+                                </ol>
+                                <p><span class="src-tag src-nswcg">NSWCG App 8</span></p>
+
+                                <h4>Record for each drug</h4>
+                                <ul>
+                                    <li>Quantity, frequency, duration of use, and pattern.</li>
+                                    <li><strong>Time and amount of last use</strong> — this is what withdrawal timing
+                                        depends on.</li>
+                                    <li>Route of administration.</li>
+                                    <li>Recent pattern leading to this presentation.</li>
+                                    <li>Average daily consumption.</li>
+                                    <li>For prescribed medicines: <strong>the prescribed dose and the
+                                            prescriber</strong> — which may differ from what is being taken.</li>
+                                </ul>
+                                <p><span class="src-tag src-nswcg">NSWCG App 8</span></p>
+
+                                <div class="warning-box">
+                                    <strong>⚠️ Flag alcohol plus benzodiazepines explicitly.</strong> Cross-tolerance
+                                    makes the withdrawal <strong>more severe and more protracted</strong> than either
+                                    alone, and the benzodiazepine component is easy to miss when alcohol is the
+                                    presenting problem.
+                                    <span class="src-tag src-nswcg">NSWCG App 8</span>
+                                </div>
+
+                                <p>For a structured, repeatable outcome measure across episodes of care, see
+                                    <strong>ATOP</strong> (Australian Treatment Outcomes Profile):
+                                    <a href="https://www.health.nsw.gov.au/aod/professionals/Pages/atop.aspx"
+                                        target="_blank" rel="noopener">NSW Health ATOP resources</a>.
+                                    <span class="src-tag src-nswcg">NSWCG App 8</span></p>
                             </div>
                         </div>
                     </section>
