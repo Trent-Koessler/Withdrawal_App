@@ -143,3 +143,42 @@ describe('P2-06 — shared harm reduction', () => {
         }
     });
 });
+
+describe('P2-01 — gabapentinoids', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="gabapentinoid-withdrawal-page"'),
+        html.indexOf('<!-- GHB Withdrawal Page -->'));
+
+    test('the page exists and is reachable from Other Substances', () => {
+        assert.ok(page.length > 500, 'the gabapentinoid page is missing or empty');
+        assert.ok(/data-page="gabapentinoid-withdrawal-page"/.test(html),
+            'nothing navigates to the gabapentinoid page');
+    });
+
+    test('the counterintuitive risk — therapeutic doses, short duration — is prominent', () => {
+        const flat = page.replace(/\s+/g, ' ');
+        assert.ok(/as little as <strong>4 weeks<\/strong>/.test(flat), 'the 4-week onset risk is missing');
+        assert.ok(/pregabalin ≤300mg/.test(flat) && /gabapentin ≤3600mg/.test(flat),
+            'withdrawal at therapeutic doses is not stated');
+    });
+
+    test('the taper hand-over thresholds are given', () => {
+        const flat = page.replace(/\s+/g, ' ');
+        assert.ok(/pregabalin 600mg or gabapentin 3600mg/.test(flat), 'starting doses missing');
+        assert.ok(/pregabalin 300mg\/day or gabapentin 1800mg\/day/.test(flat), 'hand-over threshold missing');
+        assert.ok(/5-7 days/.test(flat) && /4-6 weeks/.test(flat), 'taper durations missing');
+        assert.ok(/at least 24 hours/.test(flat), 'the 24-hour observation for overstated dose is missing');
+    });
+
+    test('renal function and the absence of a validated scale are both stated', () => {
+        assert.ok(/[Rr]enal function is the key assessment/.test(page.replace(/\s+/g, ' ')),
+            'renal assessment is missing');
+        assert.ok(/No validated withdrawal scale exists/.test(page),
+            'the app must not imply a gabapentinoid scale exists');
+    });
+
+    test('it uses the shared symptomatic and harm reduction blocks', () => {
+        assert.ok(/data-symptomatic="gabapentinoid"/.test(page));
+        assert.ok(/data-harm-reduction="gabapentinoid"/.test(page));
+    });
+});

@@ -140,6 +140,22 @@ export const HARM_REDUCTION = {
         NUAA
     ],
 
+    gabapentinoid: [
+        REDUCED_TOLERANCE,
+        {
+            heading: 'Gabapentinoid-specific risks',
+            points: [
+                `<b>Wait around 90 minutes before redosing.</b>`,
+                `Oral bioavailability is high enough that the oral route is nearly equivalent to injecting — <b>advise oral use over injecting</b>, which carries every injecting risk for no additional effect.`,
+                `Avoid combining with opioids or other sedatives.`
+            ],
+            source: `<span class="src-tag src-nswcg">NSWCG §10.4.1</span>`
+        },
+        INJECTING,
+        DRIVING,
+        NUAA
+    ],
+
     ghb: [
         REDUCED_TOLERANCE,
         {
