@@ -432,3 +432,32 @@ describe('P1-06 — loading rate', () => {
             'the reason hourly dosing stacks doses is not explained');
     });
 });
+
+describe('P1-07 — setting is decided before the drug chart', () => {
+    test('the severe cell carries a setting block', () => {
+        const cell = REGIMEN_CONFIG.Diazepam.severe;
+        assert.ok(cell.setting, 'severe withdrawal has no setting guidance');
+        const text = cell.setting.join('\n');
+        assert.ok(/HDU/.test(text) && /ICU/.test(text), 'HDU and ICU are not both addressed');
+    });
+
+    test('HDU is no longer buried in the PRN list', () => {
+        const prn = (REGIMEN_CONFIG.Diazepam.severe.prn || [])
+            .filter((p) => typeof p === 'string').join('\n');
+        assert.ok(!/Manage in HDU/.test(prn),
+            'setting guidance is still filed under PRN dosing');
+    });
+
+    test('the NSWCG indications for specialist inpatient care are listed', () => {
+        const text = REGIMEN_CONFIG.Diazepam.severe.setting.join('\n');
+        for (const indication of [
+            /predicted moderate-severe withdrawal/i,
+            /delirium or seizures/i,
+            /multiple drug dependencies/i,
+            /significant other medical problems/i,
+            /repeated inability to complete community withdrawal/i,
+        ]) {
+            assert.ok(indication.test(text), `indication missing: ${indication}`);
+        }
+    });
+});

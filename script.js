@@ -387,6 +387,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let displayHTML = `<h3>${data.title}</h3>`;
 
+        // Where to manage the patient comes before what to prescribe, so it is
+        // rendered above everything else rather than under PRN dosing.
+        if (data.setting) {
+            displayHTML += `<div class="clinical-block"><h4>Setting</h4>`
+                + data.setting.map(item => `<p>${item}</p>`).join('')
+                + `</div>`;
+        }
+
         // Shown before the doses, never after: a caveat that qualifies a whole
         // schedule is useless underneath it.
         // An array: a cell can carry more than one (an oxazepam symptom-triggered

@@ -103,6 +103,12 @@ export const REGIMEN_CONFIG = {
         // while local practice has used the latter; only one should be the default.
         severe: {
             title: 'Severe (CIWA-Ar > 20 | AWS > 14)',
+            // Setting is a first-order decision — it was previously buried under
+            // PRN dosing, where it read as an afterthought to the drug chart.
+            setting: [
+                `<b>Decide the setting before the drug chart.</b> Severe withdrawal is managed in <b>HDU</b>. Escalate to <b>ICU</b> for severe withdrawal with major complications, or with severe intercurrent illness. <span class="src-tag src-nswcg">NSWCG §5.4.2, §5.6.2</span>`,
+                `<b>Indications for specialist inpatient care:</b> predicted moderate-severe withdrawal; a history of alcohol-related delirium or seizures; multiple drug dependencies; significant other medical problems; repeated inability to complete community withdrawal. <span class="src-tag src-nswcg">NSWCG §5.4.2</span>`
+            ],
             schedule: [
                 `<b>Day 1 — loading.</b> Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
                 `<b>Hourly loading — monitored settings only.</b> Where the patient is in a monitored setting (HDU, or 1:1 nursing with continuous observation), 20mg hourly may be used instead. Do not use hourly loading on a general ward: oral diazepam peaks at around one hour, so hourly dosing stacks doses whose effect has not yet been observed. <span class="src-tag src-local">LOCAL — rationale: NSWCG Table 5.4 specifies 2-hourly; hourly loading is retained because it has been used locally in monitored settings where over-sedation would be detected immediately, and is restricted to those settings rather than removed.</span>`,
@@ -111,7 +117,6 @@ export const REGIMEN_CONFIG = {
                 `<b>Alternative handover:</b> if a fixed schedule is preferred, commence at the <b>Day 2 row</b> of the Moderate-Severe schedule — diazepam 15mg qid — and taper from there as written. Do not start that schedule at its Day 1 row. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
             ],
             prn: [
-                "Manage in HDU.",
                 `<b>80mg in 24 hours — medical officer review required.</b> This is a review threshold, not a ceiling. Assess for other pathology before giving more (see Special Cases &rarr; alcohol withdrawal delirium is a diagnosis of exclusion). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
                 `<b>If no other cause is found and withdrawal persists</b> — consider diazepam 10-20mg 2-hourly PRN, to a <b>maximum of 120mg in 24 hours</b>. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
                 `<b>Persistent agitation or hallucinations, or more than 120mg in 24 hours</b> — specialist advice required: DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
