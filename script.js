@@ -3,6 +3,7 @@ import { REGIMEN_CONFIG } from './data/regimens.js';
 import { SCALES } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
+import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const APP_VERSION = '0.3.2';
@@ -689,6 +690,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // the rest read as a list, so the emphasis stays meaningful.
             return block.danger ? `<div class="danger-box">${body}</div>` : body;
         }).join('');
+    });
+
+    // --- BENZODIAZEPINE EQUIVALENCE TABLE --- //
+    // Rendered from data so HyperTaper and this page cannot disagree about what
+    // a given drug is worth in diazepam.
+    document.querySelectorAll('[data-benzo-equivalence]').forEach(host => {
+        host.innerHTML = renderClinicalTable({
+            headers: ['Drug', `Dose equivalent to diazepam ${DIAZEPAM_REFERENCE_MG}mg`],
+            rows: BENZO_EQUIVALENCE.map(e => [e.drug, `${e.mg}mg`])
+        }) + `<ul>` + EQUIVALENCE_CAVEATS.map(c => `<li>${c}</li>`).join('') + `</ul>`
+            + `<p><span class="src-tag src-other">OTHER — eTG, via NSWCG Table 11.2</span></p>`;
     });
 
     // --- SETUP ALL CALCULATORS ---

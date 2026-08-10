@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from '../data/symptomatic.js';
 import { HARM_REDUCTION } from '../data/harm-reduction.js';
+import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -219,5 +220,61 @@ describe('P2-02 — GHB', () => {
     test('the absence of a validated scale is stated', () => {
         assert.ok(/No validated withdrawal scale exists for GHB/.test(flat),
             'the app must say no GHB scale is validated, or the calculators invite misuse');
+    });
+});
+
+describe('P2-03 — benzodiazepine framework', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="benzo-withdrawal-page"'),
+        html.indexOf('<!-- Cannabis Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('ODDE is introduced as the organising concept', () => {
+        assert.ok(/[Oo]ral daily diazepam equivalent \(ODDE\)/.test(flat), 'ODDE is not defined');
+        assert.ok(/≤ 10mg ODDE/.test(flat) && /&gt; 10mg ODDE/.test(flat),
+            'the low-dose / high-dose split is not stated');
+    });
+
+    test('the equivalence table is rendered from shared data, not inlined', () => {
+        assert.ok(/data-benzo-equivalence/.test(page),
+            'the equivalence table should render from data/benzo-equivalence.js so HyperTaper can share it');
+        assert.equal(BENZO_EQUIVALENCE.length, 9, 'the NSWCG Table 11.2 list is incomplete');
+        const byDrug = Object.fromEntries(BENZO_EQUIVALENCE.map((e) => [e.drug, e.mg]));
+        assert.deepEqual(byDrug, {
+            Alprazolam: 0.5, Bromazepam: 3, Clobazam: 10, Clonazepam: 0.25, Flunitrazepam: 0.5,
+            Lorazepam: 1, Nitrazepam: 5, Oxazepam: 15, Temazepam: 10,
+        });
+    });
+
+    test('the caveats that make the table safe travel with it', () => {
+        const caveats = EQUIVALENCE_CAVEATS.join('\n');
+        assert.ok(/[Zz]-drug conversion is unclear/.test(caveats), 'z-drug exclusion missing');
+        assert.ok(/from clonazepam/.test(caveats), 'the clonazepam warning is missing');
+        assert.ok(/[Ll]orazepam may be relatively more potent/.test(caveats), 'the lorazepam warning is missing');
+    });
+
+    test('unplanned inpatient withdrawal is covered', () => {
+        assert.ok(/BZRA history on admission/.test(flat), 'the admission history prompt is missing');
+        assert.ok(/[Dd]o not abruptly discontinue, even low doses/.test(flat),
+            'the do-not-stop-abruptly rule is missing');
+        assert.ok(/40% of usual intake, or 40mg\/day, whichever is\s*<\/strong>?\s*lower|40% of usual intake, or 40mg\/day, whichever is lower/.test(flat),
+            'the stabilisation formula for high-dose patients is missing');
+    });
+
+    test('the taper rate and its honesty about duration are stated', () => {
+        assert.ok(/10% reduction every 10-14 days/.test(flat), 'taper rate missing');
+        assert.ok(/3 months to a year or longer/.test(flat), 'the realistic duration is missing');
+        assert.ok(/daily maximum of 40mg diazepam/.test(flat), 'the 40 mg/day protective ceiling is missing');
+    });
+
+    test('urine drug screen interpretation is explained', () => {
+        assert.ok(/metabolites of diazepam/.test(flat), 'the temazepam/oxazepam metabolite trap is missing');
+        assert.ok(/etizolam/.test(flat), 'the newer-BZRA reporting gap is missing');
+        assert.ok(/not a basis for punitive measures/.test(flat), 'the framing of UDS as engagement is missing');
+    });
+
+    test('non-recommendations are stated as such', () => {
+        assert.ok(/Not supported by evidence as taper adjuncts/.test(flat),
+            'carbamazepine and pregabalin should be named as unsupported, not simply omitted');
     });
 });
