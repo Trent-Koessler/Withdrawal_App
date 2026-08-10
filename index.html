@@ -239,6 +239,9 @@ body.modal-open > #app-container {
     --tab-active-bg: #f0f0f0;
     --warning-bg: #fff3cd; --warning-text: #856404; --warning-border: #ffc107;
     --danger-bg: #f8d7da; --danger-text: #721c24; --danger-border: #dc3545;
+    --tag-neutral-bg: #e9ecef; --tag-neutral-text: #343a40; --tag-neutral-border: #adb5bd;
+    --tag-adapted-bg: #d9e9fb; --tag-adapted-text: #0b4a8f; --tag-adapted-border: #7cb0e8;
+    --tag-local-bg: #fdf0d5; --tag-local-text: #7a5200; --tag-local-border: #e0a800;
 }
 
 body {
@@ -321,6 +324,9 @@ textarea {
     --tab-active-bg: #2b2b2b;
     --warning-bg: #4d4015; --warning-text: #ffda6a; --warning-border: #ffc107;
     --danger-bg: #4a1f24; --danger-text: #f5c6cb; --danger-border: #dc3545;
+    --tag-neutral-bg: #4a4a4a; --tag-neutral-text: #e6e6e6; --tag-neutral-border: #7a7a7a;
+    --tag-adapted-bg: #16324f; --tag-adapted-text: #9cccff; --tag-adapted-border: #3d7cbf;
+    --tag-local-bg: #4d3d12; --tag-local-text: #ffd980; --tag-local-border: #c99a12;
 }
 
 /* --- Flowchart Specific Styles --- */
@@ -667,6 +673,181 @@ textarea {
 .link-button:hover {
     color: var(--link-hover-color);
 }
+/* --- Source / provenance tags (AUTH-01) ------------------------------------
+   Every clinical statement block carries a chip saying where it came from. The
+   whole point of the revision is that deviations from published guidance are
+   visible, so the tag text is real DOM text rather than a CSS content: string:
+   it has to survive copy/paste into an EMR and it has to print. */
+.src-tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+    padding: 1px 7px;
+    margin-left: 6px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    vertical-align: baseline;
+    white-space: normal;
+}
+
+/* Directly from the NSW Clinical Guidance — the unremarkable default. */
+.src-nswcg {
+    background-color: var(--tag-neutral-bg);
+    color: var(--tag-neutral-text);
+    border-color: var(--tag-neutral-border);
+}
+
+/* Another named guideline. Neutral like NSWCG, but italic so the eye can tell
+   at a glance that the source is not the benchmark document. */
+.src-other {
+    background-color: var(--tag-neutral-bg);
+    color: var(--tag-neutral-text);
+    border-color: var(--tag-neutral-border);
+    font-style: italic;
+}
+
+/* Based on NSWCG but modified locally. Must state a rationale. */
+.src-nswcg-adapted {
+    background-color: var(--tag-adapted-bg);
+    color: var(--tag-adapted-text);
+    border-color: var(--tag-adapted-border);
+}
+
+/* Local practice, in no published guideline. Must state a rationale. Amber,
+   because this is the content a reader is entitled to weigh differently. */
+.src-local {
+    background-color: var(--tag-local-bg);
+    color: var(--tag-local-text);
+    border-color: var(--tag-local-border);
+}
+
+/* A tag introducing a whole block rather than annotating a sentence. */
+.src-tag.src-block {
+    display: block;
+    margin: 0 0 8px 0;
+    max-width: max-content;
+}
+
+/* Chips are distinguished by colour on screen. Print is often greyscale and
+   the site's authority depends on the tags being legible there too, so force a
+   visible outline and defeat background-graphics suppression. */
+@media print {
+    .src-tag {
+        border-color: #000 !important;
+        color: #000 !important;
+        background: none !important;
+    }
+}
+
+/* --- Provenance-tagged content blocks --- */
+.clinical-block {
+    border-left: 3px solid var(--border-color);
+    padding-left: 12px;
+    margin: 16px 0;
+}
+
+/* --- Escalation / de-escalation block (P0-04) --- */
+.escalation-box {
+    background-color: var(--card-bg);
+    border: 1px solid var(--warning-border);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    margin: 16px 0;
+}
+
+.escalation-box h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.escalation-box ul {
+    margin: 6px 0;
+    padding-left: 22px;
+}
+
+/* --- Routing card: a cell that must not render a dose regimen (P0-05) --- */
+.routing-card {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-left: 4px solid var(--danger-border);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    margin: 12px 0;
+}
+
+.routing-card a {
+    color: inherit;
+    font-weight: 600;
+}
+
+/* --- Clinical data tables (monitoring, equivalence, BBV/STI, symptomatic) --- */
+.clinical-table-wrap {
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.clinical-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 420px;
+    font-size: 14.5px;
+}
+
+.clinical-table th,
+.clinical-table td {
+    border: 1px solid var(--border-color);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.clinical-table th {
+    background-color: var(--tab-bg);
+    font-weight: 600;
+}
+
+/* --- Scale caveats rendered inside every calculator (AUTH-05) --- */
+.scale-caveats {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 0 4px 4px 0;
+    padding: 10px 15px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.scale-caveats h4 {
+    margin: 0 0 6px 0;
+    font-size: 14.5px;
+}
+
+.scale-caveats ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* --- Per-page review metadata (AUTH-02) --- */
+.review-meta {
+    font-size: 12.5px;
+    color: var(--text-color);
+    opacity: 0.75;
+    border-top: 1px solid var(--border-color);
+    margin-top: 24px;
+    padding-top: 8px;
+}
+
+/* --- Shared, data-rendered content blocks (P2-06, P2-08) --- */
+.shared-block h5 {
+    margin-bottom: 4px;
+}
+
+.shared-block ul {
+    margin-top: 4px;
+}
     </style>
     <!-- END style.css -->
     <link rel="manifest" href="manifest.json">
@@ -762,7 +943,7 @@ textarea {
                             <strong>500mg IV TDS for a minimum of 5 days</strong>, followed by oral supplementation.
                         </p>
                         <p><strong>Caveat:</strong> Patients must be magnesium replete for adequate thiamine absorption
-                            and activation.</p>
+                            and activation. <span class="src-tag src-nswcg">NSWCG §5.4.7</span></p>
                     </div>
                     <div id="benzo-choice" class="tab-content">
                         <h3>1. Benzodiazepine Choice</h3>
@@ -775,7 +956,12 @@ textarea {
                             • <b>Respiratory insufficiency</b> or risk of respiratory depression (e.g., COPD).<br>
                             • <b>Elderly or frail patients</b> who are more sensitive to sedative effects.<br>
                             • <b>Cerebral trauma / CVA</b> where over-sedation is a risk.</p>
-                        <p><b>Conversion:</b> Diazepam 10mg is approximately equivalent to Oxazepam 30mg.</p>
+                        <p><b>Conversion:</b> Diazepam 10mg is approximately equivalent to Oxazepam 30mg.
+                            <span class="src-tag src-nswcg">NSWCG Table 11.2</span></p>
+                        <p>Indications for oxazepam over diazepam — decompensated liver disease, respiratory
+                            insufficiency, elderly or frail patients, cerebral trauma — are the same group for whom
+                            loading regimens are not appropriate.
+                            <span class="src-tag src-nswcg">NSWCG §5.6.3</span></p>
                         <div class="button-group">
                             <button class="benzo-choice-btn active" data-benzo="Diazepam">Select Diazepam</button>
                             <button class="benzo-choice-btn" data-benzo="Oxazepam">Select Oxazepam</button>
@@ -842,7 +1028,10 @@ textarea {
                             from co-occurring opioid or benzodiazepine withdrawal can artificially inflate the CIWA-Ar
                             score. Generally, treat the most life-threatening withdrawal first (Alcohol/Benzodiazepines)
                             with long-acting sedatives, which often incidentally smooths out less dangerous withdrawals
-                            (like opioids or stimulants).</p>
+                            (like opioids or stimulants).
+                            <span class="src-tag src-local">LOCAL — rationale: NSWCG notes co-occurring dependence on
+                                other CNS depressants as a severity risk factor but gives no sequencing rule; this
+                                ordering reflects local practice of treating the withdrawal that can kill first.</span></p>
                         <p><b>General Notes:</b> If total daily diazepam equivalent exceeds 80mg, contact specialist
                             service (e.g. D&A CL service, Drug and Alcohol State Advisory Service (DASAS) - 1800 023
                             687)</p>
@@ -1321,10 +1510,16 @@ textarea {
                         Ondansetron 4-8mg oral/IV up to TDS PRN.</li>
                     <li><strong>Stomach cramps:</strong> Hyoscine butylbromide 20mg oral QID PRN.</li>
                     <li><strong>Severe anxiety or agitation:</strong> Diazepam 5mg oral BD-QID PRN (short course only,
-                        e.g., 3-5 days). Please note - outside of the NSW Health guidelines, other guidelines and our
-                        own clinical experience suggests using quetiapine 25-50mg TDS or olanzapine 2.5mg TDS tends to
-                        yield better results as first line management with BZDs second line management of
-                        agitation/anxiety.</li>
+                        e.g., 3-5 days). <span class="src-tag src-nswcg">NSWCG Table 6.2</span><br>
+                        Local preference is quetiapine 25-50mg TDS or olanzapine 2.5mg TDS first line for
+                        agitation/anxiety, with benzodiazepines second line.
+                        <!-- TODO(review): the antipsychotic-first-line preference for cannabis withdrawal is the
+                             site's clearest documented departure from NSWCG and needs an external reviewer's
+                             sign-off on the stated rationale before it is presented as settled practice. -->
+                        <span class="src-tag src-local">LOCAL — rationale: other published guidelines and our own
+                            clinical experience suggest better symptom control with an antipsychotic first line, and
+                            it avoids introducing a benzodiazepine to a population at risk of substituting
+                            dependence.</span></li>
                     <li><strong>Insomnia:</strong> Promethazine 25mg oral nocte PRN.</li>
                 </ul>
             </div>
@@ -1397,6 +1592,13 @@ textarea {
             <div id="nicotine-withdrawal-page" class="page" data-title="Nicotine Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Nicotine Withdrawal Syndrome</h3>
+                <!-- TODO(review): confirm this page should continue to sit alongside the NSWCG-derived
+                     substance pages, or whether it should link out to the NSW tobacco guidance instead of
+                     restating it. -->
+                <span class="src-tag src-local src-block">LOCAL — rationale: the NSW Clinical Guidance
+                    deliberately excludes nicotine and defers to the separate NSW Health tobacco and
+                    nicotine dependence guidance, so this page is drawn from that guidance and local
+                    practice rather than from NSWCG.</span>
                 <p><strong>Onset:</strong> 2-12 hours.</p>
                 <p><strong>Peak:</strong> 1-3 days.</p>
                 <p><strong>Duration:</strong> 3-4 weeks.</p>
@@ -1428,6 +1630,9 @@ textarea {
             <div id="volatile-withdrawal-page" class="page" data-title="Volatile Substances Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Volatile Substances (Inhalants) Withdrawal</h3>
+                <span class="src-tag src-local src-block">LOCAL — rationale: volatile substance
+                    withdrawal is not covered by the NSW Clinical Guidance; this summary reflects other
+                    published guidance and local clinical experience, and no dosing is offered.</span>
                 <p><strong>Onset:</strong> 24-48 hours.</p>
                 <p><strong>Duration:</strong> 2-5 days.</p>
                 <p><strong>Symptoms:</strong> Sleep disturbances, nausea, tremors, irritability, diaphoresis, fleeting

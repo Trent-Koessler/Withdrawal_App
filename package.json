@@ -5,6 +5,9 @@
   "description": "Clinical decision support PWA for alcohol and other drug withdrawal. The app itself ships no dependencies; this file exists so the clinical data modules can be unit tested.",
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "check:todos": "python3 tools/check-todos.py",
+    "check:todos:strict": "python3 tools/check-todos.py --strict",
+    "build:css": "python3 tools/build-css.py"
   }
 }
