@@ -58,3 +58,27 @@ describe('P0-01 — a loading day is not followed by a second full day', () => {
         }
     });
 });
+
+describe('P0-02 — no fixed time gate on the inpatient pathway', () => {
+    const html = read('index.html');
+    // Everything from the inpatient guidelines page up to the ambulatory one.
+    const inpatient = html.slice(
+        html.indexOf('id="inpatient-guidelines-page"'),
+        html.indexOf('id="ambulatory-guidelines-page"'));
+
+    test('nothing tells the user to withhold scoring or treatment for N hours', () => {
+        const gate = /(do not|don't|never)[^.]{0,80}(until|before)[^.]{0,40}\d+\+?\s*hours?/i;
+        assert.ok(!gate.test(inpatient.replace(/\s+/g, ' ')),
+            'the inpatient pathway still gates scoring or dosing on time since the last drink; NSWCG §5.1 notes withdrawal may begin before the BAL reaches zero');
+    });
+
+    test('the rising-score/falling-BAL rule is stated instead', () => {
+        assert.ok(/rising score with a falling BAL/i.test(inpatient),
+            'the interpretation caveat that replaced the time gate is missing');
+    });
+
+    test('the Severe band stays reachable — CIWA-Ar is never blocked from starting', () => {
+        assert.ok(!/Do not start CIWA-Ar/i.test(html),
+            'the Severe band is defined by CIWA > 20 and is unreachable if CIWA-Ar cannot be commenced');
+    });
+});
