@@ -441,3 +441,60 @@ describe('P2-04 — assessment, risk and care planning', () => {
         assert.ok(/person-first language/.test(flat), 'stigma section gives no practical instruction');
     });
 });
+
+describe('P2-09 — opioid pathway depth', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('methadone is offered as an option', () => {
+        assert.ok(/already on methadone/.test(flat),
+            'the pragmatic methadone-for-methadone-patients approach is missing');
+        assert.ok(/[Bb]uprenorphine is preferred<\/strong>? for withdrawal from other opioids|Buprenorphine is preferred for withdrawal from other opioids/.test(flat),
+            'the preference order is not stated');
+    });
+
+    test('the buprenorphine test-dose protocol is complete', () => {
+        assert.ok(/2mg SL test dose/.test(flat), 'test dose missing');
+        assert.ok(/[Rr]eview at 1 hour/.test(flat), 'the 1-hour review is missing');
+        assert.ok(/further <strong>6mg<\/strong>/.test(flat), 'the second increment is missing');
+        assert.ok(/8-12mg outpatient/.test(flat) && /8-16mg inpatient/.test(flat), 'Day 1 totals missing');
+    });
+
+    test('the COWS threshold divergence is surfaced, not silently resolved', () => {
+        assert.ok(/COWS 8/.test(flat), 'the NSWCG threshold is missing');
+        assert.ok(/COWS &gt; 12/.test(flat), 'the existing local threshold was silently overwritten');
+        assert.ok(/src-nswcg-adapted/.test(page), 'the divergence is not tagged as an adaptation');
+    });
+
+    test('precipitated withdrawal is distinguished from under-dosing', () => {
+        assert.ok(/within 1 hour/.test(flat) && /more than 6 hours/.test(flat),
+            'the timing that separates precipitation from under-dosing is missing');
+        assert.ok(/COWS increase &gt; 6/.test(flat) && /SOWS\s*increase &gt; 8/.test(flat),
+            'the score changes that define precipitated withdrawal are missing');
+    });
+
+    test('taper tables exist for both settings', () => {
+        assert.ok(/Titrate to comfort, typically 8-16mg daily/.test(flat), 'outpatient taper missing');
+        assert.ok(/Day 6: cease/.test(flat), 'inpatient taper missing');
+        assert.ok(/[Cc]ease 1-2 days before discharge/.test(flat), 'the rebound assessment is missing');
+    });
+
+    test('withdrawal profiles cover the four opioid types', () => {
+        for (const profile of [/6-24 hours/, /36-48 hours/, /3-5 days after last dose/, /skin reservoirs/]) {
+            assert.ok(profile.test(flat), `withdrawal profile missing: ${profile}`);
+        }
+    });
+
+    test('NSW regulatory requirements are stated', () => {
+        assert.ok(/limited to 14 days by policy directive/.test(flat), 'the 14-day hospital limit is missing');
+        assert.ok(/9424 5921/.test(flat), 'the Ministry of Health confirmation line is missing');
+        assert.ok(/SafeScript NSW/.test(flat), 'SafeScript is missing');
+    });
+
+    test('pain management on buprenorphine is addressed', () => {
+        assert.ok(/[Ff]ull agonists remain effective for analgesia/.test(flat),
+            'the point that buprenorphine need not be ceased to treat pain is missing');
+    });
+});
