@@ -581,3 +581,54 @@ describe('P2-11 — cannabis pathway additions', () => {
         assert.ok(/within an hour/.test(flat), 'the faster onset is missing');
     });
 });
+
+describe('P2-12 — specific population groups', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="populations-page"'), html.indexOf('<!-- Screening -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('the page exists and is reachable', () => {
+        assert.ok(page.length > 500, 'the populations page is missing');
+        assert.ok(/data-page="populations-page"/.test(html), 'nothing navigates to it');
+    });
+
+    test('every population group named in the spec has a card', () => {
+        for (const group of ['Pregnancy', 'Co-occurring mental health', 'Aboriginal and Torres Strait Islander',
+            'Older people', 'Adolescents and young adults', 'Culturally and linguistically diverse',
+            'Gender and sexuality diverse']) {
+            assert.ok(flat.includes(group), `population card missing: ${group}`);
+        }
+    });
+
+    test('co-occurring mental health carries the three practical points', () => {
+        assert.ok(/[Mm]ore than a third<\/strong>/.test(flat), 'the prevalence figure is missing');
+        assert.ok(/precipitate or exacerbate psychiatric symptoms/.test(flat),
+            'the warning that deterioration is not automatically a new diagnosis is missing');
+        assert.ok(/not managed on a mental health\s*<\/strong>?\s*unit|not managed on a mental health unit/.test(flat),
+            'the setting point is missing');
+    });
+
+    test('interpreter guidance is unambiguous', () => {
+        assert.ok(/Use a professional interpreter/.test(flat), 'interpreter guidance missing');
+        assert.ok(/only in an\s*emergency|only in an emergency/.test(flat),
+            'the limit on family interpreting is missing');
+    });
+});
+
+describe('P2-12 / P2-14 — the standard drinks calculator asks the right questions first', () => {
+    const html = read('index.html');
+    const calc = html.slice(html.indexOf('<div id="std-by-type"'), html.indexOf('id="std-by-volume"'));
+    const flat = calc.replace(/\s+/g, ' ');
+
+    test('the shared-versus-individual prompt is on the calculator itself', () => {
+        assert.ok(/for the patient, or shared/.test(flat),
+            'the prompt belongs where the counting happens, not only on the populations page');
+    });
+
+    test('the container prompt is on the calculator itself', () => {
+        assert.ok(/250mL kitchen tumbler/.test(flat) && /600mL water bottle/.test(flat),
+            'the container prompt is missing from the calculator');
+        assert.ok(/Custom\s*Volume/.test(flat),
+            'the prompt should route the user to the custom volume tab, or it is only a warning');
+    });
+});
