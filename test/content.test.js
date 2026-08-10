@@ -182,3 +182,42 @@ describe('P2-01 — gabapentinoids', () => {
         assert.ok(/data-harm-reduction="gabapentinoid"/.test(page));
     });
 });
+
+describe('P2-02 — GHB', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="ghb-withdrawal-page"'),
+        html.indexOf('<!-- Nicotine Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('all six predictors of severe withdrawal are listed', () => {
+        for (const predictor of [/2-4 hours or less/, /15 mL\/day/, /within 2-3 hours/,
+            /[Ww]aking overnight to dose/, /Previous severe withdrawal/,
+            /No GHB-free days for 4-6 weeks/]) {
+            assert.ok(predictor.test(flat), `predictor missing: ${predictor}`);
+        }
+    });
+
+    test('the dosing ladder and its escalation points are given', () => {
+        assert.ok(/[Dd]iazepam 10-20mg every 1-2 hours/.test(flat), 'primary dosing missing');
+        assert.ok(/within 2 hours of the last dose/.test(flat), 'the early-commencement rule is missing');
+        assert.ok(/before exceeding 120mg diazepam in the first 24 hours/.test(flat),
+            'the 120 mg medical officer review point is missing');
+        assert.ok(/150-200mg diazepam in 24 hours/.test(flat), 'the ICU referral threshold is missing');
+        assert.ok(/approximately <strong>7 days<\/strong>/.test(flat), 'the wean duration is missing');
+    });
+
+    test('baclofen is present with its dispensing restriction', () => {
+        assert.ok(/baclofen 10-25mg TDS/i.test(flat), 'baclofen dosing missing');
+        assert.ok(/dispense weekly from a community pharmacy/i.test(flat),
+            'the weekly dispensing restriction is what makes baclofen safe to continue');
+    });
+
+    test('creatine kinase is in the monitoring set', () => {
+        assert.ok(/creatine kinase/i.test(flat), 'CK is missing from GHB monitoring');
+    });
+
+    test('the absence of a validated scale is stated', () => {
+        assert.ok(/No validated withdrawal scale exists for GHB/.test(flat),
+            'the app must say no GHB scale is validated, or the calculators invite misuse');
+    });
+});
