@@ -4,9 +4,10 @@ import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
+import { CONTENT_META, nextReviewDue } from './data/content-meta.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.3.2';
+    const APP_VERSION = '0.4.0';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
@@ -814,6 +815,25 @@ document.addEventListener('DOMContentLoaded', () => {
             rows: BENZO_EQUIVALENCE.map(e => [e.drug, `${e.mg}mg`])
         }) + `<ul>` + EQUIVALENCE_CAVEATS.map(c => `<li>${c}</li>`).join('') + `</ul>`
             + `<p><span class="src-tag src-other">OTHER — eTG, via NSWCG Table 11.2</span></p>`;
+    });
+
+    // --- PER-PAGE REVIEW METADATA (AUTH-02) --- //
+    // Appended to the page itself rather than kept in a repository file: a
+    // clinician reading a page is the person who needs to know how old it is.
+    Object.entries(CONTENT_META).forEach(([pageId, meta]) => {
+        const page = document.getElementById(pageId);
+        if (!page) {
+            console.warn('content metadata for a page that does not exist:', pageId);
+            return;
+        }
+        const due = nextReviewDue(meta);
+        const footer = document.createElement('p');
+        footer.className = 'review-meta';
+        footer.innerHTML = meta.lastReviewed
+            ? `Source: ${meta.source}. Content last reviewed ${meta.lastReviewed}; next review due ${due}. `
+            + `Reviewer: ${meta.reviewer || 'authored, not yet independently reviewed'}.`
+            : `Source: ${meta.source}. Not yet authored — nothing on this page has been reviewed.`;
+        page.appendChild(footer);
     });
 
     // --- SETUP ALL CALCULATORS ---

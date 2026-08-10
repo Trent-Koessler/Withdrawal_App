@@ -2903,6 +2903,69 @@ textarea {
 
 
 
+            <!-- Changelog -->
+            <div id="changelog-page" class="page" data-title="Changelog">
+                <h3>Changelog</h3>
+                <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
+                    the ones that change what a clinician does.</p>
+                <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.0 — August 2026</h4>
+                <p><em>Revision against NSW Health, Management of Withdrawal from Alcohol and Other Drugs: Clinical
+                        Guidance (August 2022).</em></p>
+                <h5>Safety changes — these alter clinical meaning</h5>
+                <ul>
+                    <li><strong>The Severe alcohol regimen no longer stacks a second 80mg day behind the loading
+                            dose.</strong> The loading day is Day 1, and handover happens on Day 2.</li>
+                    <li><strong>The 6-hour rule before starting CIWA-Ar or benzodiazepines has been removed</strong>
+                        and replaced with guidance on reading an early score. Withdrawal can begin before the BAL
+                        reaches zero.</li>
+                    <li><strong>Oxazepam loading has been removed entirely.</strong> Severe withdrawal on oxazepam now
+                        routes to titration and specialist advice rather than rendering a 240mg load.</li>
+                    <li><strong>80mg diazepam is now presented as a review threshold, not a ceiling</strong>, with the
+                        120mg maximum above it.</li>
+                    <li><strong>Thiamine now prefers IV over IM</strong>, given thrombocytopenia and coagulopathy.</li>
+                    <li><strong>Escalation and de-escalation triggers added</strong> — the regimens previously had
+                        entry points but no exit criteria.</li>
+                    <li><strong>The loading rate is now 2-hourly</strong>, with hourly loading restricted to monitored
+                        settings.</li>
+                    <li><strong>Psychostimulant symptomatic medications now carry daily maxima</strong>, and the
+                        opioid clonidine regimen has been corrected with its test-dose protocol.</li>
+                    <li><strong>The DASAS Sydney metropolitan number has been added</strong> everywhere the regional
+                        number appeared.</li>
+                </ul>
+                <h5>New sections</h5>
+                <ul>
+                    <li>Before You Prescribe — assessment, risk, confidentiality, planning.</li>
+                    <li>Screening, and a consumption history method beside the standard drinks calculator.</li>
+                    <li>Symptom-triggered and sub-mild alcohol regimens.</li>
+                    <li>Gabapentinoid withdrawal.</li>
+                    <li>Specific population groups.</li>
+                    <li>Continuing care and relapse-prevention pharmacotherapy.</li>
+                    <li>BBV/STI results to actions.</li>
+                    <li>Harm reduction on every substance page.</li>
+                    <li>Capacity, consent and involuntary pathways — scaffold only, not yet written.</li>
+                </ul>
+                <h5>Authority and provenance</h5>
+                <ul>
+                    <li><strong>Every clinical statement now carries a source tag</strong> saying whether it comes
+                        from the NSW Clinical Guidance, is adapted from it, is local practice, or comes from another
+                        named guideline — and local or adapted content states why.</li>
+                    <li>Sources &amp; Attribution page added; the copyright notice now covers original content and
+                        site code rather than derived clinical material.</li>
+                    <li>Contributors &amp; Clinical Review page added, with a per-section review register.</li>
+                    <li>Scale caveats now appear inside each calculator, above the score.</li>
+                    <li>The EMR copy function now exports a whole plan, with source tags intact.</li>
+                    <li>Per-page review dates, and this changelog.</li>
+                </ul>
+
+                <h4>0.3.2 and earlier</h4>
+                <p>Offline mode, disclaimer gate and back-button routing fixes; clinical data extracted into testable
+                    modules with a CI-gated test suite; stylesheet inlined to survive the NSW Health web filter;
+                    application icon rebuilt; renamed to SUD Toolkit.</p>
+
+            </div>
+
             <!-- Sources and Attribution -->
             <div id="sources-page" class="page" data-title="Sources & Attribution">
                 <h3>Sources and Attribution</h3>
@@ -2995,8 +3058,12 @@ textarea {
                     <button class="big-button" data-page="sources-page">Sources &amp; Attribution</button>
                 </div>
 
-                <h4>Version</h4>
-                <p>Current Version: <span class="app-version"></span></p>
+                <h4>Version and review</h4>
+                <p>Current version: <strong><span class="app-version"></span></strong>. Each page carries its own
+                    "content last reviewed" date in its footer.</p>
+                <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-page="changelog-page">Changelog</button>
+                </div>
             </div>
 
         </main>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'withdrawal-app-cache-v26';
+const CACHE_NAME = 'withdrawal-app-cache-v27';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 // style.css is deliberately absent: it is inlined into index.html by
 // tools/build-css.py, so the app never requests it as a separate file.
@@ -13,6 +13,7 @@ const urlsToCache = [
     'data/symptomatic.js',
     'data/harm-reduction.js',
     'data/benzo-equivalence.js',
+    'data/content-meta.js',
     'manifest.json',
     'favicon.ico',
     'icons/icon.svg',

@@ -16,6 +16,7 @@ import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from '../data/symptomatic.js';
 import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
+import { CONTENT_META, nextReviewDue } from '../data/content-meta.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -829,5 +830,57 @@ describe('AUTH-04 — attribution and reuse', () => {
     test('non-endorsement is explicit', () => {
         assert.ok(/has reviewed, approved or endorsed it/.test(page.replace(/\s+/g, ' ')),
             'listing organisations without disclaiming endorsement implies it');
+    });
+});
+
+describe('AUTH-02 — versioning and review metadata', () => {
+    const html = read('index.html');
+
+    test('the three version strings and the cache name move together', () => {
+        const appVersion = read('script.js').match(/APP_VERSION\s*=\s*'([^']+)'/)[1];
+        assert.equal(JSON.parse(read('package.json')).version, appVersion);
+        assert.notEqual(appVersion, '0.3.2',
+            'a content release that does not bump the version leaves installed users on the old shell');
+    });
+
+    test('every page with metadata exists, and every clinical page has metadata', () => {
+        const pageIds = [...html.matchAll(/id="([a-z0-9-]+-page)"[^>]*class="[^"]*\bpage\b/g)].map((m) => m[1]);
+        for (const id of Object.keys(CONTENT_META)) {
+            assert.ok(pageIds.includes(id), `metadata for "${id}", which is not a page`);
+        }
+        // Pages that carry clinical statements must declare when they were reviewed.
+        const exempt = new Set(['home-page', 'about-page', 'other-syndromes-page', 'sources-page',
+            'contributors-page', 'changelog-page', 'bbv-sti-page', 'assessment-page', 'screening-page',
+            'populations-page', 'continuing-care-page', 'capacity-page', 'contacts-page', 'scales-page',
+            'alcohol-withdrawal-page']);
+        for (const id of pageIds) {
+            if (exempt.has(id) || CONTENT_META[id]) continue;
+            assert.fail(`page "${id}" carries clinical content but declares no review metadata`);
+        }
+    });
+
+    test('the review-due date is a year after the review date', () => {
+        assert.equal(nextReviewDue({ lastReviewed: '2026-08-10' }), '2027-08-10');
+        assert.equal(nextReviewDue({ lastReviewed: null }), null,
+            'an unauthored section must not be given a review date it never had');
+    });
+
+    test('the unwritten scaffold is not dated as though it were reviewed', () => {
+        assert.equal(CONTENT_META['capacity-page'].lastReviewed, null,
+            'dating an empty scaffold as reviewed is the misleading part');
+    });
+
+    test('a changelog exists in both machine and user-facing form', () => {
+        assert.ok(fs.existsSync(path.join(ROOT, 'CHANGELOG.md')), 'no CHANGELOG.md');
+        assert.ok(/id="changelog-page"/.test(html), 'no user-facing changelog page');
+        assert.ok(/data-page="changelog-page"/.test(html), 'nothing navigates to the changelog');
+    });
+
+    test('the changelog leads with the changes that alter clinical meaning', () => {
+        const changelog = read('CHANGELOG.md');
+        const safety = changelog.indexOf('### Safety');
+        const infra = changelog.indexOf('### Infrastructure');
+        assert.ok(safety !== -1 && safety < infra,
+            'safety changes must come before housekeeping, or the reader stops before reaching them');
     });
 });
