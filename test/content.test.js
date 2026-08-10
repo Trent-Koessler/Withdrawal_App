@@ -378,3 +378,66 @@ describe('P2-13 — screening', () => {
         assert.ok(/avoid duplicating screening already done/i.test(flat), 'the duplication warning is missing');
     });
 });
+
+describe('P2-04 — assessment, risk and care planning', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="assessment-page"'), html.indexOf('<!-- Screening -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('the module exists and is the first thing on the home page', () => {
+        const home = html.slice(html.indexOf('id="home-page"'), html.indexOf('</nav>'));
+        const buttons = [...home.matchAll(/data-page="([^"]+)"/g)].map((m) => m[1]);
+        assert.equal(buttons[0], 'assessment-page',
+            'assessment should come before the regimens; the site used to start at "which benzodiazepine"');
+    });
+
+    test('the assessment elements are enumerated', () => {
+        for (const element of [/[Ss]ubstance use history covering every substance/, /[Mm]ental state examination/,
+            /blood-borne virus and HIV testing/, /pregnancy testing for women of child-bearing age/,
+            /[Pp]sychosocial assessment/]) {
+            assert.ok(element.test(flat), `assessment element missing: ${element}`);
+        }
+    });
+
+    test('suicide risk carries the three caveats that change what a clinician does', () => {
+        assert.ok(/[Ii]ntoxication complicates immediate risk assessment/.test(flat), 'intoxication caveat missing');
+        assert.ok(/cannot be appropriately assessed until the person is sober/.test(flat),
+            'the enduring-risk caveat is missing');
+        assert.ok(/[Nn]o rating scale has proven\s*<\/strong>?\s*predictive value|No rating scale has proven predictive value/.test(flat),
+            'the warning that no scale predicts is missing — the app is full of scales');
+        assert.ok(/1800 011 511/.test(flat), 'the Mental Health Line is missing');
+    });
+
+    test('child protection includes the qualifier that protects help-seeking', () => {
+        assert.ok(/duty to report overrides confidentiality/i.test(flat), 'the duty to report is missing');
+        assert.ok(/is not, by\s*<\/strong>?\s*itself, a reason to make a report|is not, by itself, a reason to make a report/.test(flat),
+            'the qualifier that seeking withdrawal treatment is not itself reportable is missing');
+        assert.ok(/1300 480 420/.test(flat), 'the Child Wellbeing Unit number is missing');
+        assert.ok(/13 21 11/.test(flat), 'the Child Protection Helpline is missing');
+    });
+
+    test('domestic violence screening and its contacts are present', () => {
+        assert.ok(/[Ss]creening must always be included/.test(flat), 'the mandate is missing');
+        for (const num of ['1300 789 978', '1300 766 491', '13 21 11']) {
+            assert.ok(flat.includes(num), `DV contact missing: ${num}`);
+        }
+    });
+
+    test('gambling is screened with Lie-Bet', () => {
+        assert.ok(/Lie-Bet/.test(flat), 'the Lie-Bet questionnaire is missing');
+        assert.ok(/lie to people important to you/.test(flat) && /bet more and more money/.test(flat),
+            'the two Lie-Bet questions are not stated, so the tool cannot be used');
+    });
+
+    test('the five permitted disclosures are listed', () => {
+        for (const body of ['Department of Communities and Justice', 'Mental health professionals',
+            'Transport for NSW', 'AHPRA', 'Workplaces']) {
+            assert.ok(flat.includes(body), `permitted disclosure missing: ${body}`);
+        }
+    });
+
+    test('trauma-informed care and stigma are covered at principles level', () => {
+        assert.ok(/[Tt]rauma-informed care/.test(flat), 'trauma-informed care missing');
+        assert.ok(/person-first language/.test(flat), 'stigma section gives no practical instruction');
+    });
+});

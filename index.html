@@ -883,6 +883,7 @@ textarea {
             <!-- Home Page -->
             <div id="home-page" class="page active-page">
                 <nav class="button-container">
+                    <button class="big-button" data-page="assessment-page">Before You Prescribe: Assessment, Risk & Care Planning</button>
                     <button class="big-button" data-page="alcohol-withdrawal-page">Alcohol Withdrawal Decision Flowchart</button>
                     <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
                     <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol Detox Guidelines</button>
@@ -1981,6 +1982,148 @@ textarea {
 
                 <h4>Management</h4>
                 <p>Provide a low-stimulation, safe environment. Treat symptomatically.</p>
+            </div>
+
+            <!-- Assessment, Risk and Care Planning -->
+            <div id="assessment-page" class="page" data-title="Before You Prescribe">
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="assessment-core">1. Assessment</button>
+                        <button class="tab-button" data-tab="assessment-risk">2. Risk</button>
+                        <button class="tab-button" data-tab="assessment-confidentiality">3. Confidentiality</button>
+                        <button class="tab-button" data-tab="assessment-plan">4. Plan &amp; Setting</button>
+                        <button class="tab-button" data-tab="assessment-principles">5. Principles</button>
+                    </div>
+
+                    <div id="assessment-core" class="tab-content active">
+                        <h3>Assessment</h3>
+                        <p>Withdrawal management begins before the first dose. The aims of assessment are to establish
+                            what the patient is dependent on, what else is going on medically and psychologically,
+                            what risks are present, and what the patient wants — none of which a benzodiazepine chart
+                            answers. <span class="src-tag src-nswcg">NSWCG §4.2</span></p>
+                        <h4>Key elements</h4>
+                        <ul>
+                            <li><strong>Substance use history covering every substance</strong> — not only the
+                                presenting one. See the Consumption History method on the Standard Drinks calculator.
+                            </li>
+                            <li>Medical and mental health history.</li>
+                            <li>Psychosocial assessment.</li>
+                            <li>Physical examination, including signs of intoxication and withdrawal.</li>
+                            <li>Mental state examination.</li>
+                            <li><strong>Investigations</strong>, including blood-borne virus and HIV testing, and
+                                <strong>pregnancy testing for women of child-bearing age</strong>.</li>
+                            <li>Risk assessment (see the Risk tab).</li>
+                        </ul>
+                        <p><span class="src-tag src-nswcg">NSWCG §4.2</span></p>
+                        <div class="button-container" style="margin: 20px 0;">
+                            <button class="big-button" data-page="screening-page">Screening questions</button>
+                            <button class="big-button" data-page="bbv-sti-page">BBV/STI results → actions</button>
+                        </div>
+                    </div>
+
+                    <div id="assessment-risk" class="tab-content">
+                        <h3>Risk</h3>
+
+                        <h4>Suicide risk</h4>
+                        <div class="danger-box">
+                            <strong>🚨 Intoxication complicates immediate risk assessment.</strong> Enduring risk
+                            <strong>cannot be appropriately assessed until the person is sober</strong>. Monitor in a
+                            safe setting until a full assessment is possible. <strong>No rating scale has proven
+                                predictive value</strong> — a low score is not reassurance.
+                            <span class="src-tag src-nswcg">NSWCG §4.3.1</span>
+                        </div>
+                        <p>Ask directly about current thoughts of suicide or self-harm, intent and plan, access to
+                            means, previous attempts, and what has changed recently.
+                            <span class="src-tag src-nswcg">NSWCG §4.3.1</span></p>
+                        <p><strong>NSW Mental Health Line:</strong> <a href="tel:1800011511">1800 011 511</a> (24/7).
+                            <span class="src-tag src-nswcg">NSWCG §4.3.1</span></p>
+
+                        <h4>Domestic violence</h4>
+                        <p><strong>Screening must always be included.</strong> NSW Health policy mandates screening in
+                            AOD services for women over 16. <span class="src-tag src-nswcg">NSWCG §4.3.2</span></p>
+                        <ul class="contact-list">
+                            <li><strong>Immediate danger:</strong> <a href="tel:000">000</a></li>
+                            <li><strong>Child Protection Helpline:</strong> <a href="tel:132111">13 21 11</a></li>
+                            <li><strong>MensLine Australia:</strong> <a href="tel:1300789978">1300 789 978</a></li>
+                            <li><strong>Men's Referral Service:</strong> <a href="tel:1300766491">1300 766 491</a></li>
+                            <li><strong>1800RESPECT:</strong> <a href="tel:1800737825">1800 737 825</a> (24/7)</li>
+                        </ul>
+
+                        <h4>Child protection</h4>
+                        <p><strong>The duty to report overrides confidentiality.</strong> Use the Mandatory Reporter
+                            Guide to decide whether a report is required.
+                            <span class="src-tag src-nswcg">NSWCG §4.3.3</span></p>
+                        <div class="warning-box">
+                            <strong>⚠️ A parent or carer wanting to withdraw from alcohol or other drugs is not, by
+                                itself, a reason to make a report.</strong> Seeking treatment is not a risk of
+                            significant harm. <span class="src-tag src-nswcg">NSWCG §4.3.3</span>
+                        </div>
+                        <ul class="contact-list">
+                            <li><strong>NSW Health Child Wellbeing Unit:</strong> <a href="tel:1300480420">1300 480
+                                    420</a></li>
+                            <li><strong>Child Protection Helpline:</strong> <a href="tel:132111">13 21 11</a></li>
+                        </ul>
+
+                        <h4>Gambling</h4>
+                        <p><strong>Screen all patients</strong> using the two-question <strong>Lie-Bet</strong>
+                            questionnaire: <span class="src-tag src-nswcg">NSWCG §4.3.4</span></p>
+                        <ol>
+                            <li>Have you ever had to lie to people important to you about how much you gamble?</li>
+                            <li>Have you ever felt the need to bet more and more money?</li>
+                        </ol>
+                        <p><strong>Gambling Help (G-Line):</strong> <a href="tel:1800633635">1800 633 635</a> (24/7)
+                        </p>
+                    </div>
+
+                    <div id="assessment-confidentiality" class="tab-content">
+                        <h3>Confidentiality and its limits</h3>
+                        <p>Patients are entitled to know where the boundaries are before they disclose. Disclosure is
+                            permitted to: <span class="src-tag src-nswcg">NSWCG §2.4</span></p>
+                        <ul>
+                            <li><strong>Department of Communities and Justice</strong> — child protection.</li>
+                            <li><strong>Mental health professionals</strong> — risk, as part of a mental health
+                                condition.</li>
+                            <li><strong>Transport for NSW</strong> — driver safety.</li>
+                            <li><strong>AHPRA</strong> — impaired practitioners.</li>
+                            <li><strong>Workplaces</strong> — safe operation of heavy machinery or vehicles.</li>
+                        </ul>
+                        <p><span class="src-tag src-nswcg">NSWCG §2.4</span></p>
+                    </div>
+
+                    <div id="assessment-plan" class="tab-content">
+                        <h3>Treatment plan and setting</h3>
+                        <p>A treatment plan states the goal of the withdrawal episode, the setting, the regimen, the
+                            monitoring, who is responsible for review, and what happens afterwards. A withdrawal
+                            without a post-withdrawal plan risks relapse into a lower-tolerance state.
+                            <span class="src-tag src-nswcg">NSWCG §4.4.1</span></p>
+                        <div class="warning-box">
+                            <strong>⚠️ Community withdrawal is contraindicated</strong> where there is risk to the
+                            patient or to others in the household or community, or where the medications involved are
+                            high risk. <span class="src-tag src-nswcg">NSWCG §4.4.1</span>
+                        </div>
+                        <div class="button-container" style="margin: 20px 0;">
+                            <button class="big-button" data-page="continuing-care-page">Continuing care and
+                                relapse-prevention pharmacotherapy</button>
+                        </div>
+                    </div>
+
+                    <div id="assessment-principles" class="tab-content">
+                        <h3>Principles</h3>
+                        <h4>Trauma-informed care</h4>
+                        <p>Assume a history of trauma is likely and design the encounter so it does not re-enact it:
+                            safety, trustworthiness and transparency, choice, collaboration, and empowerment. Practical
+                            consequences during withdrawal — explain what will happen before it happens, offer choices
+                            where they exist, avoid unnecessary physical exposure, and do not press for a trauma
+                            history during acute withdrawal.
+                            <span class="src-tag src-nswcg">NSWCG §2.2</span></p>
+                        <h4>Stigma</h4>
+                        <p>Stigma is a treatment barrier, not a side issue: it keeps people out of care and shapes what
+                            they disclose once they are in it. Use person-first language ("a person who uses drugs",
+                            not "an addict"), avoid "clean"/"dirty" for test results, and document in language you
+                            would be willing to read aloud to the patient.
+                            <span class="src-tag src-nswcg">NSWCG §2.3</span></p>
+                    </div>
+                </div>
             </div>
 
             <!-- Screening -->
