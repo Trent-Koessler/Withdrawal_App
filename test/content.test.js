@@ -308,3 +308,40 @@ describe('P2-05 — continuing care and relapse prevention', () => {
         assert.ok(/data-page="continuing-care-page"/.test(html), 'nothing navigates to continuing care');
     });
 });
+
+describe('P2-07 — BBV/STI results to actions', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="bbv-sti-page"'),
+        html.indexOf('<!-- Continuing Care and Relapse Prevention -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('every result in NSWCG App 9 has an action', () => {
+        for (const [result, action] of [
+            ['Hepatitis C antibody', /HCV RNA/],
+            ['HIV Ag/Ab', /Sexual\s*Health InfoLink|1800 451 624/],
+            ['Gonorrhoea PCR', /culture and sensitivity/],
+            ['Chlamydia PCR', /STI\s*management guidelines/],
+            ['Syphilis', /urgent/],
+        ]) {
+            assert.ok(flat.includes(result), `result row missing: ${result}`);
+            assert.ok(action.test(flat), `action missing for ${result}`);
+        }
+    });
+
+    test('all five hepatitis B states are covered', () => {
+        for (const state of ['susceptible', 'immune, prior infection', 'immune, vaccination',
+            'chronic infection', 'indeterminate']) {
+            assert.ok(flat.includes(state), `hepatitis B state missing: ${state}`);
+        }
+    });
+
+    test('syphilis requires both a positive RPR and a treponemal test', () => {
+        assert.ok(/positive RPR <strong>and<\/strong> positive TPPA/.test(flat),
+            'the syphilis criterion must be both tests, not either');
+    });
+
+    test('the InfoLink number is in the contacts directory as well', () => {
+        const contacts = html.slice(html.indexOf('id="contacts-page"'), html.indexOf('id="about-page"'));
+        assert.ok(/tel:1800451624/.test(contacts), 'NSW Sexual Health InfoLink is not in the contacts directory');
+    });
+});
