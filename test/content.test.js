@@ -13,6 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from '../data/symptomatic.js';
+import { HARM_REDUCTION } from '../data/harm-reduction.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -95,6 +96,49 @@ describe('P2-08 — shared symptomatic medications', () => {
                     assert.ok(/src-tag/.test(line),
                         `${key} / ${item.symptom}: a dosing line carries no source tag:\n  ${line.slice(0, 90)}`);
                 }
+            }
+        }
+    });
+});
+
+describe('P2-06 — shared harm reduction', () => {
+    test('every placeholder resolves, and every set is used somewhere', () => {
+        const used = [...read('index.html').matchAll(/data-harm-reduction="([^"]+)"/g)].map((m) => m[1]);
+        for (const key of used) {
+            assert.ok(HARM_REDUCTION[key], `index.html asks for harm reduction set "${key}", which does not exist`);
+        }
+        for (const key of Object.keys(HARM_REDUCTION)) {
+            assert.ok(used.includes(key), `harm reduction set "${key}" is defined but rendered nowhere`);
+        }
+    });
+
+    test('reduced tolerance appears on every substance', () => {
+        for (const [key, blocks] of Object.entries(HARM_REDUCTION)) {
+            const text = blocks.flatMap((b) => b.points).join('\n');
+            assert.ok(/[Tt]olerance falls after/.test(text),
+                `${key}: the reduced-tolerance warning is missing — it applies after every withdrawal episode`);
+        }
+    });
+
+    test('take-home naloxone survived the refactor', () => {
+        const opioid = HARM_REDUCTION.opioid.flatMap((b) => b.points).join('\n');
+        assert.ok(/Nyxoid/.test(opioid) && /Prenoxad/.test(opioid),
+            'the take-home naloxone content was lost when the bespoke section was replaced');
+    });
+
+    test('substance-specific advice is actually substance-specific', () => {
+        const points = (key) => HARM_REDUCTION[key].flatMap((b) => b.points).join('\n');
+        assert.ok(/soy sauce containers/.test(points('ghb')), 'GHB storage warning missing');
+        assert.ok(/bucket bongs/.test(points('cannabis')), 'cannabis inhalation advice missing');
+        assert.ok(/alternate/i.test(points('alcohol')), 'alcohol-specific advice missing');
+        assert.ok(/Pyrex/.test(points('psychostimulant')), 'pipe hygiene missing from psychostimulants');
+    });
+
+    test('every block cites a source', () => {
+        for (const [key, blocks] of Object.entries(HARM_REDUCTION)) {
+            for (const block of blocks) {
+                assert.ok(/src-tag/.test(block.source || ''),
+                    `${key} / "${block.heading}" has no source tag`);
             }
         }
     });

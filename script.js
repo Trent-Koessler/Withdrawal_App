@@ -2,6 +2,7 @@ import { FLOWCHART_LOGIC } from './data/flowchart.js';
 import { REGIMEN_CONFIG } from './data/regimens.js';
 import { SCALES } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
+import { HARM_REDUCTION } from './data/harm-reduction.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const APP_VERSION = '0.3.2';
@@ -670,6 +671,24 @@ document.addEventListener('DOMContentLoaded', () => {
             + `<h5>Rules that apply to all of the above</h5><ul>`
             + SYMPTOMATIC_UNIVERSAL.map(rule => `<li>${rule}</li>`).join('')
             + `</ul>`;
+    });
+
+    // --- SHARED HARM REDUCTION BLOCKS --- //
+    document.querySelectorAll('[data-harm-reduction]').forEach(host => {
+        const blocks = HARM_REDUCTION[host.dataset.harmReduction];
+        if (!blocks) {
+            console.warn('no harm reduction set named', host.dataset.harmReduction);
+            return;
+        }
+        host.classList.add('shared-block');
+        host.innerHTML = `<h4>Harm reduction</h4>` + blocks.map(block => {
+            const body = `<h5>${block.heading}</h5><ul>`
+                + block.points.map(p => `<li>${p}</li>`).join('')
+                + `</ul><p>${block.source}</p>`;
+            // The blocks a clinician must not skim get the danger treatment;
+            // the rest read as a list, so the emphasis stays meaningful.
+            return block.danger ? `<div class="danger-box">${body}</div>` : body;
+        }).join('');
     });
 
     // --- SETUP ALL CALCULATORS ---

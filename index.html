@@ -906,6 +906,7 @@ textarea {
                         <button class="tab-button" data-tab="benzo-choice">1. Benzo Choice</button>
                         <button class="tab-button" data-tab="regimens">2. Regimens</button>
                         <button class="tab-button" data-tab="special-cases">Special Cases</button>
+                        <button class="tab-button" data-tab="alcohol-harm-reduction">Harm Reduction</button>
                     </div>
                     <div id="prerequisites" class="tab-content active">
                         <h3>Prerequisites</h3>
@@ -1218,6 +1219,11 @@ textarea {
                                 on-call addiction medicine specialist or addiction psychiatrist.
                                 <span class="src-tag src-nswcg">NSWCG §5.4.4, §2.6</span></li>
                         </ol>
+                    </div>
+                    <div id="alcohol-harm-reduction" class="tab-content">
+                        <h3>Harm Reduction</h3>
+                        <p>Relevant whether or not the withdrawal is completed — and most relevant when it is not.</p>
+                        <div data-harm-reduction="alcohol"></div>
                     </div>
                 </div>
             </div>
@@ -1608,14 +1614,7 @@ textarea {
 
                 <div data-symptomatic="opioid"></div>
 
-                <h5>Harm Reduction &amp; Overdose Prevention</h5>
-                <div class="warning-box">
-                    <strong>⚠️ Lost Tolerance:</strong> Patients leaving an opioid detox have completely lost their
-                    tolerance. A previously "normal" dose can now be fatal.
-                </div>
-                <p><strong>Take-Home Naloxone:</strong> Always prescribe or supply Take-Home Naloxone (e.g., Nyxoid
-                    nasal spray or Prenoxad intramuscular injection) to <em>any</em> patient discharging from an opioid
-                    withdrawal program, along with brief overdose response education.</p>
+                <div data-harm-reduction="opioid"></div>
 
             </div>
 
@@ -1663,6 +1662,8 @@ textarea {
                         href="https://trent-koessler.github.io/Hypertaper/" target="_blank">HyperTaper</a>.</p>
 
                 <div data-symptomatic="benzodiazepine"></div>
+
+                <div data-harm-reduction="benzodiazepine"></div>
             </div>
 
             <!-- Cannabis Withdrawal Page -->
@@ -1684,6 +1685,8 @@ textarea {
                 </div>
 
                 <div data-symptomatic="cannabis"></div>
+
+                <div data-harm-reduction="cannabis"></div>
             </div>
 
             <!-- Psychostimulants Withdrawal Page -->
@@ -1713,6 +1716,8 @@ textarea {
                     agitation, and risk of suicide. Monitor mental state closely.</p>
 
                 <div data-symptomatic="psychostimulant"></div>
+
+                <div data-harm-reduction="psychostimulant"></div>
             </div>
 
             <!-- GHB Withdrawal Page -->
@@ -1736,6 +1741,8 @@ textarea {
                 <p><strong>Inpatient management in a high-dependency setting is often required. Consult addiction
                         medicine and ICU immediately.</strong> High-dose benzodiazepines are the mainstay of treatment,
                     often requiring significantly larger doses than standard alcohol withdrawal.</p>
+
+                <div data-harm-reduction="ghb"></div>
             </div>
 
             <!-- Nicotine Withdrawal Page -->

@@ -11,6 +11,7 @@ const urlsToCache = [
     'data/regimens.js',
     'data/scales.js',
     'data/symptomatic.js',
+    'data/harm-reduction.js',
     'manifest.json',
     'favicon.ico',
     'icons/icon.svg',
