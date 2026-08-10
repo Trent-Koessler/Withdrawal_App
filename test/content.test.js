@@ -345,3 +345,36 @@ describe('P2-07 — BBV/STI results to actions', () => {
         assert.ok(/tel:1800451624/.test(contacts), 'NSW Sexual Health InfoLink is not in the contacts directory');
     });
 });
+
+describe('P2-13 — screening', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="screening-page"'),
+        html.indexOf('<!-- BBV / STI Results to Actions -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('universal screening is stated', () => {
+        assert.ok(/admitted to hospital, or presenting to an emergency department, should be\s*<\/strong>?\s*screened|admitted to hospital, or presenting to an emergency department, should be screened/.test(flat),
+            'the universal alcohol screening rule is missing');
+    });
+
+    test('the opening questions carry the NSWCG thresholds', () => {
+        assert.ok(/4 or more days per week/.test(flat), 'the frequency threshold is missing');
+        assert.ok(/6 or more standard drinks\s*<\/strong>?\s*on one occasion|6 or more standard drinks on one occasion/.test(flat),
+            'the single-occasion threshold is missing');
+        for (const q of ['tobacco', 'recreational drugs', 'pain, anxiety or sleep']) {
+            assert.ok(flat.includes(q), `screening question missing: ${q}`);
+        }
+    });
+
+    test('the named tools are listed', () => {
+        for (const tool of ['AUDIT', 'ASSIST', 'SDS', 'IRIS', 'Substances and Choices Scale']) {
+            assert.ok(flat.includes(tool), `screening tool missing: ${tool}`);
+        }
+    });
+
+    test('the three practice points are present', () => {
+        assert.ok(/document quantities/i.test(flat), 'documenting quantities is missing');
+        assert.ok(/polysubstance use/i.test(flat), 'polysubstance prompt is missing');
+        assert.ok(/avoid duplicating screening already done/i.test(flat), 'the duplication warning is missing');
+    });
+});
