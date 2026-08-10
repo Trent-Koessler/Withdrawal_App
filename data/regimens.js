@@ -93,6 +93,10 @@ export const REGIMEN_CONFIG = {
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
         moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }] },
+        // TODO(clinical): should hourly loading be retained at all, or dropped in
+        // favour of the NSWCG 2-hourly rate everywhere? It is currently offered as a
+        // monitored-setting-only alternative; the alternative is to remove it and
+        // rely on the symptom-triggered regimen for faster titration.
         // TODO(clinical): confirm the preferred Day 2 default after a loading day —
         // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
         // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
@@ -100,7 +104,8 @@ export const REGIMEN_CONFIG = {
         severe: {
             title: 'Severe (CIWA-Ar > 20 | AWS > 14)',
             schedule: [
-                `<b>Day 1 — loading.</b> Diazepam 20mg hourly until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+                `<b>Day 1 — loading.</b> Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
+                `<b>Hourly loading — monitored settings only.</b> Where the patient is in a monitored setting (HDU, or 1:1 nursing with continuous observation), 20mg hourly may be used instead. Do not use hourly loading on a general ward: oral diazepam peaks at around one hour, so hourly dosing stacks doses whose effect has not yet been observed. <span class="src-tag src-local">LOCAL — rationale: NSWCG Table 5.4 specifies 2-hourly; hourly loading is retained because it has been used locally in monitored settings where over-sedation would be detected immediately, and is restricted to those settings rather than removed.</span>`,
                 `<b>Day 2 onward — do not repeat a loading day.</b> Following loading, no further loading diazepam is generally needed once the patient is settled: diazepam's long-acting active metabolites are the reason loading works, and a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
                 `<b>Preferred handover:</b> symptom-triggered dosing in a reducing regimen (see the Symptom-Triggered regimen). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
                 `<b>Alternative handover:</b> if a fixed schedule is preferred, commence at the <b>Day 2 row</b> of the Moderate-Severe schedule — diazepam 15mg qid — and taper from there as written. Do not start that schedule at its Day 1 row. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`

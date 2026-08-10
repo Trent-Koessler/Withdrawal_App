@@ -412,3 +412,23 @@ describe('P1-05 — band selection carries risk modifiers, not intake alone', ()
         }
     });
 });
+
+describe('P1-06 — loading rate', () => {
+    const severe = textOf(REGIMEN_CONFIG.Diazepam.severe);
+
+    test('the default loading rate is the NSWCG 2-hourly rate', () => {
+        assert.ok(/20mg <b>2-hourly<\/b>/.test(severe),
+            'the default loading rate is not 2-hourly; NSWCG Table 5.4 specifies 2-hourly');
+    });
+
+    test('hourly loading survives only as a monitored-setting option', () => {
+        const hourly = severe.match(/[^`]*20mg hourly[^`]*/);
+        assert.ok(hourly, 'the hourly option was removed rather than restricted');
+        assert.ok(/monitored setting|HDU/i.test(hourly[0]),
+            'hourly loading is offered without restricting it to a monitored setting');
+        assert.ok(/src-local/.test(hourly[0]),
+            'hourly loading departs from NSWCG Table 5.4 and must be tagged LOCAL');
+        assert.ok(/peaks at around one hour/i.test(severe),
+            'the reason hourly dosing stacks doses is not explained');
+    });
+});
