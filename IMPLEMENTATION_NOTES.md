@@ -201,10 +201,10 @@ Where the spec's guess was wrong, the actual location is given in bold.
 
 | Task | Files touched | Notes |
 |---|---|---|
-| P1-01 | `index.html` `#regimens` (5th severity button), `data/regimens.js` (`symptomatic` → new `symptom` severity key) | Added as a fifth `regimen-severity-btn`, not a fifth `.tab-button`: the four "tabs" the spec refers to are severity buttons inside the single `#regimens` tab. |
+| P1-01 | `index.html` `#regimens` (new severity button), `data/regimens.js` (new `symptom` severity key) | Added as a `regimen-severity-btn`, not a fifth `.tab-button`: the four "tabs" the spec refers to are severity buttons inside the single `#regimens` tab. The selector now has six. |
 | P1-02 | `data/regimens.js`, `index.html` | AWS bands alongside every CIWA-Ar band. |
 | P1-03 | `index.html` `#regimens` | Monitoring table. |
-| P1-04 | `data/regimens.js` (`subMild` variant) | `TODO(clinical):` on which of the two options is preferred. |
+| P1-04 | `data/regimens.js` (`submild` severity) | Both options ship — supportive care only, and a halved schedule — with `TODO(clinical):` on which should be the default. |
 | P1-05 | `index.html` `#regimens` | Risk modifiers; drink count tagged `LOCAL`. |
 | P1-06 | `data/regimens.js` | 2-hourly, with the hourly option retained as an explicitly-tagged local variant. |
 | P1-07 | `data/regimens.js` severe (setting block first), `index.html` `#special-cases` | |
@@ -245,7 +245,37 @@ Where the spec's guess was wrong, the actual location is given in bold.
 
 ---
 
-## 4. Deviations from the spec, and why
+## 4. What shipped
+
+Every task in the spec is implemented. Summary of the end state:
+
+- **41 commits**, one per task ID, in the order SURVEY-01, AUTH-01, P0, P1, P2, P3.
+- **226 source tags**: 205 `NSWCG`, 13 `LOCAL`, 5 `NSWCG-adapted`, 3 `OTHER`.
+- **17 `TODO(clinical)`** and **5 `TODO(review)`** markers outstanding, all
+  listed by `npm run check:todos`.
+- **Test suite grown from 29 to 215 assertions** across four files:
+  - `test/clinical.test.js` — the pre-existing characterisation tests, updated
+    where a shape changed (the `routing` cell, the new severities).
+  - `test/alcohol-safety.test.js` — new. One `describe` per P0/P1 task,
+    asserting the defect cannot return.
+  - `test/content.test.js` — new. Coverage assertions for the P2/P3 content.
+  - `test/provenance.test.js` — new. The rules of the tagging convention.
+- **New data modules**: `symptomatic.js`, `harm-reduction.js`,
+  `benzo-equivalence.js`, `content-meta.js`. All four added to the service
+  worker precache list; `CACHE_NAME` bumped to v27 and the app version to
+  0.4.0 across all three hand-maintained strings.
+- **New pages**: assessment, screening, populations, capacity (scaffold),
+  continuing care, BBV/STI, gabapentinoids, sources, contributors, changelog.
+- **New regimen severities**: sub-mild and symptom-triggered, taking the
+  selector from four to six.
+
+Verified in Chromium at 390 px in both themes: every page activates and
+renders, no page scrolls horizontally, every calculator builds, all twelve
+benzodiazepine × severity cells render, and there are no console errors.
+
+---
+
+## 5. Deviations from the spec, and why
 
 1. **"Four tabs" / "fifth tab" (P0-04, P1-01).** The alcohol regimens are not
    four tabs — they are four severity *buttons* inside one `#regimens` tab.
@@ -261,3 +291,22 @@ Where the spec's guess was wrong, the actual location is given in bold.
    added came from the spec text. Where the spec left a decision open, the
    content carries a `TODO(clinical):` and the app either states the
    uncertainty or offers both options — it does not pick one silently.
+5. **P2 build order.** The spec says "build in this order". Three tasks were
+   moved earlier because later ones depend on them: `P2-08` (shared
+   symptomatic table) and `P2-06` (shared harm reduction) before `P2-01`,
+   which consumes both; and `P2-05`, `P2-07`, `P2-13` before `P2-04`, which
+   links to all three. Building `P2-04` first would have shipped a commit
+   with dangling navigation, which the existing `data-page` test correctly
+   rejects.
+6. **Where existing content conflicted with NSWCG, both are shown.** Two
+   cases: the buprenorphine COWS threshold (NSWCG 8 vs the site's >12) and
+   the loading rate (NSWCG 2-hourly vs the site's hourly). Neither was
+   silently overwritten. Both are tagged, the trade-off is stated at the
+   point of use, and a `TODO(clinical):` records the decision.
+7. **Carried-forward content with no established source is tagged `LOCAL`,
+   not left bare.** Six symptomatic medication entries (metoclopramide,
+   ondansetron, hyoscine butylbromide, loperamide, paracetamol/ibuprofen,
+   promethazine) were in the app before this revision with no citation. They
+   are unchanged in dose but now say their provenance is unconfirmed, with a
+   `TODO(review):` to establish it. Giving them an NSWCG tag they had not
+   earned would have been the easier and worse option.

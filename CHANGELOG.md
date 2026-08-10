@@ -59,7 +59,7 @@ as NSWCG. Task IDs refer to `SUDTOOLKIT_REVISION_SPEC.md`; see
 
 ### Not resolved
 
-Fourteen `TODO(clinical)` decisions are outstanding and are listed by
+Seventeen `TODO(clinical)` decisions are outstanding and are listed by
 `npm run check:todos`. The most consequential:
 
 - Which Day 2 handover should be the default after a loading day.

@@ -42,11 +42,23 @@ function chips() {
 }
 
 describe('source tags', () => {
-    // A floor, not a target. Raised as the retrofit progressed so that deleting
-    // the tagging wholesale cannot pass silently.
+    // A floor, not a target: raised at the end of the 2026 revision, which
+    // finished with 226 chips. It exists so that deleting the tagging wholesale,
+    // or reverting a page to untagged prose, cannot pass silently.
     test('the app actually carries provenance tags', () => {
-        assert.ok(chips().length >= 8,
-            `only ${chips().length} source tags found — the retrofit is incomplete`);
+        assert.ok(chips().length >= 200,
+            `only ${chips().length} source tags found — clinical content has lost its provenance`);
+    });
+
+    // The distribution is itself a claim about the site: most content is
+    // guideline-derived, and the local departures are few enough to name.
+    test('local and adapted content is a minority, and neither has vanished', () => {
+        const all = chips();
+        const local = all.filter((c) => /src-local|src-nswcg-adapted/.test(c.classes));
+        assert.ok(local.length >= 10,
+            'the site has known departures from NSWCG; if none are tagged, the tagging has been lost');
+        assert.ok(local.length < all.length / 2,
+            'more than half the clinical content is untraceable to a published guideline');
     });
 
     test('every chip declares exactly one kind', () => {
