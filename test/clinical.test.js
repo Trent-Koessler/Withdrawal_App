@@ -157,16 +157,22 @@ describe('scale structure', () => {
 });
 
 describe('benzodiazepine regimens', () => {
-    const SEVERITIES = ['mild', 'moderate', 'severe', 'unknown'];
+    const SEVERITIES = ['submild', 'mild', 'symptom', 'moderate', 'severe', 'unknown'];
 
-    test('every benzo x severity combination resolves', () => {
+    // A cell renders either a schedule or a `routing` card. The routing shape
+    // exists so a combination that must not produce doses (severe withdrawal on
+    // oxazepam) can say so, instead of rendering an empty schedule — see P0-05.
+    test('every benzo x severity combination resolves to a schedule or a routing card', () => {
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
             for (const severity of SEVERITIES) {
                 const data = REGIMEN_CONFIG[benzo][severity];
                 assert.ok(data, `${benzo}/${severity} missing`);
                 assert.ok(data.title, `${benzo}/${severity} has no title`);
-                assert.ok(Array.isArray(data.schedule) && data.schedule.length > 0,
-                    `${benzo}/${severity} has no schedule`);
+                const schedule = Array.isArray(data.schedule) && data.schedule.length > 0;
+                const routing = Array.isArray(data.routing) && data.routing.length > 0;
+                assert.ok(schedule || routing, `${benzo}/${severity} renders nothing`);
+                assert.ok(!(schedule && routing),
+                    `${benzo}/${severity} has both a schedule and a routing card — the renderer shows only the routing card`);
             }
         }
     });
@@ -174,7 +180,7 @@ describe('benzodiazepine regimens', () => {
     test('scheduled doses are positive numbers with a frequency', () => {
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
             for (const severity of SEVERITIES) {
-                for (const step of REGIMEN_CONFIG[benzo][severity].schedule) {
+                for (const step of REGIMEN_CONFIG[benzo][severity].schedule || []) {
                     if (typeof step === 'string') continue; // free-text instruction
                     assert.equal(typeof step.dose, 'number', `${benzo}/${severity} non-numeric dose`);
                     assert.ok(step.dose > 0, `${benzo}/${severity} has a non-positive dose`);
@@ -189,7 +195,7 @@ describe('benzodiazepine regimens', () => {
         const PER_DAY = { qid: 4, tds: 3, bd: 2, nocte: 1 };
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
             for (const severity of ['mild', 'moderate']) {
-                const totals = REGIMEN_CONFIG[benzo][severity].schedule
+                const totals = (REGIMEN_CONFIG[benzo][severity].schedule || [])
                     .filter((s) => typeof s !== 'string')
                     .map((s) => s.dose * PER_DAY[s.freq]);
                 for (let i = 1; i < totals.length; i++) {
@@ -200,12 +206,17 @@ describe('benzodiazepine regimens', () => {
         }
     });
 
-    test('mild regimens carry a symptom-triggered alternative', () => {
+    // The dose table used to be duplicated: once under Mild-Moderate and
+    // nowhere else. It now lives only in the symptom-triggered severity, and
+    // the mild cell points at it — so assert the pointer, not a second copy.
+    test('mild regimens point at the symptom-triggered alternative', () => {
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
             const st = REGIMEN_CONFIG[benzo].mild.symptom_triggered;
-            assert.ok(st, `${benzo} mild has no symptom_triggered block`);
-            assert.ok(st.doses.length > 0);
-            assert.ok(st.review.includes('Medical review'));
+            assert.ok(st, `${benzo} mild has no symptom_triggered pointer`);
+            assert.ok(/Symptom-Triggered regimen/i.test(st.note),
+                `${benzo} mild does not tell the user where the dosing table is`);
+            assert.ok(!st.doses,
+                `${benzo} mild carries its own copy of the dose table again — it will drift`);
         }
     });
 });

@@ -1,9 +1,13 @@
 import { FLOWCHART_LOGIC } from './data/flowchart.js';
 import { REGIMEN_CONFIG } from './data/regimens.js';
-import { SCALES } from './data/scales.js';
+import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
+import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
+import { HARM_REDUCTION } from './data/harm-reduction.js';
+import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
+import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.3.2';
+    const APP_VERSION = '0.4.0';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
@@ -81,6 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeButton = document.getElementById('home-button');
     const aboutButton = document.getElementById('about-button');
     const feedbackButton = document.getElementById('feedback-button');
+    const globalBackBtn = document.getElementById('global-back-btn');
+
+    // How many in-app forward navigations are behind us this tab session.
+    // An installed PWA often has no browser chrome at all, so the global
+    // back button cannot lean on "does history.length look long enough" —
+    // that's unreliable across browsers and meaningless after a fresh deep
+    // link. This counts only navigations *this app* pushed, so the button
+    // can tell "go back within the app" from "there is nothing to go back
+    // to" and fall back to Home instead of leaving the app.
+    let inAppNavCount = 0;
 
     // Selects a scale tab on the scales page, used for deep links and for the
     // "Go to X Scale" buttons on the syndrome pages.
@@ -126,9 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (push) {
             if (location.hash !== hash) {
                 window.history.pushState({ pageId, tabId }, '', hash);
+                inAppNavCount++;
             }
         } else {
             window.history.replaceState({ pageId, tabId }, '', hash);
+        }
+
+        if (globalBackBtn) {
+            globalBackBtn.classList.toggle('visible', pageId !== 'home-page');
         }
 
         // Long pages otherwise keep the previous page's scroll position.
@@ -156,6 +175,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     homeButton.addEventListener('click', () => showPage('home-page'));
     aboutButton.addEventListener('click', () => showPage('about-page'));
+
+    if (globalBackBtn) {
+        globalBackBtn.addEventListener('click', () => {
+            // Real history.back() when we know it stays inside the app, so
+            // it lands on the actual previous page rather than a fixed
+            // destination — the .back-to-selection-btn buttons already
+            // cover "take me to the substance list regardless of how I got
+            // here"; this button means "undo my last navigation".
+            if (inAppNavCount > 0) {
+                inAppNavCount--;
+                window.history.back();
+            } else {
+                showPage('home-page');
+            }
+        });
+    }
 
     if (feedbackButton) {
         feedbackButton.addEventListener('click', () => {
@@ -357,6 +392,160 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    // --- EMR PLAN EXPORT (AUTH-06) --- //
+
+    // Turns rendered clinical markup into something that survives being pasted
+    // into an EMR text field. Built from the live DOM rather than from the data
+    // modules, so what is copied is by construction what the clinician read -
+    // including the source tags by default, rendered as [NSWCG §5.4.4]. Pass
+    // stripSources for the quick-start copies, which drop citations entirely
+    // rather than bracket them - the point there is an uncluttered paste, and
+    // the full page is still the source of record.
+    function elementToPlainText(root, { stripSources = false } = {}) {
+        if (!root) return '';
+        const clone = root.cloneNode(true);
+
+        clone.querySelectorAll('.src-tag').forEach(tag => {
+            if (stripSources) {
+                tag.remove();
+            } else {
+                tag.replaceWith(document.createTextNode(` [${tag.textContent.trim()}]`));
+            }
+        });
+        // Buttons are controls, not content; copying their labels is noise.
+        clone.querySelectorAll('button, .clinical-table-wrap').forEach(el => {
+            if (el.tagName === 'BUTTON') el.remove();
+        });
+
+        const collapse = (s) => s.replace(/\s+/g, ' ').trim();
+        // Recurse only into containers that hold other blocks. A callout whose
+        // children are all inline (<strong>, <span>) is a paragraph, and walking
+        // into it would emit the bold fragments and silently drop the prose
+        // between them.
+        const BLOCK = /^(DIV|SECTION|ARTICLE|UL|OL|TABLE|P|H[1-6])$/;
+        const hasBlockChildren = (el) => [...el.children].some(c => BLOCK.test(c.tagName));
+
+        const lines = [];
+        const walk = (node) => {
+            for (const child of node.children) {
+                const tag = child.tagName;
+                if (tag === 'UL' || tag === 'OL') {
+                    [...child.children].forEach(li => lines.push('  - ' + collapse(li.textContent)));
+                } else if (tag === 'TABLE') {
+                    [...child.querySelectorAll('tr')].forEach(row => {
+                        lines.push('  ' + [...row.children].map(c => collapse(c.textContent)).join(' | '));
+                    });
+                } else if (/^H[1-6]$/.test(tag)) {
+                    lines.push('', collapse(child.textContent).toUpperCase());
+                } else if (hasBlockChildren(child)) {
+                    walk(child);
+                } else {
+                    const text = collapse(child.textContent);
+                    if (text) lines.push(text);
+                }
+            }
+        };
+        walk(clone);
+        return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    }
+
+    // Assembles the whole plan: what was selected, where to manage it, the
+    // doses, how often to look at the patient, and when to stop following the
+    // plan and call someone. No published guideline hands a clinician that as
+    // one pasteable block, which is the point of it.
+    function buildPlanSummary() {
+        // Selected by id, not by position: the blocks on this tab have been
+        // reordered twice already during this revision.
+        const sections = [
+            ['REGIMEN', document.getElementById('regimen-display')],
+            ['BAND SELECTION', document.getElementById('block-band-selection')],
+            ['INTERPRETING THE SCORE', document.getElementById('block-interpreting-score')],
+            ['MONITORING', document.getElementById('block-monitoring')],
+            ['ESCALATION AND DE-ESCALATION', document.getElementById('block-escalation')],
+            ['DISCHARGE', document.getElementById('block-discharge')],
+            ['THIAMINE', document.getElementById('thiamine')]
+        ];
+
+        const body = sections
+            .map(([heading, el]) => {
+                const text = elementToPlainText(el);
+                return text ? `=== ${heading} ===\n${text}` : '';
+            })
+            .filter(Boolean)
+            .join('\n\n');
+
+        return [
+            `ALCOHOL WITHDRAWAL PLAN - ${selectedBenzo}`,
+            `Selected regimen: ${REGIMEN_CONFIG[selectedBenzo][selectedSeverity].title}`,
+            '',
+            body,
+            '',
+            `--- Generated by SUD Toolkit v${APP_VERSION}. Adult patients only. Verify against local policy `
+            + `and current NSW Health guidance before use; this is decision support, not a prescription. ---`
+        ].join('\n');
+    }
+
+    // Condensed, citation-free version of the Day 1-3 buprenorphine and
+    // methadone steps above — for pasting into a treatment plan or handover
+    // note, where the source tags this app carries everywhere else would
+    // just be noise. The doses are the same ones cited (with sources) in the
+    // Buprenorphine and Methadone sections on this page; this function does
+    // not introduce any figure that is not already stated and sourced there.
+    function buildOpioidQuickStart() {
+        return [
+            '--- QUICK-START: BUPRENORPHINE COMMENCEMENT ---',
+            'WARNING: Defer the first dose until the patient is in objective withdrawal (COWS >= 8) to avoid precipitated withdrawal.',
+            '',
+            'Day 1:',
+            '  - Test dose: 2mg sublingually.',
+            '  - Review at 1 hour. If no increase in severity and still in withdrawal, give a further 6mg.',
+            '  - Mild withdrawal (COWS 4-8): an alternative is 4mg initially, plus a further 4mg after 1-2 hours.',
+            '  - Total Day 1 dose: 8-12mg outpatient, 8-16mg inpatient.',
+            '',
+            'Day 2 (if continuing as Opioid Agonist Treatment):',
+            '  - Increase in 2, 4 or 8mg increments as needed, up to 16mg.',
+            '  - (If instead tapering for time-limited withdrawal, see the full page - Day 2 reduces, it does not increase.)',
+            '',
+            'Day 3 onward (Opioid Agonist Treatment):',
+            '  - Continue increasing in 2, 4 or 8mg increments, up to 24mg on Day 3, toward a stable dose.',
+            '  - More for ongoing withdrawal; less for intoxication or oversedation.',
+            '  - Consult an addiction medicine specialist if higher or faster increases are needed, or the patient must suddenly stop a prescribed opioid.',
+            '',
+            '--- QUICK-START: METHADONE COMMENCEMENT ---',
+            'WARNING: Overdose risk is highest in the first 1-2 weeks, while methadone accumulates toward steady state (4-7 days). All doses supervised; review daily before dosing in week 1.',
+            '',
+            'Day 1:',
+            '  - Commence 20-30mg daily.',
+            '  - Consider lower (<20mg) for low/uncertain tolerance, high-risk polydrug use (alcohol, benzodiazepines), or other severe medical complications.',
+            '  - Specialist consultation required before starting above 40mg.',
+            '',
+            'Days 2-3:',
+            '  - Assess for intoxication ~2-3 hours after dosing (peak effect), and for withdrawal control at 24 hours.',
+            '',
+            'Day 4 onward:',
+            '  - Increase by 5-10mg every 3-5 days if withdrawal features suggest not enough methadone.',
+            '  - Typical trajectory: 30-50mg by end of week 1, 40-60mg by end of week 2.',
+            '  - Consult an addiction medicine specialist for faster/higher increases, unclear tolerance, high-risk polydrug use, or difficulty stabilising.',
+            '',
+            '---',
+            'Condensed quick-start reference only - see the full Opioid Withdrawal page for the complete protocol, ',
+            'precipitated-withdrawal recognition, and when to seek specialist advice.',
+            `Generated by SUD Toolkit v${APP_VERSION}. Adult patients only. Verify against local policy and current `
+            + 'NSW Health guidance before use; this is decision support, not a prescription.'
+        ].join('\n');
+    }
+
+    // Shared by the regimen panel and the monitoring/equivalence tables. Wrapped
+    // so a wide table scrolls inside its own box rather than widening the page
+    // on a phone, which is where this app is mostly read.
+    function renderClinicalTable({ headers, rows, caption }) {
+        const head = headers.map(h => `<th scope="col">${h}</th>`).join('');
+        const body = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+        return `<div class="clinical-table-wrap"><table class="clinical-table">`
+            + (caption ? `<caption>${caption}</caption>` : '')
+            + `<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
     function updateRegimenDisplay() {
         if (!regimenDisplayDiv) return;
 
@@ -364,7 +553,52 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = config[selectedSeverity];
         const b_name = config.name;
 
-        let displayHTML = `<h3>${data.title}</h3><b>Scheduled Dosing:</b><ul>`;
+        // A `routing` cell is one where no regimen should be rendered at all —
+        // severe withdrawal on oxazepam, for instance. Returning advice instead
+        // of a dose table is the point, so bail out before the schedule loop
+        // rather than rendering an empty one.
+        if (data.routing) {
+            regimenDisplayDiv.innerHTML = `<h3>${data.title}</h3>`
+                + data.routing.map(item => `<div class="routing-card">${item}</div>`).join('');
+            return;
+        }
+
+        let displayHTML = `<h3>${data.title}</h3>`;
+
+        // Where to manage the patient comes before what to prescribe, so it is
+        // rendered above everything else rather than under PRN dosing.
+        if (data.setting) {
+            displayHTML += `<div class="clinical-block"><h4>Setting</h4>`
+                + data.setting.map(item => `<p>${item}</p>`).join('')
+                + `</div>`;
+        }
+
+        // Shown before the doses, never after: a caveat that qualifies a whole
+        // schedule is useless underneath it.
+        // An array: a cell can carry more than one (an oxazepam symptom-triggered
+        // regimen is both converted and conditional on the care setting).
+        // Collapsed by default so caveats don't stack into a wall of text above
+        // the doses — but every caveat opens with its own bold lead-in sentence
+        // (e.g. "Conversion caveat."), which becomes the <summary>, so the
+        // substance is visible without expanding it. Only the elaboration and
+        // source-tag rationale are hidden behind the toggle.
+        (data.caveat || []).forEach(caveat => {
+            const leadIn = caveat.match(/^<b>(.*?)<\/b>\s*/);
+            if (leadIn) {
+                displayHTML += `<details class="warning-box"><summary>${leadIn[1]}</summary>${caveat.slice(leadIn[0].length)}</details>`;
+            } else {
+                displayHTML += `<div class="warning-box">${caveat}</div>`;
+            }
+        });
+
+        // A score-banded dose table (symptom-triggered dosing, monitoring
+        // frequency). Rendered above the instructions because the table is the
+        // regimen and the instructions qualify it.
+        if (data.table) {
+            displayHTML += renderClinicalTable(data.table);
+        }
+
+        displayHTML += `<b>${data.table ? 'Notes' : 'Scheduled Dosing'}:</b><ul>`;
         data.schedule.forEach((s, index) => {
             if (typeof s === 'string') {
                 displayHTML += `<li>${s}</li>`;
@@ -381,31 +615,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.prn && data.prn.length > 0) {
             displayHTML += `<b>PRN Dosing:</b>`;
             if (selectedSeverity === 'mild' || selectedSeverity === 'moderate') {
-                displayHTML += `<div><i>(max twice daily PRN)</i></div>`;
+                displayHTML += `<div><i>Consider increasing the regular regimen by a band if PRN is being used `
+                    + `frequently (e.g. more than two times daily).</i></div>`;
             }
             displayHTML += `<ul>`;
             data.prn.forEach(p => {
                 if (typeof p === 'string') {
                     displayHTML += `<li>${p}</li>`;
                 } else {
-                    displayHTML += `<li>CIWA ${p.range}: extra ${b_name} ${p.dose}mg PRN</li>`;
+                    const band = p.aws ? `CIWA-Ar ${p.range} / AWS ${p.aws}` : `CIWA-Ar ${p.range}`;
+                    displayHTML += `<li>${band}: extra ${b_name} ${p.dose}mg PRN</li>`;
                 }
             });
             displayHTML += `</ul>`;
         }
 
-        // Add alternative symptom-triggered regimen for mild/moderate cases
+        // Points at the Symptom-Triggered regimen rather than restating its dose
+        // table, which used to be a second copy that could drift from the first.
         if (selectedSeverity === 'mild' && data.symptom_triggered) {
             const st = data.symptom_triggered;
             displayHTML += `<hr style="margin: 20px 0;">`;
-            displayHTML += `<h3>Alternative: ${st.title}</h3>`;
+            displayHTML += `<h3>${st.title}</h3>`;
             displayHTML += `<p><i>${st.note}</i></p>`;
-            displayHTML += `<b>Dosing based on score:</b><ul>`;
-            st.doses.forEach(dose_info => {
-                displayHTML += `<li>${dose_info}</li>`;
-            });
-            displayHTML += `</ul>`;
-            displayHTML += `<p><b>${st.review}</b></p>`;
         }
 
         regimenDisplayDiv.innerHTML = displayHTML;
@@ -428,6 +659,72 @@ document.addEventListener('DOMContentLoaded', () => {
             regimenSeverityBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             updateRegimenDisplay();
+        });
+    });
+
+    // Rebuilt on demand rather than on every selection change: it reads the
+    // whole tab, and there is no reason to pay for that until asked.
+    const planSummaryEl = document.getElementById('plan-summary');
+    const copyPlanBtn = document.getElementById('copy-plan-btn');
+    if (planSummaryEl && copyPlanBtn) {
+        copyPlanBtn.addEventListener('click', () => {
+            planSummaryEl.value = buildPlanSummary();
+            planSummaryEl.select();
+            navigator.clipboard.writeText(planSummaryEl.value);
+            const original = copyPlanBtn.textContent;
+            copyPlanBtn.textContent = 'Copied!';
+            setTimeout(() => { copyPlanBtn.textContent = original; }, 2000);
+        });
+    }
+
+    const opioidQuickStartEl = document.getElementById('opioid-quickstart-summary');
+    const copyOpioidQuickStartBtn = document.getElementById('copy-opioid-quickstart-btn');
+    if (opioidQuickStartEl && copyOpioidQuickStartBtn) {
+        copyOpioidQuickStartBtn.addEventListener('click', () => {
+            opioidQuickStartEl.value = buildOpioidQuickStart();
+            opioidQuickStartEl.select();
+            navigator.clipboard.writeText(opioidQuickStartEl.value);
+            const original = copyOpioidQuickStartBtn.textContent;
+            copyOpioidQuickStartBtn.textContent = 'Copied!';
+            setTimeout(() => { copyOpioidQuickStartBtn.textContent = original; }, 2000);
+        });
+    }
+
+    // Generic quick-start copy for the other substance pages with a plain
+    // dosing regimen. A page opts in by marking the relevant .clinical-
+    // block(s) with data-quickcopy and pairing a
+    // <textarea id="X-quickstart-summary"> with a
+    // <button id="copy-X-quickstart-btn">. Unlike opioid's above (which
+    // needed hand-written reconciliation between two overlapping NSWCG/OAT
+    // protocols), these are built straight from the marked DOM content, so
+    // one generic handler covers all of them without drifting from the page.
+    document.querySelectorAll('button[id^="copy-"][id$="-quickstart-btn"]').forEach(btn => {
+        if (btn.id === 'copy-opioid-quickstart-btn') return; // already wired above
+        const textarea = document.getElementById(btn.id.replace(/^copy-/, '').replace(/-btn$/, '-summary'));
+        const page = btn.closest('.page');
+        if (!textarea || !page) return;
+        btn.addEventListener('click', () => {
+            const blocks = [...page.querySelectorAll('[data-quickcopy]')];
+            const body = blocks
+                .map(el => elementToPlainText(el, { stripSources: true }))
+                .filter(Boolean)
+                .join('\n\n');
+            const text = [
+                `${(page.dataset.title || page.id).toUpperCase()} - QUICK-START REFERENCE`,
+                '',
+                body,
+                '',
+                '---',
+                'Condensed quick-start reference only - see the full page for the complete protocol and sourcing.',
+                `Generated by SUD Toolkit v${APP_VERSION}. Adult patients only. Verify against local policy and `
+                + 'current NSW Health guidance before use; this is decision support, not a prescription.'
+            ].join('\n');
+            textarea.value = text;
+            textarea.select();
+            navigator.clipboard.writeText(text);
+            const original = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => { btn.textContent = original; }, 2000);
         });
     });
 
@@ -543,6 +840,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         itemsContainer.innerHTML = itemsHtml;
 
+        // Caveats sit immediately above the score, not below it and not on a
+        // separate page: the calculator's own output is what invites the
+        // misreading they exist to prevent.
+        const caveats = [...SCALE_CAVEATS_UNIVERSAL, ...(config.caveats || [])];
+        const caveatNode = document.createElement('div');
+        caveatNode.className = 'scale-caveats';
+        caveatNode.innerHTML = `<h4>What this scale can and cannot tell you</h4><ul>`
+            + caveats.map(c => `<li>${c}</li>`).join('')
+            + `</ul>`;
+        calculatorNode.insertBefore(caveatNode, calculatorNode.querySelector('.results-grid'));
+
         // Add reference if it exists
         if (config.reference) {
             const referenceNode = document.createElement('div');
@@ -608,6 +916,73 @@ document.addEventListener('DOMContentLoaded', () => {
         // 7. Set initial state
         updateCalculatorState();
     }
+
+    // --- SHARED SYMPTOMATIC MEDICATION BLOCKS --- //
+    // One structure rendered into each substance page's placeholder, so a dose
+    // correction lands everywhere at once instead of on whichever page was open.
+    document.querySelectorAll('[data-symptomatic]').forEach(host => {
+        const set = SYMPTOMATIC[host.dataset.symptomatic];
+        if (!set) {
+            console.warn('no symptomatic set named', host.dataset.symptomatic);
+            return;
+        }
+        const items = set.items.map(item =>
+            `<h5>${item.symptom}</h5><ul>${item.lines.map(l => `<li>${l}</li>`).join('')}</ul>`).join('');
+        host.classList.add('shared-block');
+        host.innerHTML = `<h4>${set.title}</h4>`
+            + (set.intro ? `<p>${set.intro}</p>` : '')
+            + items
+            + `<h5>Rules that apply to all of the above</h5><ul>`
+            + SYMPTOMATIC_UNIVERSAL.map(rule => `<li>${rule}</li>`).join('')
+            + `</ul>`;
+    });
+
+    // --- SHARED HARM REDUCTION BLOCKS --- //
+    document.querySelectorAll('[data-harm-reduction]').forEach(host => {
+        const blocks = HARM_REDUCTION[host.dataset.harmReduction];
+        if (!blocks) {
+            console.warn('no harm reduction set named', host.dataset.harmReduction);
+            return;
+        }
+        host.classList.add('shared-block');
+        host.innerHTML = `<h4>Harm reduction</h4>` + blocks.map(block => {
+            const body = `<h5>${block.heading}</h5><ul>`
+                + block.points.map(p => `<li>${p}</li>`).join('')
+                + `</ul><p>${block.source}</p>`;
+            // The blocks a clinician must not skim get the danger treatment;
+            // the rest read as a list, so the emphasis stays meaningful.
+            return block.danger ? `<div class="danger-box">${body}</div>` : body;
+        }).join('');
+    });
+
+    // --- BENZODIAZEPINE EQUIVALENCE TABLE --- //
+    // Rendered from data so HyperTaper and this page cannot disagree about what
+    // a given drug is worth in diazepam.
+    document.querySelectorAll('[data-benzo-equivalence]').forEach(host => {
+        host.innerHTML = renderClinicalTable({
+            headers: ['Drug', `Dose equivalent to diazepam ${DIAZEPAM_REFERENCE_MG}mg`],
+            rows: BENZO_EQUIVALENCE.map(e => [e.drug, `${e.mg}mg`])
+        }) + `<ul>` + EQUIVALENCE_CAVEATS.map(c => `<li>${c}</li>`).join('') + `</ul>`
+            + `<p><span class="src-tag src-other">OTHER - eTG, via NSWCG Table 11.2</span></p>`;
+    });
+
+    // --- PER-PAGE REVIEW METADATA (AUTH-02) --- //
+    // Appended to the page itself rather than kept in a repository file: a
+    // clinician reading a page is the person who needs to know how old it is.
+    Object.entries(CONTENT_META).forEach(([pageId, meta]) => {
+        const page = document.getElementById(pageId);
+        if (!page) {
+            console.warn('content metadata for a page that does not exist:', pageId);
+            return;
+        }
+        const footer = document.createElement('p');
+        footer.className = 'review-meta';
+        footer.innerHTML = meta.lastReviewed
+            ? `Source: ${meta.source}. Content last reviewed ${formatReviewMonth(meta.lastReviewed)}. `
+            + `Reviewer: ${meta.reviewer || 'authored, not yet independently reviewed'}.`
+            : `Source: ${meta.source}. Not yet authored - nothing on this page has been reviewed.`;
+        page.appendChild(footer);
+    });
 
     // --- SETUP ALL CALCULATORS ---
     SCALES.forEach(setupCalculator);

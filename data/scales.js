@@ -1,9 +1,35 @@
-// Extracted verbatim from script.js so this clinical data can be unit tested.
-// Content is unchanged; only the surrounding declaration differs.
+// Extracted from script.js so this clinical data can be unit tested.
+//
+// Each scale may carry `caveats`, rendered inside its own calculator rather
+// than on a help page nobody opens (AUTH-05). The UI puts a total next to a
+// severity band and an EMR summary, which is a strong invitation to treat the
+// number as the decision — so the limits of each instrument have to sit in the
+// same field of view as its output.
+
+// True of every scale here, and the sentence most often forgotten.
+export const SCALE_CAVEATS_UNIVERSAL = [
+    `Scales <b>do not diagnose withdrawal</b> and <b>do not override clinical judgement</b>. They measure the severity of a syndrome that has already been diagnosed. <span class="src-tag src-nswcg">NSWCG §4.4.2</span>`
+];
+
+// CIWA-Ar and AWS: both depend on the patient being able to report and on the
+// observer being able to read consciousness, which is exactly what is
+// unreliable in the patients who score highest.
+const ALCOHOL_SCALE_CAVEATS = [
+    `<b>Consider discontinuing the scale in patients with multiple pathologies</b>, where the result may be misleading rather than merely imprecise. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`,
+    `<b>Monitoring of consciousness may be compromised by head injury or CVA</b> - specialist consultation is essential in those patients. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`,
+    `<b>Re-evaluate regularly</b> to confirm the diagnosis is withdrawal and not another condition - particularly where the patient is not responding to treatment. A rising score is a reason to reconsider the diagnosis, not only to increase the dose. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`
+];
+
+// The monitoring-only scales. The UI shows a score and a severity band beside
+// each other, which invites an inference these instruments cannot support.
+const NOT_FOR_DOSING = [
+    `<b>This scale is not validated for linking a score to a medication decision.</b> Use it to track change over time, not to choose or justify a dose. <span class="src-tag src-nswcg">NSWCG §6.3.5, §7.3.5, §11.3.8</span>`
+];
 
 export const SCALES = [
     {
         id: 'aws',
+        caveats: ALCOHOL_SCALE_CAVEATS,
         name: 'Alcohol Withdrawal Scale (AWS)',
         reference: 'Adapted from NSW Dept of Health (2000).',
         items: [
@@ -79,8 +105,9 @@ export const SCALES = [
 
     {
         id: 'ciwa-ar',
+        caveats: ALCOHOL_SCALE_CAVEATS,
         name: 'CIWA-Ar',
-        reference: 'Clinical institute withdrawal assessment for alcohol — revised. Sullivan J, Sykora M, Schneiderman J, et al. Assessment of alcohol withdrawal: the revised Clinical Institute withdrawal for alcohol scale (CIWA-Ar). Br J Addict 1989; 84: 1353–1357.',
+        reference: 'Clinical institute withdrawal assessment for alcohol - revised. Sullivan J, Sykora M, Schneiderman J, et al. Assessment of alcohol withdrawal: the revised Clinical Institute withdrawal for alcohol scale (CIWA-Ar). Br J Addict 1989; 84: 1353–1357.',
         items: [
             {
                 displayName: "Nausea and vomiting", instruction: "Ask “Do you feel sick to your stomach? Have you vomited?” and observe.", radioName: "ciwa-nausea", options: [
@@ -194,6 +221,10 @@ export const SCALES = [
 
     {
         id: 'cows',
+        caveats: [
+            `<b>COWS is preferred over SOWS</b> because it assesses both objective and subjective measures. <span class="src-tag src-nswcg">NSWCG §8.3.6</span>`,
+            `For inpatient treatment, score <b>6-hourly</b>. <span class="src-tag src-nswcg">NSWCG §8.3.6</span>`
+        ],
         name: 'COWS (Clinical Opiate Withdrawal Scale)',
         reference: 'Wesson, D. R., & Ling, W. (2003). The Clinical Opiate Withdrawal Scale (COWS). Journal of Psychoactive Drugs, 35(2), 253–259.',
         relatedPage: { id: 'opioid-withdrawal-page', title: 'Opioid Withdrawal Guidelines' },
@@ -277,6 +308,7 @@ export const SCALES = [
 
     {
         id: 'ciwa-b',
+        caveats: NOT_FOR_DOSING,
         name: 'CIWA-B (Benzodiazepine)',
         reference: "Busto UE, Sykora K, Sellers EM. A clinical scale to assess benzodiazepine withdrawal. Journal of Clinical Psychopharmacology. 1989;9(6):412-6. doi: 10.1097/00004714-198912000-00005",
         relatedPage: { id: 'benzo-withdrawal-page', title: 'Benzodiazepine Withdrawal Guidelines' },
@@ -354,6 +386,7 @@ export const SCALES = [
 
     {
         id: 'nsw-cws',
+        caveats: NOT_FOR_DOSING,
         name: 'Cannabis Withdrawal Scale',
         reference: "Allsop DJ, Norberg MM, Copeland J, Fu S, Budney AJ. The Cannabis Withdrawal Scale development: patterns and predictors of cannabis withdrawal and distress. Drug Alcohol Dependence. 2011;119(1-2):123-9. doi: 10.1016/j.drugalcdep.2011.06.003",
         relatedPage: { id: 'cannabis-withdrawal-page', title: 'Cannabis Withdrawal Guidelines' },
@@ -392,6 +425,7 @@ export const SCALES = [
 
     {
         id: 'cwas',
+        caveats: NOT_FOR_DOSING,
         name: 'Cannabis Withdrawal Assessment Scale',
         reference: "Budney, A. et al, Archives of General Psychiatry, Volume 58 (10) October 2001, 917–924.",
         relatedPage: { id: 'cannabis-withdrawal-page', title: 'Cannabis Withdrawal Guidelines' },
@@ -435,6 +469,7 @@ export const SCALES = [
 
     {
         id: 'awq',
+        caveats: NOT_FOR_DOSING,
         name: 'Amphetamine Withdrawal Questionnaire (AWQ)',
         reference: "Srisurapanont, M., Jarusuraisin, N., and Jittiwutikan, J. Amphetamine withdrawal: Reliability, validity and factor structure of a measure. Australian and New Zealand Journal of Psychiatry, 1999. 33(1): 89-93",
         relatedPage: { id: 'stimulant-withdrawal-page', title: 'Psychostimulant Withdrawal Guidelines' },

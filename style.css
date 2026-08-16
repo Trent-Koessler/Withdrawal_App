@@ -42,6 +42,28 @@ body.modal-open > #app-container {
     min-width: 0; /* Allow title to shrink and truncate */
 }
 
+/* Global back button — installed (PWA) use has no browser chrome to fall
+   back on, so this is the only back affordance on most pages. Hidden by
+   default and shown by script.js once the app has navigated away from
+   home; sits outside .header-controls so it never gets swallowed into the
+   mobile hamburger menu. */
+.header-back-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border-radius: 50%;
+}
+
+.header-back-btn.visible {
+    display: inline-flex;
+}
+
 .header-controls {
     display: flex;
     align-items: center;
@@ -130,6 +152,14 @@ body.modal-open > #app-container {
     }
 }
 
+/* Nav entries for sections not ready for publishing. The pages themselves
+   stay in the app (content, tests and cross-links all keep working) — this
+   only removes them from discovery via the home page. Un-hide by dropping
+   the class once a section is ready. */
+.pending-publish {
+    display: none !important;
+}
+
 /* Main Content and Page Styles */
 #main-content {
     flex-grow: 1;
@@ -165,7 +195,11 @@ body.modal-open > #app-container {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    white-space: pre-wrap; /* Allows wrapping with \n */
+    /* pre-line, not pre-wrap: still breaks on an explicit \n in a label, but
+       collapses runs of spaces like normal text. pre-wrap preserves the space
+       at a natural wrap point too, which rides onto the wrapped line and
+       throws off centering for any label that wraps on width alone. */
+    white-space: pre-line;
 }
 
 /* Footer Styles */
@@ -210,6 +244,9 @@ body.modal-open > #app-container {
     --tab-active-bg: #f0f0f0;
     --warning-bg: #fff3cd; --warning-text: #856404; --warning-border: #ffc107;
     --danger-bg: #f8d7da; --danger-text: #721c24; --danger-border: #dc3545;
+    --tag-neutral-bg: #e9ecef; --tag-neutral-text: #343a40; --tag-neutral-border: #adb5bd;
+    --tag-adapted-bg: #d9e9fb; --tag-adapted-text: #0b4a8f; --tag-adapted-border: #7cb0e8;
+    --tag-local-bg: #fdf0d5; --tag-local-text: #7a5200; --tag-local-border: #e0a800;
 }
 
 body {
@@ -292,6 +329,9 @@ textarea {
     --tab-active-bg: #2b2b2b;
     --warning-bg: #4d4015; --warning-text: #ffda6a; --warning-border: #ffc107;
     --danger-bg: #4a1f24; --danger-text: #f5c6cb; --danger-border: #dc3545;
+    --tag-neutral-bg: #4a4a4a; --tag-neutral-text: #e6e6e6; --tag-neutral-border: #7a7a7a;
+    --tag-adapted-bg: #16324f; --tag-adapted-text: #9cccff; --tag-adapted-border: #3d7cbf;
+    --tag-local-bg: #4d3d12; --tag-local-text: #ffd980; --tag-local-border: #c99a12;
 }
 
 /* --- Flowchart Specific Styles --- */
@@ -543,6 +583,20 @@ textarea {
     border-left: 4px solid var(--danger-border);
 }
 
+/* Regimen-band caveats render as <details class="warning-box"> so the
+   guideline/local rationale is available without forcing every band's
+   caveat paragraph onto the screen at once. The <summary> is the caveat's
+   own bold lead-in sentence (e.g. "Conversion caveat.") rather than a
+   placeholder, so the substance is visible before it is opened. */
+.warning-box > summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.warning-box[open] > summary {
+    margin-bottom: 8px;
+}
+
 /* --- Contact List Styles --- */
 .contact-list {
     list-style-type: none;
@@ -637,4 +691,205 @@ textarea {
 
 .link-button:hover {
     color: var(--link-hover-color);
+}
+/* --- Source / provenance tags (AUTH-01) ------------------------------------
+   Every clinical statement block carries a chip saying where it came from. The
+   whole point of the revision is that deviations from published guidance are
+   visible, so the tag text is real DOM text rather than a CSS content: string:
+   it has to survive copy/paste into an EMR and it has to print. */
+.src-tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+    padding: 1px 7px;
+    margin-left: 6px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    vertical-align: baseline;
+    white-space: normal;
+}
+
+/* Directly from the NSW Clinical Guidance — the unremarkable default. */
+.src-nswcg {
+    background-color: var(--tag-neutral-bg);
+    color: var(--tag-neutral-text);
+    border-color: var(--tag-neutral-border);
+}
+
+/* Another named guideline. Neutral like NSWCG, but italic so the eye can tell
+   at a glance that the source is not the benchmark document. */
+.src-other {
+    background-color: var(--tag-neutral-bg);
+    color: var(--tag-neutral-text);
+    border-color: var(--tag-neutral-border);
+    font-style: italic;
+}
+
+/* Based on NSWCG but modified locally. Must state a rationale. */
+.src-nswcg-adapted {
+    background-color: var(--tag-adapted-bg);
+    color: var(--tag-adapted-text);
+    border-color: var(--tag-adapted-border);
+}
+
+/* Local practice, in no published guideline. Must state a rationale. Amber,
+   because this is the content a reader is entitled to weigh differently. */
+.src-local {
+    background-color: var(--tag-local-bg);
+    color: var(--tag-local-text);
+    border-color: var(--tag-local-border);
+}
+
+/* A tag introducing a whole block rather than annotating a sentence. */
+.src-tag.src-block {
+    display: block;
+    margin: 0 0 8px 0;
+    max-width: max-content;
+}
+
+/* Chips are distinguished by colour on screen. Print is often greyscale and
+   the site's authority depends on the tags being legible there too, so force a
+   visible outline and defeat background-graphics suppression. */
+@media print {
+    .src-tag {
+        border-color: #000 !important;
+        color: #000 !important;
+        background: none !important;
+    }
+}
+
+/* --- Provenance-tagged content blocks --- */
+.clinical-block {
+    border-left: 3px solid var(--border-color);
+    padding-left: 12px;
+    margin: 16px 0;
+}
+
+/* --- Escalation / de-escalation block (P0-04) --- */
+.escalation-box {
+    background-color: var(--card-bg);
+    border: 1px solid var(--warning-border);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    margin: 16px 0;
+}
+
+.escalation-box h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.escalation-box ul {
+    margin: 6px 0;
+    padding-left: 22px;
+}
+
+/* --- Routing card: a cell that must not render a dose regimen (P0-05) --- */
+.routing-card {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-left: 4px solid var(--danger-border);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    margin: 12px 0;
+}
+
+.routing-card a {
+    color: inherit;
+    font-weight: 600;
+}
+
+/* --- Clinical data tables (monitoring, equivalence, BBV/STI, symptomatic) --- */
+.clinical-table-wrap {
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.clinical-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 420px;
+    font-size: 14.5px;
+}
+
+.clinical-table th,
+.clinical-table td {
+    border: 1px solid var(--border-color);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.clinical-table th {
+    background-color: var(--tab-bg);
+    font-weight: 600;
+}
+
+/* --- Scale caveats rendered inside every calculator (AUTH-05) --- */
+.scale-caveats {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 0 4px 4px 0;
+    padding: 10px 15px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.scale-caveats h4 {
+    margin: 0 0 6px 0;
+    font-size: 14.5px;
+}
+
+.scale-caveats ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* --- Per-page review metadata (AUTH-02) --- */
+.review-meta {
+    font-size: 12.5px;
+    color: var(--text-color);
+    opacity: 0.75;
+    border-top: 1px solid var(--border-color);
+    margin-top: 24px;
+    padding-top: 8px;
+}
+
+/* --- Shared, data-rendered content blocks (P2-06, P2-08) --- */
+.shared-block h5 {
+    margin-bottom: 4px;
+}
+
+.shared-block ul {
+    margin-top: 4px;
+}
+
+/* --- Substance page sectioning ---
+   The "Other Substances" pages (opioid, benzo, cannabis, psychostimulant,
+   gabapentinoid, GHB, nicotine, volatile) had no heading treatment beyond
+   the browser default, so an <h4> section break read the same as a bolded
+   word in a paragraph. Scoped to .substance-page rather than applied
+   globally, so it doesn't reflow the tab-based alcohol pages, which already
+   have their own visual language. */
+.substance-page h4 {
+    margin-top: 32px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.substance-page h4:first-of-type {
+    margin-top: 20px;
+}
+
+.substance-page h5 {
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: var(--link-color);
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.03em;
 }

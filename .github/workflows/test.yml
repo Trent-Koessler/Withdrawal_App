@@ -20,3 +20,9 @@ jobs:
       # No dependencies to install — the suite uses node:test only.
       - name: Run clinical logic tests
         run: npm test
+
+      # Warns rather than fails: unresolved clinical decisions are expected
+      # while the revision is in progress, but they must never be invisible.
+      # A production build should run `npm run check:todos:strict` instead.
+      - name: Report outstanding clinical decisions
+        run: npm run check:todos
