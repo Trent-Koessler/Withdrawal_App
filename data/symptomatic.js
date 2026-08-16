@@ -19,17 +19,23 @@ const UNSOURCED = `<span class="src-tag src-local">LOCAL — rationale: carried 
 // re-tag them against whichever guideline they came from.
 
 // Common to every substance. Same words everywhere, because they are the rules
-// a clinician most often skips when reading a symptomatic table.
+// a clinician most often skips when reading a symptomatic table. The NRT line
+// that used to sit here was cannabis-specific wording ("mixed cannabis with
+// tobacco") rendering on every substance's page, including ones with no
+// connection to cannabis — it now lives with cannabis's own items instead.
 export const SYMPTOMATIC_UNIVERSAL = [
     `Symptomatic medications are <b>generally not continued beyond 7 days</b> without medical review and a clear indication. <span class="src-tag src-nswcg">NSWCG §6.3.4, §8.3.4</span>`,
     `For inpatient or residential withdrawal, <b>cease symptomatic medication 1-2 days before discharge</b> to assess how the patient copes without it. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
     `<b>Supervise access</b> — daily dispensing, or supervision by a carer. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
-    `Use <b>caution with any psychoactive medication</b> in a patient with a substance use disorder. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
-    `Offer <b>NRT</b> to patients who mixed cannabis with tobacco, or who smoke. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`
+    `Use <b>caution with any psychoactive medication</b> in a patient with a substance use disorder. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`
 ];
 
-// Shared GI/analgesic block. Identical across substances in the previous site
-// content, so it stays identical here by construction.
+// Shared GI/analgesic block, for benzodiazepine/cannabis/gabapentinoid/
+// psychostimulant withdrawal. The opioid page used to draw from this same
+// block, but NSWCG Table 8.6 (p.53) turned out to specify these exact
+// entries for opioid withdrawal specifically — see OPIOID_GENERAL_SYMPTOMS
+// below. This block stays unsourced pending the same check against each of
+// these four substances' own NSWCG sections.
 const GENERAL_SYMPTOMS = [
     {
         symptom: 'Nausea and vomiting',
@@ -46,6 +52,36 @@ const GENERAL_SYMPTOMS = [
     {
         symptom: 'Headache and muscle aches',
         lines: [`Paracetamol 1g oral QID PRN, and/or ibuprofen 400mg oral TDS PRN. ${UNSOURCED}`]
+    }
+];
+
+// NSWCG Table 8.6, p.53 — verified against the published table, opioid
+// section. Doses and frequencies are quoted as the table states them, not as
+// the previous unsourced GENERAL_SYMPTOMS block had them (several differ:
+// see the frequency of metoclopramide, ondansetron and ibuprofen below).
+const OPIOID_GENERAL_SYMPTOMS = [
+    {
+        symptom: 'Muscle aches and pains',
+        lines: [`Paracetamol 1g oral every 4 hours PRN, <b>maximum 4g in 24 hours</b>, <b>or</b> ibuprofen 400mg oral every 6 hours PRN (avoid if history of peptic ulcer or gastritis). <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`]
+    },
+    {
+        symptom: 'Nausea',
+        lines: [`Metoclopramide 10mg oral every 4-6 hours PRN, <b>or</b> prochlorperazine 5mg every 4-6 hours PRN, <b>or</b> ondansetron 4-8mg every 12 hours PRN. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`]
+    },
+    {
+        symptom: 'Abdominal cramps',
+        lines: [`Hyoscine butylbromide 20mg oral every 6 hours PRN. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`]
+    },
+    {
+        symptom: 'Diarrhoea',
+        lines: [
+            `Kaomagma, <b>or</b> loperamide 2mg PRN. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`,
+            `Standard loperamide dosing: after each loose bowel action, <b>maximum 16mg in 24 hours</b>. <span class="src-tag src-local">LOCAL — rationale: NSWCG states the 2mg dose but not a maximum; this is standard loperamide prescribing information.</span>`
+        ]
+    },
+    {
+        symptom: 'Dehydration or electrolyte disturbance',
+        lines: [`Fluid and electrolyte replacement. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`]
     }
 ];
 
@@ -66,7 +102,7 @@ export const SYMPTOMATIC = {
                     `<b>Taper after prolonged use</b> to avoid rebound hypertension. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`
                 ]
             },
-            ...GENERAL_SYMPTOMS,
+            ...OPIOID_GENERAL_SYMPTOMS,
             {
                 symptom: 'Severe continued gastrointestinal symptoms (second line)',
                 lines: [`Octreotide 0.05-0.1mg subcutaneously every 8-12 hours PRN. <b>Hospital setting only.</b> <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`]
@@ -76,8 +112,8 @@ export const SYMPTOMATIC = {
                 lines: [`Temazepam 10-20mg nocte, ceasing after 3-5 nights. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`]
             },
             {
-                symptom: 'Severe agitation',
-                lines: [`Diazepam 2.5-5mg oral QID PRN, maximum 20mg/day. Monitor closely if co-prescribed with opioids. ${UNSOURCED}`]
+                symptom: 'Agitation or anxiety',
+                lines: [`Diazepam 5mg oral QID PRN. Taper/cease the dose over 3-5 days. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`]
             }
         ]
     },
@@ -106,6 +142,10 @@ export const SYMPTOMATIC = {
                     `Promethazine 25mg oral nocte PRN. ${UNSOURCED}`,
                     `Z-drugs are listed options for sleep: zolpidem 10-20mg nocte, or zopiclone 7.5-15mg nocte. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`
                 ]
+            },
+            {
+                symptom: 'Nicotine co-use',
+                lines: [`Offer <b>NRT</b> to patients who mixed cannabis with tobacco, or who smoke. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`]
             }
         ]
     },
@@ -117,10 +157,7 @@ export const SYMPTOMATIC = {
             ...GENERAL_SYMPTOMS,
             {
                 symptom: 'Anxiety or agitation',
-                lines: [
-                    `Diazepam 5mg oral BD-QID PRN, short course only. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`,
-                    ANTIPSYCHOTIC_FIRST_LINE
-                ]
+                lines: [`Diazepam 5mg oral BD-QID PRN, short course only. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`]
             },
             {
                 symptom: 'Insomnia',

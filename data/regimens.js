@@ -63,27 +63,21 @@ const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
         `Score the patient at the interval shown for their current band, and give the dose for that band. There is no fixed daily total to complete. <span class="src-tag src-nswcg">NSWCG Table 5.4, Table 5.6</span>`,
         `<b>Medical review required</b> for rising scores, or for severe withdrawal not responding to medication. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
         `<b>Medical review required if the total dose exceeds ${reviewMax} in 24 hours.</b> <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-        `Dose no more frequently than q4hrly. <span class="src-tag src-local">LOCAL — rationale: local practice caps dosing frequency to limit stacking of doses whose peak effect has not yet been observed; NSWCG sets a monitoring frequency but no minimum dosing interval.</span>`
+        `Dose no more frequently than q2hrly, unless the patient has <b>delirium tremens</b> and is in a <b>heavily medically monitored environment</b> (HDU, or 1:1 nursing with continuous observation) — see Special Cases &rarr; Alcohol withdrawal delirium for that pathway. <span class="src-tag src-local">LOCAL — rationale: local practice caps dosing frequency to limit stacking of doses whose peak effect has not yet been observed; NSWCG sets a monitoring frequency but no minimum dosing interval. The DT exception matches the more frequent dosing already permitted for delirium in a monitored setting elsewhere in this app.</span>`
     ]
-    // TODO(clinical): the local q4hrly minimum dosing interval sits awkwardly
-    // against hourly monitoring at CIWA-Ar > 20 — a patient scoring above 20 is
-    // reassessed hourly but cannot be redosed for four hours. Should the q4hrly
-    // floor be relaxed in the highest band, or should that band always route to
-    // the loading/severe pathway instead?
 });
 
 // Not in NSWCG at all — this protocol is original to this site. NSWCG's own
 // answer to uncertain tolerance is symptom-triggered dosing, which yields the
 // same information from a smaller first dose, so the reason for preferring a
 // test dose locally has to be stated rather than assumed.
-const testDoseCell = (drug, testDose, reducedDose, extraCaveats = []) => ({
+const testDoseCell = (drug, testDose, extraCaveats = []) => ({
     title: 'Unknown Tolerance (Test-Dose Protocol)',
     caveat: [...extraCaveats,
-        `<b>This protocol is local, not guideline.</b> NSWCG does not describe a test-dose protocol. Its answer to uncertain tolerance is <b>symptom-triggered dosing</b>, which produces the same information about tolerance from a smaller first dose and is the safer default where frequent skilled review is available. <span class="src-tag src-local">LOCAL — rationale: a single observed test dose is preferred locally where review is not frequent enough to run a symptom-triggered regimen safely, because it establishes tolerance at a known time under direct observation rather than across a shift; where frequent review IS available, use symptom-triggered dosing instead.</span>`],
+        `<b>This protocol is local, not guideline.</b> NSWCG does not describe a test-dose protocol. Its answer to uncertain tolerance is <b>symptom-triggered dosing</b>, which produces the same information about tolerance from a smaller first dose and is the safer default where frequent skilled review is available. <span class="src-tag src-local">LOCAL — rationale: a single observed test dose is preferred locally where review is not frequent enough to run a symptom-triggered regimen safely, because it establishes tolerance at a known time under direct observation rather than across a shift; where frequent review IS available, use symptom-triggered dosing instead. Reassessing at a fixed timeframe also gives the clinician a clear decision point for which subsequent regimen to commence, rather than an open-ended judgement call.</span>`],
     schedule: [
         `<b>Only in consultation</b> with Addiction Medicine or a similar CL service, given the risks of test dosing.`,
-        `<b>Standard test dose:</b> ${drug} ${testDose} orally, once.`,
-        `<b>Reduced test dose — ${drug} ${reducedDose} orally, once</b> — for elderly or frail patients, hepatic impairment, or where intake may have been over-reported. ${testDose} is a substantial dose if the history is wrong in that direction. <span class="src-tag src-local">LOCAL — rationale: the reduced dose is a local safety modification to a local protocol; there is no guideline source for either figure.</span>`,
+        `<b>Test dose:</b> ${drug} ${testDose} orally, once.`,
         `<b>Reassess at 1 hour, and again at 2 hours.</b> Absence of sedation at 1 hour is weak evidence of tolerance on its own: oral absorption is variable and 1 hour is approximately peak, so a patient who is going to be sedated may not be yet. <span class="src-tag src-local">LOCAL — rationale: the original protocol assessed only at 1 hour; the 2-hour reassessment is added locally to catch delayed absorption.</span>`,
         `<b>Assess sedation with a charted scale</b>, not an impression, so the finding is reproducible between assessors and across shifts.`,
         `<b>If sedated</b> (drowsy, slurred speech, ataxia): lower or normal tolerance. Manage cautiously with the Mild-Moderate regimen, or the Sub-Mild option if the score is below that band.`,
@@ -93,9 +87,6 @@ const testDoseCell = (drug, testDose, reducedDose, extraCaveats = []) => ({
         'Monitor the patient closely for signs of toxicity or escalating withdrawal.',
         'Consult a Drug & Alcohol specialist service if withdrawal severity remains unclear.'
     ]
-    // TODO(clinical): confirm the reduced test dose figure for elderly, frail,
-    // hepatic impairment or suspected over-reported intake — is half the standard
-    // test dose right, and are those the right four triggers for using it?
     // TODO(clinical): should the assessment point move to 2 hours only, rather
     // than assessing at both 1 and 2 hours? Oral diazepam peaks at about 1 hour,
     // so a 1-hour reading is at best a partial answer.
@@ -125,10 +116,6 @@ export const REGIMEN_CONFIG = {
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
         moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }] },
-        // TODO(clinical): should hourly loading be retained at all, or dropped in
-        // favour of the NSWCG 2-hourly rate everywhere? It is currently offered as a
-        // monitored-setting-only alternative; the alternative is to remove it and
-        // rely on the symptom-triggered regimen for faster titration.
         // TODO(clinical): confirm the preferred Day 2 default after a loading day —
         // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
         // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
@@ -143,7 +130,7 @@ export const REGIMEN_CONFIG = {
             ],
             schedule: [
                 `<b>Day 1 — loading.</b> Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
-                `<b>Hourly loading — monitored settings only.</b> Where the patient is in a monitored setting (HDU, or 1:1 nursing with continuous observation), 20mg hourly may be used instead. Do not use hourly loading on a general ward: oral diazepam peaks at around one hour, so hourly dosing stacks doses whose effect has not yet been observed. <span class="src-tag src-local">LOCAL — rationale: NSWCG Table 5.4 specifies 2-hourly; hourly loading is retained because it has been used locally in monitored settings where over-sedation would be detected immediately, and is restricted to those settings rather than removed.</span>`,
+                `<b>Delirium tremens — hourly loading, monitored settings only.</b> For withdrawal delirium specifically, diazepam 20mg hourly to a total of 80mg/24h may be used in a monitored setting (HDU, or 1:1 nursing with continuous observation) — see Special Cases &rarr; Alcohol withdrawal delirium. Do not use hourly loading for severe withdrawal without delirium: oral diazepam peaks at around one hour, so hourly dosing outside DT stacks doses whose effect has not yet been observed. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`,
                 `<b>Day 2 onward — do not repeat a loading day.</b> Following loading, no further loading diazepam is generally needed once the patient is settled: diazepam's long-acting active metabolites are the reason loading works, and a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
                 `<b>Preferred handover:</b> symptom-triggered dosing in a reducing regimen (see the Symptom-Triggered regimen). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
                 `<b>Alternative handover:</b> if a fixed schedule is preferred, commence at the <b>Day 2 row</b> of the Moderate-Severe schedule — diazepam 15mg qid — and taper from there as written. Do not start that schedule at its Day 1 row. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
@@ -154,7 +141,7 @@ export const REGIMEN_CONFIG = {
                 `<b>Persistent agitation or hallucinations, or more than 120mg in 24 hours</b> — specialist advice required: DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
             ]
         },
-        unknown: testDoseCell('Diazepam', '20mg', '10mg')
+        unknown: testDoseCell('Diazepam', '10mg')
     },
     "Oxazepam": {
         name: "Oxazepam",
@@ -180,11 +167,12 @@ export const REGIMEN_CONFIG = {
             title: 'Severe (CIWA-Ar > 20 | AWS > 14) — oxazepam',
             routing: [
                 `<b>There is no oxazepam regimen for severe withdrawal.</b> Loading is a diazepam concept: it works because of diazepam's long-acting active metabolites, which oxazepam does not have. Converting a diazepam loading dose would give roughly 240mg of oxazepam to the patients least able to tolerate it. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
+                `<b>This is not specific to severe withdrawal.</b> The situations that favour oxazepam over diazepam — significant liver impairment, respiratory insufficiency, elderly or frail patients, cerebral trauma — are the same situations in which a loading regimen would not be appropriate. Loading regimens for oxazepam have therefore been omitted entirely, at every severity. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>Instead:</b> titrate oxazepam <b>15-30mg</b> carefully against response — do not follow a fixed schedule. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>Consider HDU.</b> Where escalation is needed, NSWCG options are an <b>IV midazolam infusion monitored in HDU</b>, or <b>IM lorazepam</b> where no HDU is available. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`,
                 `<b>Contact specialist advice now:</b> DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §2.6, §5.6.2</span>`
             ]
         },
-        unknown: testDoseCell('Oxazepam', '60mg', '30mg', [OXAZEPAM_CONVERSION_CAVEAT])
+        unknown: testDoseCell('Oxazepam', '30mg', [OXAZEPAM_CONVERSION_CAVEAT])
     }
 };

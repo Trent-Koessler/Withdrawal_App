@@ -110,12 +110,14 @@ describe('P0-04 — escalation and de-escalation criteria exist', () => {
     const regimens = html.slice(html.indexOf('<div id="regimens"'),
         html.indexOf('<div id="special-cases"'));
 
-    test('the escalation block sits above the rendered regimen, not inside one severity', () => {
-        const box = regimens.indexOf('class="escalation-box"');
-        const display = regimens.indexOf('id="regimen-display"');
-        assert.ok(box !== -1, 'no escalation block on the regimens tab');
-        assert.ok(box < display,
-            'the escalation block must precede #regimen-display so it renders under every severity');
+    test('the escalation block exists once as static markup, not duplicated per severity', () => {
+        // Now lives on its own Monitoring, Escalation & Discharge tab rather than
+        // stacked above #regimen-display within the Regimens tab, so it applies
+        // regardless of the selected severity without being regenerated per cell.
+        const matches = html.match(/class="escalation-box"/g);
+        assert.ok(matches, 'no escalation block found');
+        assert.equal(matches.length, 1,
+            'the escalation block should exist once, not be repeated per severity');
     });
 
     test('all four escalation triggers are present', () => {
@@ -392,8 +394,9 @@ describe('P1-04 — something exists below the Mild-Moderate band', () => {
 
 describe('P1-05 — band selection carries risk modifiers, not intake alone', () => {
     const html = read('index.html');
-    const regimens = html.slice(html.indexOf('<div id="regimens"'),
-        html.indexOf('<div id="special-cases"'));
+    // Band selection lives on its own Assessment & Banding tab, ahead of Regimens.
+    const regimens = html.slice(html.indexOf('<div id="assessment-banding"'),
+        html.indexOf('<div id="regimens"'));
 
     test('the standard-drink split is tagged as local practice', () => {
         assert.ok(/standard drinks per\s+day split is not from NSWCG/.test(regimens),
@@ -421,15 +424,17 @@ describe('P1-06 — loading rate', () => {
             'the default loading rate is not 2-hourly; NSWCG Table 5.4 specifies 2-hourly');
     });
 
-    test('hourly loading survives only as a monitored-setting option', () => {
+    test('hourly loading survives only as a delirium-tremens, monitored-setting option', () => {
         const hourly = severe.match(/[^`]*20mg hourly[^`]*/);
         assert.ok(hourly, 'the hourly option was removed rather than restricted');
+        assert.ok(/delirium/i.test(hourly[0]),
+            'hourly loading is offered outside the delirium tremens indication it is scoped to');
         assert.ok(/monitored setting|HDU/i.test(hourly[0]),
             'hourly loading is offered without restricting it to a monitored setting');
-        assert.ok(/src-local/.test(hourly[0]),
-            'hourly loading departs from NSWCG Table 5.4 and must be tagged LOCAL');
+        assert.ok(/src-nswcg/.test(hourly[0]),
+            'the DT hourly rate matches NSWCG §5.6.2 and should not be tagged LOCAL');
         assert.ok(/peaks at around one hour/i.test(severe),
-            'the reason hourly dosing stacks doses is not explained');
+            'the reason hourly dosing stacks doses outside DT is not explained');
     });
 });
 
@@ -524,12 +529,13 @@ describe('P1-09 — the test-dose protocol declares itself as local', () => {
                 'the guideline alternative (symptom-triggered dosing, smaller first dose) is not offered');
         });
 
-        test(`${benzo}: a reduced test dose exists for the at-risk groups`, () => {
+        test(`${benzo}: the test dose matches the current local figure`, () => {
             const text = textOf(cell);
-            assert.ok(/Reduced test dose/i.test(text), 'no reduced test dose offered');
-            for (const group of [/elderly or frail/i, /hepatic impairment/i, /over-reported/i]) {
-                assert.ok(group.test(text), `reduced-dose trigger missing: ${group}`);
-            }
+            const expectedDose = benzo === 'Diazepam' ? '10mg' : '30mg';
+            assert.ok(text.includes(`${benzo} ${expectedDose} orally`),
+                `expected a single ${expectedDose} test dose, no separate reduced tier`);
+            assert.ok(!/[Rr]educed test dose/.test(text),
+                'the reduced-dose tier was retired; this benzo still offers one');
         });
 
         test(`${benzo}: assessment is not left at 1 hour alone`, () => {

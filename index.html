@@ -194,7 +194,11 @@ body.modal-open > #app-container {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    white-space: pre-wrap; /* Allows wrapping with \n */
+    /* pre-line, not pre-wrap: still breaks on an explicit \n in a label, but
+       collapses runs of spaces like normal text. pre-wrap preserves the space
+       at a natural wrap point too, which rides onto the wrapped line and
+       throws off centering for any label that wraps on width alone. */
+    white-space: pre-line;
 }
 
 /* Footer Styles */
@@ -578,6 +582,20 @@ textarea {
     border-left: 4px solid var(--danger-border);
 }
 
+/* Regimen-band caveats render as <details class="warning-box"> so the
+   guideline/local rationale is available without forcing every band's
+   caveat paragraph onto the screen at once. The <summary> is the caveat's
+   own bold lead-in sentence (e.g. "Conversion caveat.") rather than a
+   placeholder, so the substance is visible before it is opened. */
+.warning-box > summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.warning-box[open] > summary {
+    margin-bottom: 8px;
+}
+
 /* --- Contact List Styles --- */
 .contact-list {
     list-style-type: none;
@@ -848,6 +866,32 @@ textarea {
 .shared-block ul {
     margin-top: 4px;
 }
+
+/* --- Substance page sectioning ---
+   The "Other Substances" pages (opioid, benzo, cannabis, psychostimulant,
+   gabapentinoid, GHB, nicotine, volatile) had no heading treatment beyond
+   the browser default, so an <h4> section break read the same as a bolded
+   word in a paragraph. Scoped to .substance-page rather than applied
+   globally, so it doesn't reflow the tab-based alcohol pages, which already
+   have their own visual language. */
+.substance-page h4 {
+    margin-top: 32px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.substance-page h4:first-of-type {
+    margin-top: 20px;
+}
+
+.substance-page h5 {
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: var(--link-color);
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+}
     </style>
     <!-- END style.css -->
     <link rel="manifest" href="manifest.json">
@@ -883,11 +927,11 @@ textarea {
             <!-- Home Page -->
             <div id="home-page" class="page active-page">
                 <nav class="button-container">
-                    <button class="big-button" data-page="assessment-page">Before You Prescribe: Assessment, Risk & Care Planning</button>
                     <button class="big-button" data-page="alcohol-withdrawal-page">Alcohol Withdrawal Decision Flowchart</button>
                     <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
                     <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol Detox Guidelines</button>
                     <button class="big-button" data-page="scales-page">Clinical Scales & Calculators</button>
+                    <button class="big-button" data-page="screening-page">Screening</button>
                     <button class="big-button" data-page="other-syndromes-page">Other Substances</button>
                     <button class="big-button" data-page="populations-page">Specific Population Groups</button>
                     <button class="big-button" data-page="capacity-page">Capacity, Consent & Involuntary Pathways</button>
@@ -908,7 +952,9 @@ textarea {
                         <button class="tab-button active" data-tab="prerequisites">Prerequisites</button>
                         <button class="tab-button" data-tab="thiamine">Thiamine</button>
                         <button class="tab-button" data-tab="benzo-choice">1. Benzo Choice</button>
-                        <button class="tab-button" data-tab="regimens">2. Regimens</button>
+                        <button class="tab-button" data-tab="assessment-banding">2. Assessment &amp; Banding</button>
+                        <button class="tab-button" data-tab="regimens">3. Regimens</button>
+                        <button class="tab-button" data-tab="monitoring-discharge">4. Monitoring, Escalation &amp; Discharge</button>
                         <button class="tab-button" data-tab="special-cases">Special Cases</button>
                         <button class="tab-button" data-tab="alcohol-harm-reduction">Harm Reduction</button>
                     </div>
@@ -930,7 +976,7 @@ textarea {
                                 <p><strong>CIWA-Ar Scale:</strong> Commence CIWA-Ar monitoring every 2-4 hours. This
                                     objective scale guides symptom-triggered therapy, allowing for tailored dosing and
                                     preventing both under- and over-sedation. Scoring is not withheld pending a time
-                                    interval — see "Interpreting CIWA-Ar early" on the Regimens tab for how to read a
+                                    interval; see "Interpreting CIWA-Ar early" on the Assessment &amp; Banding tab for how to read a
                                     score taken while the patient is still intoxicated.</p>
                                 <p><strong>Post-withdrawal plan:</strong> Ensure there is a follow-up plan in place for
                                     ongoing support and monitoring after the withdrawal process. To withdraw without a
@@ -944,19 +990,18 @@ textarea {
                             thiamine 100mg TDS (or 300mg daily) for 3 days then 100mg daily for 11 days thereafter </p>
                         <p><strong>WKS prophylaxis for those with chronic high level alcohol use and/or poor
                                 nutrition:</strong> All patients undergoing inpatient alcohol withdrawal should receive
-                            parenteral thiamine. Commence thiamine 300mg daily for 3 days, then 300mg oral daily
+                            parenteral thiamine. Commence thiamine 300mg daily IV (preferred) or IM for 3 days, then 300mg oral daily
                             for 2-3 weeks. <strong>Crucially, always administer thiamine BEFORE any glucose-containing
                                 fluids.</strong></p>
                         <div class="warning-box">
-                            <strong>⚠️ Route — prefer IV over IM.</strong> Alcohol is associated with thrombocytopenia
-                            and coagulopathy that may render intramuscular injection unsafe. IV and IM are not freely
-                            interchangeable here: check platelets and coagulation before giving thiamine IM, and
-                            prefer the IV route. <span class="src-tag src-nswcg">NSWCG §5.4.7</span>
+                            <strong>Route - prefer IV over IM.</strong> Alcohol is associated with thrombocytopenia
+                            and coagulopathy that may render intramuscular injection unsafe. Check platelets and coagulation before giving thiamine IM, and
+                            prefer the IV route (by the time you do this, a cannula may be in situ anyway!) <span class="src-tag src-nswcg">NSWCG §5.4.7</span>
                         </div>
                         <p><strong>Suspected Wernicke-Korsakov Syndrome (WKS):</strong> Have a high index of suspicion
                             for WKS in any patient with confusion, ataxia, ophthalmoplegia, memory disturbance, or
                             malnutrition. The classic triad is rare. Treatment requires high-dose thiamine:
-                            <strong>500mg IV TDS for a minimum of 5 days</strong>, followed by oral supplementation.
+                            <strong>500mg IV TDS for a minimum of 5 days (i.e. 7.5g) or otherwise until symptoms resolve or improvement plateaus</strong>, followed by oral supplementation.  
                         </p>
                         <p><strong>Caveat:</strong> Patients must be magnesium replete for adequate thiamine absorption
                             and activation. <span class="src-tag src-nswcg">NSWCG §5.4.7</span></p>
@@ -974,45 +1019,14 @@ textarea {
                             • <b>Cerebral trauma / CVA</b> where over-sedation is a risk.</p>
                         <p><b>Conversion:</b> Diazepam 10mg is approximately equivalent to Oxazepam 30mg.
                             <span class="src-tag src-nswcg">NSWCG Table 11.2</span></p>
-                        <p>Indications for oxazepam over diazepam — decompensated liver disease, respiratory
-                            insufficiency, elderly or frail patients, cerebral trauma — are the same group for whom
-                            loading regimens are not appropriate.
-                            <span class="src-tag src-nswcg">NSWCG §5.6.3</span></p>
                         <div class="button-group">
                             <button class="benzo-choice-btn active" data-benzo="Diazepam">Select Diazepam</button>
                             <button class="benzo-choice-btn" data-benzo="Oxazepam">Select Oxazepam</button>
                         </div>
                         <p><strong>Current Selection: <span id="benzo-selection-display">Diazepam</span></strong></p>
                     </div>
-                    <div id="regimens" class="tab-content">
-                        <h3>2. Regimens</h3>
-                        <p>Displaying Regimens for: <strong id="regimen-benzo-display">Diazepam</strong></p>
-                        <div class="button-group">
-                            <button class="regimen-severity-btn" data-severity="submild">
-                                <strong>Sub-Mild</strong><br>
-                                <small>CIWA-Ar &lt; 10 / AWS &lt; 4 | supportive care or a halved schedule</small>
-                            </button>
-                            <button class="regimen-severity-btn active" data-severity="mild">
-                                <strong>Mild-Mod</strong><br>
-                                <small>e.g. CIWA-Ar 10-15 / AWS 4-14 | ≤ 14 standard drinks/day</small>
-                            </button>
-                            <button class="regimen-severity-btn" data-severity="symptom">
-                                <strong>Symptom-Triggered</strong><br>
-                                <small>Dose to the CIWA-Ar or AWS score | uncomplicated withdrawal, frequent skilled review</small>
-                            </button>
-                            <button class="regimen-severity-btn" data-severity="moderate">
-                                <strong>Mod-Sev</strong><br>
-                                <small>e.g. CIWA-Ar 15-20 / AWS 4-14 | ≥ 15 standard drinks/day</small>
-                            </button>
-                            <button class="regimen-severity-btn" data-severity="severe">
-                                <strong>Severe</strong><br>
-                                <small>e.g. CIWA-Ar &gt; 20 / AWS &gt; 14 | ≥ 15 drinks/day + complex features</small>
-                            </button>
-                            <button class="regimen-severity-btn" data-severity="unknown">
-                                <strong>Unknown Tolerance</strong><br>
-                                <small>Local protocol | test dose, reassess at 1 and 2 hours</small>
-                            </button>
-                        </div>
+                    <div id="assessment-banding" class="tab-content">
+                        <h3>2. Assessment &amp; Banding</h3>
                         <div class="clinical-block" id="block-interpreting-score">
                             <h4>Interpreting CIWA-Ar early</h4>
                             <p>Check BAC before commencing. CIWA-Ar is unreliable while the patient is intoxicated —
@@ -1029,7 +1043,7 @@ textarea {
                         </div>
                         <div class="clinical-block" id="block-band-selection">
                             <h4>Choosing a band</h4>
-                            <p>The standard-drink split above is the default entry point.
+                            <p>The standard-drink split used on the Regimens tab is the default entry point.
                                 <span class="src-tag src-local">LOCAL — rationale: the ≤14 / ≥15 standard drinks per
                                     day split is not from NSWCG, which states severity is difficult to predict
                                     (§5.1.1) and gives risk factors rather than an intake threshold; the split is
@@ -1048,7 +1062,52 @@ textarea {
                                  with the ambulatory pathway, which already uses it as an inclusion criterion? Using
                                  two different band-selection methods across the two pathways is the current state. -->
                         </div>
+                    </div>
+                    <div id="regimens" class="tab-content">
+                        <h3>3. Regimens</h3>
+                        <p>Displaying Regimens for: <strong id="regimen-benzo-display">Diazepam</strong></p>
+                        <div class="button-group">
+                            <button class="regimen-severity-btn" data-severity="symptom">
+                                <strong>Symptom-Triggered</strong><br>
+                                <small>Dose to the CIWA-Ar or AWS score | uncomplicated withdrawal, frequent skilled review</small>
+                            </button>
+                            <button class="regimen-severity-btn" data-severity="submild">
+                                <strong>Sub-Mild</strong><br>
+                                <small>CIWA-Ar &lt; 10 / AWS &lt; 4 | supportive care or a halved schedule</small>
+                            </button>
+                            <button class="regimen-severity-btn active" data-severity="mild">
+                                <strong>Mild-Mod</strong><br>
+                                <small>e.g. CIWA-Ar 10-15 / AWS 4-14 | ≤ 14 standard drinks/day</small>
+                            </button>
+                            <button class="regimen-severity-btn" data-severity="moderate">
+                                <strong>Mod-Sev</strong><br>
+                                <small>e.g. CIWA-Ar 15-20 / AWS 4-14 | ≥ 15 standard drinks/day</small>
+                            </button>
+                            <button class="regimen-severity-btn" data-severity="severe">
+                                <strong>Severe</strong><br>
+                                <small>e.g. CIWA-Ar &gt; 20 / AWS &gt; 14 | ≥ 15 drinks/day + complex features</small>
+                            </button>
+                            <button class="regimen-severity-btn" data-severity="unknown">
+                                <strong>Unknown Tolerance</strong><br>
+                                <small>Local protocol | test dose, reassess at 1 and 2 hours</small>
+                            </button>
+                        </div>
 
+                        <div id="regimen-display"></div>
+
+                        <div class="clinical-block">
+                            <h4>Copy this plan to the EMR</h4>
+                            <p>Copies the selected regimen with its doses and taper, the monitoring frequency, the
+                                escalation thresholds, the thiamine regimen and the discharge rules — with source tags
+                                intact, so the paste says where each part came from.</p>
+                            <textarea id="plan-summary" readonly aria-label="Plan summary for the EMR"></textarea>
+                            <div class="button-group">
+                                <button id="copy-plan-btn">Copy plan</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="monitoring-discharge" class="tab-content">
+                        <h3>4. Monitoring, Escalation &amp; Discharge</h3>
                         <div class="clinical-block" id="block-monitoring">
                             <h4>Monitoring</h4>
                             <div class="clinical-table-wrap">
@@ -1075,8 +1134,9 @@ textarea {
                                 <span class="src-tag src-nswcg">NSWCG §5.4.5</span></p>
                         </div>
 
-                        <!-- Placed once, above #regimen-display, so it renders under every severity
-                             rather than being repeated per severity and drifting between them. -->
+                        <!-- Placed once, above #regimen-display on the Regimens tab, so it applied under every
+                             severity rather than being repeated per severity and drifting between them. Kept as a
+                             standalone block now that Monitoring/Escalation/Discharge has its own tab. -->
                         <div class="escalation-box" id="block-escalation">
                             <h4>Escalation triggers</h4>
                             <p><strong>Escalate — move up a schedule and request medical review if any of:</strong></p>
@@ -1117,19 +1177,6 @@ textarea {
                                 withdrawal. <span class="src-tag src-nswcg">NSWCG §5.4.4</span></p>
                             <p><strong>Limit benzodiazepine use to 5-7 days.</strong>
                                 <span class="src-tag src-nswcg">NSWCG §5.4.4</span></p>
-                        </div>
-
-                        <div id="regimen-display"></div>
-
-                        <div class="clinical-block">
-                            <h4>Copy this plan to the EMR</h4>
-                            <p>Copies the selected regimen with its doses and taper, the monitoring frequency, the
-                                escalation thresholds, the thiamine regimen and the discharge rules — with source tags
-                                intact, so the paste says where each part came from.</p>
-                            <textarea id="plan-summary" readonly aria-label="Plan summary for the EMR"></textarea>
-                            <div class="button-group">
-                                <button id="copy-plan-btn">Copy plan</button>
-                            </div>
                         </div>
                     </div>
                     <div id="special-cases" class="tab-content">
@@ -1639,8 +1686,7 @@ textarea {
                     <button class="big-button" data-page="benzo-withdrawal-page">Benzodiazepine Withdrawal</button>
                     <button class="big-button" data-page="cannabis-withdrawal-page">Cannabis Withdrawal</button>
                     <button class="big-button" data-page="stimulant-withdrawal-page">Psychostimulant Withdrawal</button>
-                    <button class="big-button" data-page="gabapentinoid-withdrawal-page">Gabapentinoid Withdrawal
-                        (Pregabalin, Gabapentin)</button>
+                    <button class="big-button" data-page="gabapentinoid-withdrawal-page">Gabapentinoid Withdrawal (Pregabalin, Gabapentin)</button>
                     <button class="big-button" data-page="ghb-withdrawal-page">GHB Withdrawal</button>
                     <button class="big-button" data-page="nicotine-withdrawal-page">Nicotine Withdrawal</button>
                     <button class="big-button" data-page="volatile-withdrawal-page">Volatile Substances Withdrawal</button>
@@ -1648,7 +1694,7 @@ textarea {
             </div>
 
             <!-- Opioid Withdrawal Page -->
-            <div id="opioid-withdrawal-page" class="page" data-title="Opioid Withdrawal">
+            <div id="opioid-withdrawal-page" class="page substance-page" data-title="Opioid Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Opioid Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 6-24 hours (short-acting, e.g., heroin), 36-72 hours (long-acting, e.g.,
@@ -1671,12 +1717,26 @@ textarea {
                     <button class="big-button" data-link-to-scale="cows">Go to COWS Scale</button>
                 </div>
 
-                <h4>Management</h4>
-                <p>Opioid withdrawal is intensely uncomfortable but rarely life-threatening. Management typically
-                    involves either opioid substitution therapy or symptomatic medication. <strong>Consult addiction
-                        services for complex patients, pregnancy, or severe medical co-morbidities.</strong></p>
+                <div class="clinical-block">
+                <h4>1. Treatment approach: OAT, or time-limited withdrawal?</h4>
+                <div class="warning-box">
+                    <strong>Consider Opioid Agonist Treatment (OAT) before withdrawal.</strong> Withdrawal alone
+                    rarely produces long-term change in opioid use, and carries an <b>increased overdose risk from
+                        loss of tolerance</b>. OAT - ongoing buprenorphine or methadone maintenance - has the
+                    stronger evidence base: it reduces mortality and retains patients in treatment, whereas
+                    standalone withdrawal has poorer long-term outcomes. Patients often ask for withdrawal without
+                    having weighed the alternative - <b>discuss OAT, and consult addiction medicine or the local
+                        Opioid Treatment Program (OTP), before committing to a withdrawal-only plan.</b>
+                    <span class="src-tag src-other">OTHER — NSW Health, NSW Clinical Guidelines: Treatment of
+                        Opioid Dependence (2018), §1.2.2, Table 1</span>
+                </div>
+                <p>Opioid withdrawal itself is intensely uncomfortable but rarely life-threatening.
+                    <strong>Consult addiction services for complex patients, pregnancy, or severe medical
+                        co-morbidities.</strong></p>
 
-                <h4>Withdrawal profiles by opioid</h4>
+                </div>
+                <div class="clinical-block">
+                <h4>2. Withdrawal profiles by opioid</h4>
                 <div class="clinical-table-wrap">
                     <table class="clinical-table">
                         <thead>
@@ -1706,7 +1766,9 @@ textarea {
                     approach for a patient <strong>already on methadone</strong> is to use methadone.
                     <span class="src-tag src-nswcg">NSWCG §8.3.5</span></p>
 
-                <h5>Opioid Substitution Therapy (Buprenorphine)</h5>
+                </div>
+                <div class="clinical-block">
+                <h4>3. Buprenorphine</h4>
                 <div class="danger-box">
                     <strong>🚨 Precipitated Withdrawal Warning:</strong> Administering Buprenorphine before the patient
                     is in adequate withdrawal, or too soon after full-agonist opioids, will strip the receptors and
@@ -1716,21 +1778,12 @@ textarea {
                     <strong>Long-Acting Injectable Buprenorphine (LAIB)</strong> (e.g., Buvidal, Sublocade) are
                     increasingly used and may be considered in consultation with specialist services.</p>
 
-                <h5>Buprenorphine test-dose protocol</h5>
-                <div class="warning-box">
-                    <strong>⚠️ Two different COWS thresholds are in circulation on this site.</strong> NSWCG §8.3.6
-                    defers the first dose until objective withdrawal at <strong>COWS 8</strong>. This site previously
-                    used <strong>COWS &gt; 12</strong>. The lower threshold gets patients dosed sooner; the higher one
-                    is more conservative about precipitated withdrawal. <strong>Until this is resolved, follow your
-                        local protocol and be explicit about which threshold you are using.</strong>
-                    <span class="src-tag src-nswcg-adapted">NSWCG-adapted §8.3.6 — rationale: NSWCG specifies COWS 8
-                        and the existing site content specified COWS &gt; 12; rather than silently overwrite a
-                        threshold that has been in local use, both are shown pending a clinical decision.</span>
-                    <!-- TODO(clinical): resolve the COWS threshold for the first buprenorphine dose — NSWCG §8.3.6
-                         says 8, the site has used >12. One number should ship, and the other should be removed. -->
-                </div>
+                <h5>Induction (Day 1)</h5>
+                <p>The same induction technique applies whether the patient will continue as OAT or move onto a
+                    time-limited taper — what differs is what happens from Day 2. Decide the goal with the patient
+                    before Day 1 if possible.</p>
                 <ol>
-                    <li>Defer the first dose until <strong>objective withdrawal</strong>.
+                    <li>Defer the first dose until <strong>objective withdrawal (COWS &ge; 8)</strong>.
                         <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
                     <li>Give a <strong>2mg SL test dose</strong>.
                         <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
@@ -1749,7 +1802,68 @@ textarea {
                     responses. <span class="src-tag src-nswcg">NSWCG §8.3.6</span>
                 </div>
 
-                <h5>Buprenorphine taper</h5>
+                <h5>Option A — continuing as Opioid Agonist Treatment (preferred)</h5>
+                <p>From Day 2, the dose is increased toward a stable maintenance level rather than reduced. The
+                    table below gives more detail on selecting the Day 1 starting dose by withdrawal severity, and
+                    on titrating over Days 2-3, than the induction steps above.</p>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Regimen</th>
+                                <th scope="col">Recommendations and consideration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Patient supervision and review</td>
+                                <td>Initial doses should be supervised.* A clinician should review the patient
+                                    within the first few days, during which the dose is stabilised — assessing
+                                    intoxication or withdrawal symptoms, side effects, ongoing cravings, other
+                                    substance use and general wellbeing. Do not assume what is prescribed is what
+                                    is being taken.</td>
+                            </tr>
+                            <tr>
+                                <td>Starting dose of buprenorphine</td>
+                                <td>Most patients should have a Day 1 dose of <b>8mg</b>: for <b>COWS &gt; 8</b>
+                                    (moderate-severe withdrawal), an initial 8mg dose is appropriate; for
+                                    <b>COWS 4-8</b> (mild withdrawal), give 4mg with a further 4mg after 1-2
+                                    hours — split dosing reduces the risk of precipitated withdrawal.
+                                    <b>Lower doses (2-4mg total)</b> suit low or uncertain dependence, high-risk
+                                    polydrug use (alcohol, benzodiazepines), or other severe medical
+                                    complications — seek specialist advice if concerned. Some patients need more
+                                    than 8mg on Day 1: this requires consultation with an addiction medicine
+                                    specialist.</td>
+                            </tr>
+                            <tr>
+                                <td>Dose increase of buprenorphine</td>
+                                <td>Increase in 2, 4 or 8mg increments, to upper limits of <b>16mg on Day 2</b>
+                                    and <b>24mg on Day 3</b>. Slower increments (as used for methadone) are not
+                                    required — increments that are too slow are associated with higher treatment
+                                    dropout. Adjust the dose following review of side effects, features of
+                                    withdrawal (suggesting not enough buprenorphine) or intoxication (suggesting
+                                    too much buprenorphine or other drug use), ongoing cravings and substance
+                                    use.</td>
+                            </tr>
+                            <tr>
+                                <td>When to consider specialist advice or referral</td>
+                                <td>If higher or more rapid dose increases are needed, or the patient must
+                                    suddenly discontinue their prescribed opioids — consult an addiction medicine
+                                    specialist, and/or manage in an inpatient setting with closer monitoring.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><small>*Check pharmacy availability.</small>
+                    <span class="src-tag src-other">OTHER — NSW Health, NSW Clinical Guidelines: Treatment of
+                        Opioid Dependence (2018), Table 10</span></p>
+                <p>Ongoing OAT is delivered through an Opioid Treatment Program - see NSW regulatory requirements
+                    below for authorisation and dosing-point contacts.</p>
+
+                <h5>Option B — time-limited withdrawal</h5>
+                <p>Where OAT has been discussed and declined, or is not appropriate or available (e.g. a short,
+                    non-elective withdrawal such as an unplanned hospital admission or incarceration), continue
+                    with a wean rather than increasing toward a maintenance dose.</p>
                 <div class="clinical-table-wrap">
                     <table class="clinical-table">
                         <thead>
@@ -1775,9 +1889,11 @@ textarea {
                 <p><strong>Cease 1-2 days before discharge</strong> to assess for rebound.
                     <span class="src-tag src-nswcg">NSWCG §8.3.6</span></p>
 
-                <div data-symptomatic="opioid"></div>
+                </div>
+                <div class="clinical-block" data-symptomatic="opioid"></div>
 
-                <h4>Estimating level of use</h4>
+                <div class="clinical-block">
+                <h4>4. Estimating level of use</h4>
                 <p><strong>Frequency is a better indicator than grams</strong>, given how variable purity is.
                     <span class="src-tag src-nswcg">NSWCG §8.2</span></p>
                 <ul>
@@ -1789,7 +1905,9 @@ textarea {
                         target="_blank" rel="noopener">ANZCA Faculty of Pain Medicine opioid dose equivalence
                         table</a>. <span class="src-tag src-other">OTHER — ANZCA Faculty of Pain Medicine</span></p>
 
-                <h4>Unplanned withdrawal in hospital or prison</h4>
+                </div>
+                <div class="clinical-block">
+                <h4>5. Unplanned withdrawal in hospital or prison</h4>
                 <div class="warning-box">
                     <strong>⚠️ Consider opioid dependence</strong> where there are withdrawal signs, injection sites,
                     or <strong>difficult pain control and unexpectedly high analgesic requirements</strong> — the last
@@ -1797,7 +1915,9 @@ textarea {
                     <span class="src-tag src-nswcg">NSWCG §8.2</span>
                 </div>
 
-                <h4>Pain in a patient on buprenorphine</h4>
+                </div>
+                <div class="clinical-block">
+                <h4>6. Pain in a patient on buprenorphine</h4>
                 <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
                     Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
                     <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
@@ -1805,7 +1925,9 @@ textarea {
                     Faculty of Pain Medicine acute pain guidance.
                     <span class="src-tag src-nswcg">NSWCG §8.3.5, §2.6</span></p>
 
-                <h4>NSW regulatory requirements</h4>
+                </div>
+                <div class="clinical-block">
+                <h4>7. NSW regulatory requirements</h4>
                 <ul>
                     <li><strong>In hospital</strong>, doctors may use methadone or buprenorphine without an authority
                         for opioid-dependent inpatients — <strong>limited to 14 days by policy directive</strong>.
@@ -1820,7 +1942,9 @@ textarea {
                         <strong>My Health Record</strong>. <span class="src-tag src-nswcg">NSWCG §8.2</span></li>
                 </ul>
 
-                <h4>Complications of chronic use</h4>
+                </div>
+                <div class="clinical-block">
+                <h4>8. Complications of chronic use</h4>
                 <ul>
                     <li><strong>Endocrine:</strong> reduced testosterone, raised prolactin, reduced FSH/LH,
                         oligomenorrhoea or amenorrhoea, infertility.</li>
@@ -1831,12 +1955,13 @@ textarea {
                 </ul>
                 <p><span class="src-tag src-nswcg">NSWCG §8.2</span></p>
 
-                <div data-harm-reduction="opioid"></div>
+                </div>
+                <div class="clinical-block" data-harm-reduction="opioid"></div>
 
             </div>
 
             <!-- Benzo Withdrawal Page -->
-            <div id="benzo-withdrawal-page" class="page" data-title="Benzodiazepine Withdrawal">
+            <div id="benzo-withdrawal-page" class="page substance-page" data-title="Benzodiazepine Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Benzodiazepine Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 1-2 days (short-acting, e.g., alprazolam), 2-7 days (long-acting, e.g.,
@@ -1870,6 +1995,7 @@ textarea {
                     Obstetric and Addiction Medicine specialists.
                 </div>
 
+                <div class="clinical-block">
                 <h4>Oral daily diazepam equivalent (ODDE)</h4>
                 <p>ODDE is the organising concept for this whole page — management differs by which side of the line
                     the patient sits on. <span class="src-tag src-nswcg">NSWCG §11</span></p>
@@ -1878,6 +2004,8 @@ textarea {
                     <li><strong>High-dose dependence:</strong> &gt; 10mg ODDE.</li>
                 </ul>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Equivalence table</h4>
                 <div data-benzo-equivalence></div>
 
@@ -1896,6 +2024,8 @@ textarea {
                     <span class="src-tag src-nswcg">NSWCG §11</span>
                 </div>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Tapering Schedules</h4>
                 <p><strong>Discussion with addiction services is strongly recommended.</strong></p>
                 <p>Arranging a safe and effective outpatient taper is often difficult and carries risks if not closely
@@ -1922,17 +2052,23 @@ textarea {
                         fortnightly review. <span class="src-tag src-nswcg">NSWCG §11</span></li>
                 </ul>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Setting</h4>
                 <p>Outpatient is preferred <em>except</em> where safety is at risk — documented seizures, delirium,
                     alcohol dependence, or significant untreated mental illness — where use is erratic, uncontrolled
                     and high-dose, or involves other CNS depressants, or where outpatient success is unlikely.
                     <span class="src-tag src-nswcg">NSWCG §11</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Low-dose therapeutic dependence</h4>
                 <p>Withdrawal may cause <strong>more distress than continuing a stable long-term dose</strong>. Weigh
                     that against the risks of continued prescribing — falls, cognitive decline. Stopping is not
                     automatically the right answer. <span class="src-tag src-nswcg">NSWCG §11</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Interpreting a urine drug screen</h4>
                 <div class="warning-box">
                     <strong>⚠️ Temazepam and oxazepam are metabolites of diazepam.</strong> During diazepam treatment
@@ -1942,18 +2078,21 @@ textarea {
                     <span class="src-tag src-nswcg">NSWCG §11</span>
                 </div>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Bridging scripts</h4>
                 <p>Only with frequent review, avoiding higher-risk agents such as alprazolam, and with a
                     <strong>clear written treatment agreement stating the arrangement is interim</strong>.
                     <span class="src-tag src-nswcg">NSWCG §11</span></p>
 
-                <div data-symptomatic="benzodiazepine"></div>
+                </div>
+                <div class="clinical-block" data-symptomatic="benzodiazepine"></div>
 
-                <div data-harm-reduction="benzodiazepine"></div>
+                <div class="clinical-block" data-harm-reduction="benzodiazepine"></div>
             </div>
 
             <!-- Cannabis Withdrawal Page -->
-            <div id="cannabis-withdrawal-page" class="page" data-title="Cannabis Withdrawal">
+            <div id="cannabis-withdrawal-page" class="page substance-page" data-title="Cannabis Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Cannabis Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 1-2 days after cessation.</p>
@@ -1970,6 +2109,7 @@ textarea {
                     <button class="big-button" data-link-to-scale="cwas">Go to CWAS Scale</button>
                 </div>
 
+                <div class="clinical-block">
                 <h4>Who withdraws</h4>
                 <p>Around <strong>50% of regular or dependent users</strong> meet the threshold for withdrawal — and
                     <strong>80-90% in inpatient settings</strong>, where use tends to be heavier. <strong>Daily use is
@@ -1978,6 +2118,8 @@ textarea {
                     disturbance and cravings may persist for weeks.
                     <span class="src-tag src-nswcg">NSWCG §6</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Gradual reduction or abrupt cessation?</h4>
                 <ul>
                     <li><strong>Abrupt cessation</strong> suits patients who are motivated, have a supportive
@@ -1988,6 +2130,8 @@ textarea {
                 </ul>
                 <p><span class="src-tag src-nswcg">NSWCG §6</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Supportive care</h4>
                 <ul>
                     <li>Hydration <strong>2-3 L/day</strong>.</li>
@@ -1997,11 +2141,15 @@ textarea {
                 </ul>
                 <p><span class="src-tag src-nswcg">NSWCG §6</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Medicinal cannabis</h4>
                 <p><strong>Taper THC-based medicines over several weeks</strong>, and plan alternative management for
                     the underlying condition before starting — otherwise the condition that prompted the prescription
                     returns untreated mid-taper. <span class="src-tag src-nswcg">NSWCG §6</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Synthetic cannabinoids</h4>
                 <div class="warning-box">
                     <strong>⚠️ Not the same syndrome.</strong> Synthetic cannabinoids have <strong>higher receptor
@@ -2011,13 +2159,14 @@ textarea {
                     <span class="src-tag src-nswcg">NSWCG §6</span>
                 </div>
 
-                <div data-symptomatic="cannabis"></div>
+                </div>
+                <div class="clinical-block" data-symptomatic="cannabis"></div>
 
-                <div data-harm-reduction="cannabis"></div>
+                <div class="clinical-block" data-harm-reduction="cannabis"></div>
             </div>
 
             <!-- Psychostimulants Withdrawal Page -->
-            <div id="stimulant-withdrawal-page" class="page" data-title="Psychostimulant Withdrawal">
+            <div id="stimulant-withdrawal-page" class="page substance-page" data-title="Psychostimulant Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Psychostimulant Withdrawal (Amphetamines, Cocaine)</h3>
                 <p><strong>Onset:</strong> 1-2 days after cessation (the "crash").</p>
@@ -2038,6 +2187,7 @@ textarea {
                     <button class="big-button" data-link-to-scale="awq">Go to AWQ Scale</button>
                 </div>
 
+                <div class="clinical-block">
                 <h4>The three-phase model</h4>
                 <div class="clinical-table-wrap">
                     <table class="clinical-table">
@@ -2073,6 +2223,8 @@ textarea {
                 </div>
                 <p><span class="src-tag src-nswcg">NSWCG §7</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Complications to look for</h4>
                 <div class="clinical-table-wrap">
                     <table class="clinical-table">
@@ -2094,6 +2246,8 @@ textarea {
                 </div>
                 <p><span class="src-tag src-nswcg">NSWCG §7</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Assessment</h4>
                 <p>Assess <strong>nutrition, hydration, weight loss, skin integrity and dental health</strong> — the
                     physical consequences that are easy to miss while attention is on mental state.
@@ -2101,6 +2255,8 @@ textarea {
                 <p><strong>Consumption history units:</strong> 'points' (approximately 0.1g); days used in the past 28;
                     dollar amount spent. <span class="src-tag src-nswcg">NSWCG §7</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Management</h4>
                 <p>Withdrawal is generally not life-threatening but is associated with severe psychological distress,
                     agitation, and risk of suicide. Monitor mental state closely. Management is
@@ -2108,6 +2264,8 @@ textarea {
                     should match the severity and the supports available.
                     <span class="src-tag src-nswcg">NSWCG §7</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Driving</h4>
                 <div class="warning-box">
                     <strong>⚠️ Austroads.</strong> A person with a substance use disorder, or with impairing use, is
@@ -2118,13 +2276,14 @@ textarea {
                     <span class="src-tag src-other">OTHER — Austroads Assessing Fitness to Drive, via NSWCG §7</span>
                 </div>
 
-                <div data-symptomatic="psychostimulant"></div>
+                </div>
+                <div class="clinical-block" data-symptomatic="psychostimulant"></div>
 
-                <div data-harm-reduction="psychostimulant"></div>
+                <div class="clinical-block" data-harm-reduction="psychostimulant"></div>
             </div>
 
             <!-- Gabapentinoid Withdrawal Page -->
-            <div id="gabapentinoid-withdrawal-page" class="page" data-title="Gabapentinoid Withdrawal">
+            <div id="gabapentinoid-withdrawal-page" class="page substance-page" data-title="Gabapentinoid Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Gabapentinoid Withdrawal (Pregabalin, Gabapentin)</h3>
                 <p><strong>Onset:</strong> 1-2 days after last use.
@@ -2150,6 +2309,7 @@ textarea {
                         and withdrawal.</strong> <span class="src-tag src-nswcg">NSWCG §10</span>
                 </div>
 
+                <div class="clinical-block">
                 <h4>Assessment</h4>
                 <p><strong>Renal function is the key assessment</strong>, given how gabapentinoids are cleared. Seek
                     specialist advice for significant renal impairment, and for pregnancy (Category B3).
@@ -2157,6 +2317,8 @@ textarea {
                 <p><strong>No validated withdrawal scale exists for gabapentinoids.</strong> Monitoring is clinical.
                     <span class="src-tag src-nswcg">NSWCG §10</span></p>
 
+                </div>
+                <div class="clinical-block">
                 <h4>Management — the taper is the mainstay</h4>
                 <ul>
                     <li><strong>Supratherapeutic users</strong> can start the taper at maximum doses — pregabalin
@@ -2174,13 +2336,14 @@ textarea {
                         <span class="src-tag src-nswcg">NSWCG §10</span></li>
                 </ul>
 
-                <div data-symptomatic="gabapentinoid"></div>
+                </div>
+                <div class="clinical-block" data-symptomatic="gabapentinoid"></div>
 
-                <div data-harm-reduction="gabapentinoid"></div>
+                <div class="clinical-block" data-harm-reduction="gabapentinoid"></div>
             </div>
 
             <!-- GHB Withdrawal Page -->
-            <div id="ghb-withdrawal-page" class="page" data-title="GHB Withdrawal">
+            <div id="ghb-withdrawal-page" class="page substance-page" data-title="GHB Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>GHB/GBL Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 1-6 hours after last dose.</p>
@@ -2211,6 +2374,7 @@ textarea {
                 <p><strong>No validated withdrawal scale exists for GHB.</strong> Do not use a CIWA-Ar or AWS score to
                     drive dosing here. <span class="src-tag src-nswcg">NSWCG §9</span></p>
 
+                <div class="clinical-block">
                 <h4>Management</h4>
                 <div class="danger-box">
                     <strong>🚨 Medical Emergency:</strong> GHB withdrawal can escalate rapidly and unpredictably. Watch
@@ -2255,16 +2419,14 @@ textarea {
                     <strong>Hourly or more frequent in severe cases.</strong>
                     <span class="src-tag src-nswcg">NSWCG §9</span></p>
 
-                <div data-harm-reduction="ghb"></div>
+                </div>
+                <div class="clinical-block" data-harm-reduction="ghb"></div>
             </div>
 
             <!-- Nicotine Withdrawal Page -->
-            <div id="nicotine-withdrawal-page" class="page" data-title="Nicotine Withdrawal">
+            <div id="nicotine-withdrawal-page" class="page substance-page" data-title="Nicotine Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Nicotine Withdrawal Syndrome</h3>
-                <!-- TODO(review): confirm this page should continue to sit alongside the NSWCG-derived
-                     substance pages, or whether it should link out to the NSW tobacco guidance instead of
-                     restating it. -->
                 <span class="src-tag src-local src-block">LOCAL — rationale: the NSW Clinical Guidance
                     deliberately excludes nicotine and defers to the separate NSW Health tobacco and
                     nicotine dependence guidance, so this page is drawn from that guidance and local
@@ -2277,6 +2439,7 @@ textarea {
                 <p><strong>Key Distinguishing Features:</strong> Intense cravings, increased appetite, and weight gain.
                 </p>
 
+                <div class="clinical-block">
                 <h4>Management</h4>
                 <p>Nicotine Replacement Therapy (NRT) in a combination approach (e.g., long-acting patch + fast-acting
                     oral form) is first-line. Alternatives include Varenicline or Bupropion. Offer brief interventions
@@ -2294,10 +2457,11 @@ textarea {
                     (gum, lozenge) is often preferred over continuous patches. Consult local
                     guidelines.<br><strong>Vaping:</strong> Liquid nicotine vaporisers (e-cigarettes) may be considered
                     as a second-line harm reduction step-down tool for patients unsuccessful with standard NRT.</p>
+                </div>
             </div>
 
             <!-- Volatile Substances Withdrawal Page -->
-            <div id="volatile-withdrawal-page" class="page" data-title="Volatile Substances Withdrawal">
+            <div id="volatile-withdrawal-page" class="page substance-page" data-title="Volatile Substances Withdrawal">
                 <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
                 <h3>Volatile Substances (Inhalants) Withdrawal</h3>
                 <span class="src-tag src-local src-block">LOCAL — rationale: volatile substance
@@ -2310,149 +2474,9 @@ textarea {
                 <p><strong>Key Distinguishing Features:</strong> Fleeting illusions, sleep disturbances, and cravings,
                     though generally lacks a highly specific classic syndrome compared to other substances.</p>
 
+                <div class="clinical-block">
                 <h4>Management</h4>
                 <p>Provide a low-stimulation, safe environment. Treat symptomatically.</p>
-            </div>
-
-            <!-- Assessment, Risk and Care Planning -->
-            <div id="assessment-page" class="page" data-title="Before You Prescribe">
-                <div class="tab-container">
-                    <div class="tab-buttons">
-                        <button class="tab-button active" data-tab="assessment-core">1. Assessment</button>
-                        <button class="tab-button" data-tab="assessment-risk">2. Risk</button>
-                        <button class="tab-button" data-tab="assessment-confidentiality">3. Confidentiality</button>
-                        <button class="tab-button" data-tab="assessment-plan">4. Plan &amp; Setting</button>
-                        <button class="tab-button" data-tab="assessment-principles">5. Principles</button>
-                    </div>
-
-                    <div id="assessment-core" class="tab-content active">
-                        <h3>Assessment</h3>
-                        <p>Withdrawal management begins before the first dose. The aims of assessment are to establish
-                            what the patient is dependent on, what else is going on medically and psychologically,
-                            what risks are present, and what the patient wants — none of which a benzodiazepine chart
-                            answers. <span class="src-tag src-nswcg">NSWCG §4.2</span></p>
-                        <h4>Key elements</h4>
-                        <ul>
-                            <li><strong>Substance use history covering every substance</strong> — not only the
-                                presenting one. See the Consumption History method on the Standard Drinks calculator.
-                            </li>
-                            <li>Medical and mental health history.</li>
-                            <li>Psychosocial assessment.</li>
-                            <li>Physical examination, including signs of intoxication and withdrawal.</li>
-                            <li>Mental state examination.</li>
-                            <li><strong>Investigations</strong>, including blood-borne virus and HIV testing, and
-                                <strong>pregnancy testing for women of child-bearing age</strong>.</li>
-                            <li>Risk assessment (see the Risk tab).</li>
-                        </ul>
-                        <p><span class="src-tag src-nswcg">NSWCG §4.2</span></p>
-                        <div class="button-container" style="margin: 20px 0;">
-                            <button class="big-button" data-page="screening-page">Screening questions</button>
-                            <button class="big-button" data-page="bbv-sti-page">BBV/STI results → actions</button>
-                        </div>
-                    </div>
-
-                    <div id="assessment-risk" class="tab-content">
-                        <h3>Risk</h3>
-
-                        <h4>Suicide risk</h4>
-                        <div class="danger-box">
-                            <strong>🚨 Intoxication complicates immediate risk assessment.</strong> Enduring risk
-                            <strong>cannot be appropriately assessed until the person is sober</strong>. Monitor in a
-                            safe setting until a full assessment is possible. <strong>No rating scale has proven
-                                predictive value</strong> — a low score is not reassurance.
-                            <span class="src-tag src-nswcg">NSWCG §4.3.1</span>
-                        </div>
-                        <p>Ask directly about current thoughts of suicide or self-harm, intent and plan, access to
-                            means, previous attempts, and what has changed recently.
-                            <span class="src-tag src-nswcg">NSWCG §4.3.1</span></p>
-                        <p><strong>NSW Mental Health Line:</strong> <a href="tel:1800011511">1800 011 511</a> (24/7).
-                            <span class="src-tag src-nswcg">NSWCG §4.3.1</span></p>
-
-                        <h4>Domestic violence</h4>
-                        <p><strong>Screening must always be included.</strong> NSW Health policy mandates screening in
-                            AOD services for women over 16. <span class="src-tag src-nswcg">NSWCG §4.3.2</span></p>
-                        <ul class="contact-list">
-                            <li><strong>Immediate danger:</strong> <a href="tel:000">000</a></li>
-                            <li><strong>Child Protection Helpline:</strong> <a href="tel:132111">13 21 11</a></li>
-                            <li><strong>MensLine Australia:</strong> <a href="tel:1300789978">1300 789 978</a></li>
-                            <li><strong>Men's Referral Service:</strong> <a href="tel:1300766491">1300 766 491</a></li>
-                            <li><strong>1800RESPECT:</strong> <a href="tel:1800737825">1800 737 825</a> (24/7)</li>
-                        </ul>
-
-                        <h4>Child protection</h4>
-                        <p><strong>The duty to report overrides confidentiality.</strong> Use the Mandatory Reporter
-                            Guide to decide whether a report is required.
-                            <span class="src-tag src-nswcg">NSWCG §4.3.3</span></p>
-                        <div class="warning-box">
-                            <strong>⚠️ A parent or carer wanting to withdraw from alcohol or other drugs is not, by
-                                itself, a reason to make a report.</strong> Seeking treatment is not a risk of
-                            significant harm. <span class="src-tag src-nswcg">NSWCG §4.3.3</span>
-                        </div>
-                        <ul class="contact-list">
-                            <li><strong>NSW Health Child Wellbeing Unit:</strong> <a href="tel:1300480420">1300 480
-                                    420</a></li>
-                            <li><strong>Child Protection Helpline:</strong> <a href="tel:132111">13 21 11</a></li>
-                        </ul>
-
-                        <h4>Gambling</h4>
-                        <p><strong>Screen all patients</strong> using the two-question <strong>Lie-Bet</strong>
-                            questionnaire: <span class="src-tag src-nswcg">NSWCG §4.3.4</span></p>
-                        <ol>
-                            <li>Have you ever had to lie to people important to you about how much you gamble?</li>
-                            <li>Have you ever felt the need to bet more and more money?</li>
-                        </ol>
-                        <p><strong>Gambling Help (G-Line):</strong> <a href="tel:1800633635">1800 633 635</a> (24/7)
-                        </p>
-                    </div>
-
-                    <div id="assessment-confidentiality" class="tab-content">
-                        <h3>Confidentiality and its limits</h3>
-                        <p>Patients are entitled to know where the boundaries are before they disclose. Disclosure is
-                            permitted to: <span class="src-tag src-nswcg">NSWCG §2.4</span></p>
-                        <ul>
-                            <li><strong>Department of Communities and Justice</strong> — child protection.</li>
-                            <li><strong>Mental health professionals</strong> — risk, as part of a mental health
-                                condition.</li>
-                            <li><strong>Transport for NSW</strong> — driver safety.</li>
-                            <li><strong>AHPRA</strong> — impaired practitioners.</li>
-                            <li><strong>Workplaces</strong> — safe operation of heavy machinery or vehicles.</li>
-                        </ul>
-                        <p><span class="src-tag src-nswcg">NSWCG §2.4</span></p>
-                    </div>
-
-                    <div id="assessment-plan" class="tab-content">
-                        <h3>Treatment plan and setting</h3>
-                        <p>A treatment plan states the goal of the withdrawal episode, the setting, the regimen, the
-                            monitoring, who is responsible for review, and what happens afterwards. A withdrawal
-                            without a post-withdrawal plan risks relapse into a lower-tolerance state.
-                            <span class="src-tag src-nswcg">NSWCG §4.4.1</span></p>
-                        <div class="warning-box">
-                            <strong>⚠️ Community withdrawal is contraindicated</strong> where there is risk to the
-                            patient or to others in the household or community, or where the medications involved are
-                            high risk. <span class="src-tag src-nswcg">NSWCG §4.4.1</span>
-                        </div>
-                        <div class="button-container" style="margin: 20px 0;">
-                            <button class="big-button" data-page="continuing-care-page">Continuing care and
-                                relapse-prevention pharmacotherapy</button>
-                        </div>
-                    </div>
-
-                    <div id="assessment-principles" class="tab-content">
-                        <h3>Principles</h3>
-                        <h4>Trauma-informed care</h4>
-                        <p>Assume a history of trauma is likely and design the encounter so it does not re-enact it:
-                            safety, trustworthiness and transparency, choice, collaboration, and empowerment. Practical
-                            consequences during withdrawal — explain what will happen before it happens, offer choices
-                            where they exist, avoid unnecessary physical exposure, and do not press for a trauma
-                            history during acute withdrawal.
-                            <span class="src-tag src-nswcg">NSWCG §2.2</span></p>
-                        <h4>Stigma</h4>
-                        <p>Stigma is a treatment barrier, not a side issue: it keeps people out of care and shapes what
-                            they disclose once they are in it. Use person-first language ("a person who uses drugs",
-                            not "an addict"), avoid "clean"/"dirty" for test results, and document in language you
-                            would be willing to read aloud to the patient.
-                            <span class="src-tag src-nswcg">NSWCG §2.3</span></p>
-                    </div>
                 </div>
             </div>
 
@@ -2884,10 +2908,18 @@ textarea {
                         practical support, information or referral to men with relationship or violence problems
                         including free phone and online counselling. See <a
                             href="https://mensline.org.au">mensline.org.au</a>)</li>
+                    <li><strong>Men's Referral Service:</strong> <a href="tel:1300766491">1300 766 491</a></li>
                     <li><strong>NSW Domestic Violence Line:</strong> <a href="tel:1800656463">1800 656 463</a> (Free
                         24/7 support with domestic violence issues)</li>
                     <li><strong>NSW Sexual Violence Helpline:</strong> <a href="tel:1800424017">1800 424 017</a>(Free
                         24/7 access to trauma specialist counsellors)</li>
+                </ul>
+
+                <h3>Child Protection</h3>
+                <ul class="contact-list">
+                    <li><strong>Child Protection Helpline:</strong> <a href="tel:132111">13 21 11</a></li>
+                    <li><strong>NSW Health Child Wellbeing Unit:</strong> <a href="tel:1300480420">1300 480 420</a>
+                    </li>
                 </ul>
 
                 <h3>Housing and Financial Instability</h3>
@@ -3087,6 +3119,9 @@ textarea {
                     <li><strong>Therapeutic Guidelines (eTG)</strong> — benzodiazepine equivalence.</li>
                     <li><strong>ANZCA Faculty of Pain Medicine</strong> — opioid dose equivalence and acute pain
                         guidance.</li>
+                    <li><strong>NSW Health</strong> — <em>NSW Clinical Guidelines: Treatment of Opioid
+                            Dependence</em> (2018). A separate NSW Health document from the primary source above;
+                        used for the buprenorphine OAT induction protocol.</li>
                     <li><strong>Austroads</strong> — <em>Assessing Fitness to Drive</em>.</li>
                 </ul>
                 <p>Links to these documents are on the <button class="link-button"

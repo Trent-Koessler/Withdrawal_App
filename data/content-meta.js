@@ -11,10 +11,7 @@
 // register where that changes.
 
 export const CONTENT_META_DEFAULTS = {
-    reviewer: null,
-    // 12 months. Guideline updates and drug availability changes are the two
-    // things that date this content, and both move on roughly that cycle.
-    reviewIntervalMonths: 12
+    reviewer: null
 };
 
 // Sections revised against NSW Health, Management of Withdrawal from Alcohol
@@ -26,7 +23,6 @@ export const CONTENT_META = {
     'inpatient-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'alcohol-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
-    'assessment-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'screening-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'populations-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'continuing-care-page': { source: NSWCG_2022, lastReviewed: REVISED },
@@ -59,12 +55,16 @@ export const CONTENT_META = {
     'contacts-page': { source: 'NSW Health service directories', lastReviewed: REVISED }
 };
 
-// Returns the review-due date for a section, or null where nothing has been
-// authored yet.
-export function nextReviewDue(meta) {
-    if (!meta || !meta.lastReviewed) return null;
-    const months = meta.reviewIntervalMonths ?? CONTENT_META_DEFAULTS.reviewIntervalMonths;
-    const date = new Date(meta.lastReviewed + 'T00:00:00Z');
-    date.setUTCMonth(date.getUTCMonth() + months);
-    return date.toISOString().slice(0, 10);
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+// Displayed as "Month Year" rather than the exact day: a content review
+// doesn't happen to day-level precision, and the exact date implied more
+// than was true. There is deliberately no "next review due" date — that
+// cadence has not been agreed with the service yet, so this app does not
+// present one as though it had been.
+export function formatReviewMonth(dateStr) {
+    if (!dateStr) return null;
+    const [year, month] = dateStr.split('-');
+    return `${MONTHS[Number(month) - 1]} ${year}`;
 }

@@ -165,7 +165,11 @@ body.modal-open > #app-container {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    white-space: pre-wrap; /* Allows wrapping with \n */
+    /* pre-line, not pre-wrap: still breaks on an explicit \n in a label, but
+       collapses runs of spaces like normal text. pre-wrap preserves the space
+       at a natural wrap point too, which rides onto the wrapped line and
+       throws off centering for any label that wraps on width alone. */
+    white-space: pre-line;
 }
 
 /* Footer Styles */
@@ -549,6 +553,20 @@ textarea {
     border-left: 4px solid var(--danger-border);
 }
 
+/* Regimen-band caveats render as <details class="warning-box"> so the
+   guideline/local rationale is available without forcing every band's
+   caveat paragraph onto the screen at once. The <summary> is the caveat's
+   own bold lead-in sentence (e.g. "Conversion caveat.") rather than a
+   placeholder, so the substance is visible before it is opened. */
+.warning-box > summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.warning-box[open] > summary {
+    margin-bottom: 8px;
+}
+
 /* --- Contact List Styles --- */
 .contact-list {
     list-style-type: none;
@@ -818,4 +836,30 @@ textarea {
 
 .shared-block ul {
     margin-top: 4px;
+}
+
+/* --- Substance page sectioning ---
+   The "Other Substances" pages (opioid, benzo, cannabis, psychostimulant,
+   gabapentinoid, GHB, nicotine, volatile) had no heading treatment beyond
+   the browser default, so an <h4> section break read the same as a bolded
+   word in a paragraph. Scoped to .substance-page rather than applied
+   globally, so it doesn't reflow the tab-based alcohol pages, which already
+   have their own visual language. */
+.substance-page h4 {
+    margin-top: 32px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.substance-page h4:first-of-type {
+    margin-top: 20px;
+}
+
+.substance-page h5 {
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: var(--link-color);
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.03em;
 }

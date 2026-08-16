@@ -4,7 +4,7 @@ import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
-import { CONTENT_META, nextReviewDue } from './data/content-meta.js';
+import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const APP_VERSION = '0.4.0';
@@ -490,8 +490,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // schedule is useless underneath it.
         // An array: a cell can carry more than one (an oxazepam symptom-triggered
         // regimen is both converted and conditional on the care setting).
+        // Collapsed by default so caveats don't stack into a wall of text above
+        // the doses — but every caveat opens with its own bold lead-in sentence
+        // (e.g. "Conversion caveat."), which becomes the <summary>, so the
+        // substance is visible without expanding it. Only the elaboration and
+        // source-tag rationale are hidden behind the toggle.
         (data.caveat || []).forEach(caveat => {
-            displayHTML += `<div class="warning-box">${caveat}</div>`;
+            const leadIn = caveat.match(/^<b>(.*?)<\/b>\s*/);
+            if (leadIn) {
+                displayHTML += `<details class="warning-box"><summary>${leadIn[1]}</summary>${caveat.slice(leadIn[0].length)}</details>`;
+            } else {
+                displayHTML += `<div class="warning-box">${caveat}</div>`;
+            }
         });
 
         // A score-banded dose table (symptom-triggered dosing, monitoring
@@ -826,11 +836,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('content metadata for a page that does not exist:', pageId);
             return;
         }
-        const due = nextReviewDue(meta);
         const footer = document.createElement('p');
         footer.className = 'review-meta';
         footer.innerHTML = meta.lastReviewed
-            ? `Source: ${meta.source}. Content last reviewed ${meta.lastReviewed}; next review due ${due}. `
+            ? `Source: ${meta.source}. Content last reviewed ${formatReviewMonth(meta.lastReviewed)}. `
             + `Reviewer: ${meta.reviewer || 'authored, not yet independently reviewed'}.`
             : `Source: ${meta.source}. Not yet authored — nothing on this page has been reviewed.`;
         page.appendChild(footer);
