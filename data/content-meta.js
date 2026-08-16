@@ -37,7 +37,7 @@ export const CONTENT_META = {
 
     // Deliberately not NSWCG-derived — see the source tags on those pages.
     'nicotine-withdrawal-page': {
-        source: 'NSW Health tobacco and nicotine guidance; local practice',
+        source: 'NSW Health tobacco and nicotine guidance; RACGP; local practice',
         lastReviewed: REVISED
     },
     'volatile-withdrawal-page': {

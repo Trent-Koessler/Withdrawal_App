@@ -16,8 +16,8 @@ export const SCALE_CAVEATS_UNIVERSAL = [
 // unreliable in the patients who score highest.
 const ALCOHOL_SCALE_CAVEATS = [
     `<b>Consider discontinuing the scale in patients with multiple pathologies</b>, where the result may be misleading rather than merely imprecise. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`,
-    `<b>Monitoring of consciousness may be compromised by head injury or CVA</b> — specialist consultation is essential in those patients. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`,
-    `<b>Re-evaluate regularly</b> to confirm the diagnosis is withdrawal and not another condition — particularly where the patient is not responding to treatment. A rising score is a reason to reconsider the diagnosis, not only to increase the dose. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`
+    `<b>Monitoring of consciousness may be compromised by head injury or CVA</b> - specialist consultation is essential in those patients. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`,
+    `<b>Re-evaluate regularly</b> to confirm the diagnosis is withdrawal and not another condition - particularly where the patient is not responding to treatment. A rising score is a reason to reconsider the diagnosis, not only to increase the dose. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`
 ];
 
 // The monitoring-only scales. The UI shows a score and a severity band beside
@@ -107,7 +107,7 @@ export const SCALES = [
         id: 'ciwa-ar',
         caveats: ALCOHOL_SCALE_CAVEATS,
         name: 'CIWA-Ar',
-        reference: 'Clinical institute withdrawal assessment for alcohol — revised. Sullivan J, Sykora M, Schneiderman J, et al. Assessment of alcohol withdrawal: the revised Clinical Institute withdrawal for alcohol scale (CIWA-Ar). Br J Addict 1989; 84: 1353–1357.',
+        reference: 'Clinical institute withdrawal assessment for alcohol - revised. Sullivan J, Sykora M, Schneiderman J, et al. Assessment of alcohol withdrawal: the revised Clinical Institute withdrawal for alcohol scale (CIWA-Ar). Br J Addict 1989; 84: 1353–1357.',
         items: [
             {
                 displayName: "Nausea and vomiting", instruction: "Ask “Do you feel sick to your stomach? Have you vomited?” and observe.", radioName: "ciwa-nausea", options: [

@@ -11,12 +11,14 @@
 // content, whose source was not established during this revision, say so
 // rather than borrowing the credibility of the tagged ones.
 
-const UNSOURCED = `<span class="src-tag src-local">LOCAL — rationale: carried forward unchanged; source not yet confirmed.</span>`;
+const UNSOURCED = `<span class="src-tag src-local">LOCAL - rationale: carried forward unchanged; source not yet confirmed.</span>`;
 
-// TODO(review): establish the provenance of the symptomatic entries currently
-// marked as carried-forward local practice (metoclopramide, ondansetron,
-// hyoscine butylbromide, loperamide, paracetamol/ibuprofen, promethazine) and
-// re-tag them against whichever guideline they came from.
+// TODO(review): establish the provenance of promethazine for cannabis
+// withdrawal insomnia, currently carried-forward local practice, and re-tag
+// it against whichever guideline it came from. The rest of the entries this
+// note used to cover (metoclopramide, ondansetron, hyoscine butylbromide,
+// loperamide, paracetamol/ibuprofen) have since been resolved against
+// NSWCG per substance, or dropped as not relevant to that substance.
 
 // Common to every substance. Same words everywhere, because they are the rules
 // a clinician most often skips when reading a symptomatic table. The NRT line
@@ -26,40 +28,17 @@ const UNSOURCED = `<span class="src-tag src-local">LOCAL — rationale: carried 
 export const SYMPTOMATIC_UNIVERSAL = [
     `Symptomatic medications are <b>generally not continued beyond 7 days</b> without medical review and a clear indication. <span class="src-tag src-nswcg">NSWCG §6.3.4, §8.3.4</span>`,
     `For inpatient or residential withdrawal, <b>cease symptomatic medication 1-2 days before discharge</b> to assess how the patient copes without it. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
-    `<b>Supervise access</b> — daily dispensing, or supervision by a carer. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
+    `<b>Supervise access</b> - daily dispensing, or supervision by a carer. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
     `Use <b>caution with any psychoactive medication</b> in a patient with a substance use disorder. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`
-];
-
-// Shared GI/analgesic block, for benzodiazepine/psychostimulant withdrawal.
-// The opioid, cannabis and gabapentinoid pages used to draw from this same
-// block, but NSWCG Table 8.6 (p.53), Table 6.2 and Table 10.2 turned out to
-// specify these exact entries for those three substances specifically — see
-// OPIOID_GENERAL_SYMPTOMS, CANNABIS_SYMPTOMATIC and GABAPENTINOID_SYMPTOMATIC
-// below. This block stays unsourced pending the same check against
-// benzodiazepine and psychostimulant's own NSWCG sections.
-const GENERAL_SYMPTOMS = [
-    {
-        symptom: 'Nausea and vomiting',
-        lines: [`Metoclopramide 10mg oral/IM/IV up to TDS PRN, <b>or</b> ondansetron 4-8mg oral/IV up to TDS PRN. ${UNSOURCED}`]
-    },
-    {
-        symptom: 'Stomach cramps',
-        lines: [`Hyoscine butylbromide 20mg oral QID PRN. ${UNSOURCED}`]
-    },
-    {
-        symptom: 'Diarrhoea',
-        lines: [`Loperamide 2mg oral after each loose bowel action, maximum 16mg/day. ${UNSOURCED}`]
-    },
-    {
-        symptom: 'Headache and muscle aches',
-        lines: [`Paracetamol 1g oral QID PRN, and/or ibuprofen 400mg oral TDS PRN. ${UNSOURCED}`]
-    }
 ];
 
 // NSWCG Table 8.6, p.53 — verified against the published table, opioid
 // section. Doses and frequencies are quoted as the table states them, not as
-// the previous unsourced GENERAL_SYMPTOMS block had them (several differ:
-// see the frequency of metoclopramide, ondansetron and ibuprofen below).
+// the site's old generic GI/analgesic block had them (several differed: see
+// the frequency of metoclopramide, ondansetron and ibuprofen below). That
+// generic block is gone now — cannabis and gabapentinoid got their own
+// verified equivalents (below), and benzodiazepine and psychostimulant
+// dropped it as not relevant enough to their withdrawal syndromes to carry.
 const OPIOID_GENERAL_SYMPTOMS = [
     {
         symptom: 'Muscle aches and pains',
@@ -77,7 +56,7 @@ const OPIOID_GENERAL_SYMPTOMS = [
         symptom: 'Diarrhoea',
         lines: [
             `Kaomagma, <b>or</b> loperamide 2mg PRN. <span class="src-tag src-nswcg">NSWCG Table 8.6</span>`,
-            `Standard loperamide dosing: after each loose bowel action, <b>maximum 16mg in 24 hours</b>. <span class="src-tag src-local">LOCAL — rationale: NSWCG states the 2mg dose but not a maximum; this is standard loperamide prescribing information.</span>`
+            `Standard loperamide dosing: after each loose bowel action, <b>maximum 16mg in 24 hours</b>. <span class="src-tag src-local">LOCAL - rationale: NSWCG states the 2mg dose but not a maximum; this is standard loperamide prescribing information.</span>`
         ]
     },
     {
@@ -87,17 +66,17 @@ const OPIOID_GENERAL_SYMPTOMS = [
 ];
 
 // NSWCG Table 6.2 — verified against the published table, cannabis section.
-// Diarrhoea is deliberately absent: it is not a symptom row in this table,
-// unlike the shared GENERAL_SYMPTOMS block above. Nausea and the headache/
-// pain row name the drug classes but the table gives no doses for either;
-// the doses stated here are a separately-tagged local addition, not implied
-// by the NSWCG citation on the drug-choice line.
+// Diarrhoea is deliberately absent: it is not a symptom row in this table.
+// Nausea and the headache/pain row name the drug classes but the table
+// gives no doses for either; the doses stated here are a separately-tagged
+// local addition, not implied by the NSWCG citation on the drug-choice
+// line.
 const CANNABIS_SYMPTOMATIC = [
     {
         symptom: 'Nausea',
         lines: [
             `Metoclopramide, <b>or</b> ondansetron. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
-            `Standard dosing: metoclopramide 10mg oral up to TDS PRN, <b>or</b> ondansetron 4-8mg oral up to TDS PRN. <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drugs but gives no dose for this row; these are standard prescribing doses.</span>`
+            `Standard dosing: metoclopramide 10mg oral up to TDS PRN, <b>or</b> ondansetron 4-8mg oral up to TDS PRN. <span class="src-tag src-local">LOCAL - rationale: NSWCG names the drugs but gives no dose for this row; these are standard prescribing doses.</span>`
         ]
     },
     {
@@ -108,7 +87,7 @@ const CANNABIS_SYMPTOMATIC = [
         symptom: 'Physical pain, headaches',
         lines: [
             `Paracetamol, <b>or</b> non-steroidal anti-inflammatory agents. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
-            `Standard dosing: paracetamol 1g oral every 4 hours PRN, <b>maximum 4g in 24 hours</b>, <b>or</b> ibuprofen 400mg oral every 6 hours PRN (avoid if history of peptic ulcer or gastritis). <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drug classes but gives no dose for this row; these are the same standard doses used for the equivalent opioid entry (NSWCG Table 8.6).</span>`
+            `Standard dosing: paracetamol 1g oral every 4 hours PRN, <b>maximum 4g in 24 hours</b>, <b>or</b> ibuprofen 400mg oral every 6 hours PRN (avoid if history of peptic ulcer or gastritis). <span class="src-tag src-local">LOCAL - rationale: NSWCG names the drug classes but gives no dose for this row; these are the same standard doses used for the equivalent opioid entry (NSWCG Table 8.6).</span>`
         ]
     }
 ];
@@ -122,7 +101,7 @@ const GABAPENTINOID_SYMPTOMATIC = [
         symptom: 'Nausea',
         lines: [
             `Metoclopramide, <b>or</b> ondansetron. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`,
-            `Standard dosing: metoclopramide 10mg oral up to TDS PRN, <b>or</b> ondansetron 4-8mg oral up to TDS PRN. <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drugs but gives no dose for this row; these are standard prescribing doses.</span>`
+            `Standard dosing: metoclopramide 10mg oral up to TDS PRN, <b>or</b> ondansetron 4-8mg oral up to TDS PRN. <span class="src-tag src-local">LOCAL - rationale: NSWCG names the drugs but gives no dose for this row; these are standard prescribing doses.</span>`
         ]
     },
     {
@@ -133,14 +112,14 @@ const GABAPENTINOID_SYMPTOMATIC = [
         symptom: 'Physical pain, headaches',
         lines: [
             `Paracetamol, <b>or</b> non-steroidal anti-inflammatory agents. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`,
-            `Standard dosing: paracetamol 1g oral every 4 hours PRN, <b>maximum 4g in 24 hours</b>, <b>or</b> ibuprofen 400mg oral every 6 hours PRN (avoid if history of peptic ulcer or gastritis). <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drug classes but gives no dose for this row; these are the same standard doses used for the equivalent opioid entry (NSWCG Table 8.6).</span>`
+            `Standard dosing: paracetamol 1g oral every 4 hours PRN, <b>maximum 4g in 24 hours</b>, <b>or</b> ibuprofen 400mg oral every 6 hours PRN (avoid if history of peptic ulcer or gastritis). <span class="src-tag src-local">LOCAL - rationale: NSWCG names the drug classes but gives no dose for this row; these are the same standard doses used for the equivalent opioid entry (NSWCG Table 8.6).</span>`
         ]
     }
 ];
 
 export const SYMPTOMATIC = {
     opioid: {
-        title: 'Symptomatic medications — opioid withdrawal',
+        title: 'Symptomatic medications - opioid withdrawal',
         items: [
             {
                 symptom: 'Autonomic symptoms (sweating, anxiety, restlessness)',
@@ -166,14 +145,8 @@ export const SYMPTOMATIC = {
         ]
     },
 
-    benzodiazepine: {
-        title: 'Symptomatic medications — benzodiazepine withdrawal',
-        intro: `Management is primarily a controlled taper. These relieve specific complaints; <b>none of them prevent seizures or delirium</b>.`,
-        items: GENERAL_SYMPTOMS
-    },
-
     cannabis: {
-        title: 'Symptomatic medications — cannabis withdrawal',
+        title: 'Symptomatic medications - cannabis withdrawal',
         intro: `Medications are typically only required for severe symptoms.`,
         items: [
             ...CANNABIS_SYMPTOMATIC,
@@ -199,7 +172,7 @@ export const SYMPTOMATIC = {
     },
 
     gabapentinoid: {
-        title: 'Symptomatic medications — gabapentinoid withdrawal',
+        title: 'Symptomatic medications - gabapentinoid withdrawal',
         intro: `The taper is the mainstay of treatment; these are adjuncts, for no more than 7 days.`,
         items: [
             ...GABAPENTINOID_SYMPTOMATIC,
@@ -218,11 +191,14 @@ export const SYMPTOMATIC = {
     },
 
     psychostimulant: {
-        title: 'Symptomatic medications — psychostimulant withdrawal',
+        title: 'Symptomatic medications - psychostimulant withdrawal',
         // Every entry here previously lacked a daily maximum, which is the
-        // difference between a PRN order and an open-ended one.
+        // difference between a PRN order and an open-ended one. The generic
+        // GI/analgesic block (nausea, stomach cramps, diarrhoea, headache)
+        // was dropped as not relevant enough to psychostimulant withdrawal
+        // to carry here — see NSWCG §7.3.4 for what this page is actually
+        // sourced from.
         items: [
-            ...GENERAL_SYMPTOMS,
             {
                 symptom: 'Agitation',
                 lines: [
@@ -235,7 +211,7 @@ export const SYMPTOMATIC = {
                 lines: [
                     `Olanzapine 2.5-5mg oral PRN 6-8 hourly, <b>maximum 20mg/24 hours</b>. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`,
                     `<b>Alternative:</b> quetiapine immediate release 25-50mg oral PRN 8-hourly, <b>maximum 150mg/24 hours</b>. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`,
-                    `Seek specialist psychiatric input for psychosis or severe agitation. <span class="src-tag src-local">LOCAL — rationale: NSWCG §7.3.4 describes the medications for agitation and low-level psychotic symptoms but does not itself state when to escalate to psychiatry; this is a local addition.</span>`
+                    `Seek specialist psychiatric input for psychosis or severe agitation. <span class="src-tag src-local">LOCAL - rationale: NSWCG §7.3.4 describes the medications for agitation and low-level psychotic symptoms but does not itself state when to escalate to psychiatry; this is a local addition.</span>`
                 ]
             }
         ]

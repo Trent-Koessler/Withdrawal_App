@@ -23,7 +23,7 @@ const INJECTING = {
     points: [
         `Needle and Syringe Program (NSP) access, and <b>sterile injecting kits to take home on discharge</b>.`,
         `Discuss <b>non-injecting routes</b> where the drug allows it.`,
-        `Never share injecting equipment — including spoons, filters, water and tourniquets, not only needles.`
+        `Never share injecting equipment - including spoons, filters, water and tourniquets, not only needles.`
     ],
     source: `<span class="src-tag src-nswcg">NSWCG §4.5.2, §8.4.1</span>`
 };
@@ -31,7 +31,7 @@ const INJECTING = {
 const PIPES = {
     heading: 'Pipe and intranasal equipment hygiene',
     points: [
-        `Use a <b>heat-resistant pipe</b> (e.g. Pyrex). Avoid broken or cracked pipes — they cause burns and cuts.`,
+        `Use a <b>heat-resistant pipe</b> (e.g. Pyrex). Avoid broken or cracked pipes - they cause burns and cuts.`,
         `Clean the inside of pipes.`,
         `<b>Do not share pipes or intranasal equipment</b>: hepatitis B, herpes simplex, respiratory infections and tuberculosis all transmit this way.`
     ],
@@ -50,7 +50,7 @@ const SEXUAL_HEALTH = {
 const DRIVING = {
     heading: 'Driving',
     points: [
-        `Advise on driving and give the advice explicitly — impairment, and the legal obligation to disclose a relevant condition to the licensing authority. <b>Document the advice given.</b>`
+        `Advise on driving and give the advice explicitly - impairment, and the legal obligation to disclose a relevant condition to the licensing authority. <b>Document the advice given.</b>`
     ],
     source: `<span class="src-tag src-nswcg">NSWCG §7.4.1</span>`
 };
@@ -58,7 +58,7 @@ const DRIVING = {
 const NUAA = {
     heading: 'Peer resources',
     points: [
-        `<b>NUAA</b> (NSW Users and AIDS Association) — peer-based information, resources and support for people who use drugs.`
+        `<b>NUAA</b> (NSW Users and AIDS Association) - peer-based information, resources and support for people who use drugs.`
     ],
     source: `<span class="src-tag src-nswcg">NSWCG App 3</span>`
 };
@@ -71,7 +71,7 @@ export const HARM_REDUCTION = {
             points: [
                 `Alternate alcoholic drinks with soft drinks or water; use smaller glasses; start later in the day.`,
                 `Choose lower-alcohol alternatives.`,
-                `Avoid top-ups and drinking in rounds — both make intake impossible to track.`,
+                `Avoid top-ups and drinking in rounds - both make intake impossible to track.`,
                 `Eat before and during drinking.`,
                 `<b>Avoid combining alcohol with other sedatives</b>, including benzodiazepines and opioids.`,
                 `Drink-spiking precautions.`
@@ -115,7 +115,7 @@ export const HARM_REDUCTION = {
                 `Avoid daily use.`,
                 `Prefer <b>lower THC / higher CBD</b> products.`,
                 `Avoid use in the teenage years.`,
-                `Avoid mixing with tobacco — offer NRT where the patient does.`,
+                `Avoid mixing with tobacco - offer NRT where the patient does.`,
                 `Avoid deep inhalation and bucket bongs.`,
                 `Glass equipment rather than plastic, hoses or aluminium.`,
                 `Vaporisers produce less tar than smoking.`
@@ -131,7 +131,7 @@ export const HARM_REDUCTION = {
         {
             heading: 'Reducing risk',
             points: [
-                `<b>Avoid combining with alcohol or opioids</b> — respiratory depression is the mechanism of most benzodiazepine-involved deaths.`,
+                `<b>Avoid combining with alcohol or opioids</b> - respiratory depression is the mechanism of most benzodiazepine-involved deaths.`,
                 `Staged dispensing reduces the risk of taking a taper's remaining supply at once.`
             ],
             source: `<span class="src-tag src-nswcg">NSWCG §11.4</span>`
@@ -146,7 +146,7 @@ export const HARM_REDUCTION = {
             heading: 'Gabapentinoid-specific risks',
             points: [
                 `<b>Wait around 90 minutes before redosing.</b>`,
-                `Oral bioavailability is high enough that the oral route is nearly equivalent to injecting — <b>advise oral use over injecting</b>, which carries every injecting risk for no additional effect.`,
+                `Oral bioavailability is high enough that the oral route is nearly equivalent to injecting - <b>advise oral use over injecting</b>, which carries every injecting risk for no additional effect.`,
                 `Avoid combining with opioids or other sedatives.`
             ],
             source: `<span class="src-tag src-nswcg">NSWCG §10.4.1</span>`
@@ -162,10 +162,10 @@ export const HARM_REDUCTION = {
             heading: 'GHB-specific risks',
             danger: true,
             points: [
-                `GHB is <b>colourless and odourless</b>, and is often stored in water bottles and takeaway soy sauce containers — a high risk of accidental poisoning, including of children. Advise storing it safely and out of reach.`,
+                `GHB is <b>colourless and odourless</b>, and is often stored in water bottles and takeaway soy sauce containers - a high risk of accidental poisoning, including of children. Advise storing it safely and out of reach.`,
                 `<b>Avoid combining</b> with alcohol, benzodiazepines, sedating antihistamines or opioids.`,
                 `Do not use alone.`,
-                `<b>Wait long enough to feel the effects before redosing</b> — the gap between an effective dose and an overdose is small.`
+                `<b>Wait long enough to feel the effects before redosing</b> - the gap between an effective dose and an overdose is small.`
             ],
             source: `<span class="src-tag src-nswcg">NSWCG §9.4.1</span>`
         },

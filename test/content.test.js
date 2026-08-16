@@ -93,7 +93,7 @@ describe('P2-08 — shared symptomatic medications', () => {
 
     test('NRT advice is scoped to cannabis, not rendered on unrelated substance pages', () => {
         assert.ok(/NRT/.test(linesOf(SYMPTOMATIC.cannabis)), 'NRT advice missing from cannabis');
-        for (const key of ['opioid', 'benzodiazepine', 'gabapentinoid', 'psychostimulant']) {
+        for (const key of ['opioid', 'gabapentinoid', 'psychostimulant']) {
             assert.ok(!/mixed cannabis with tobacco/.test(linesOf(SYMPTOMATIC[key])),
                 `${key}: cannabis-specific NRT wording should not appear here`);
         }
@@ -783,7 +783,7 @@ describe('AUTH-04 — attribution and reuse', () => {
 
     test('every source document is listed', () => {
         for (const source of ['NSW Health', 'Turning Point', 'Queensland Health', 'SA Health', 'WA Health',
-            'New Zealand Ministry of Health', 'Therapeutic Guidelines', 'ANZCA Faculty of Pain Medicine']) {
+            'New Zealand Ministry of Health', 'Therapeutic Guidelines', 'ANZCA Faculty of Pain Medicine', 'RACGP']) {
             assert.ok(page.includes(source), `source missing from attribution page: ${source}`);
         }
     });

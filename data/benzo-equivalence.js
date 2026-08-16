@@ -28,6 +28,6 @@ export const BENZO_EQUIVALENCE = [
 export const EQUIVALENCE_CAVEATS = [
     `Differing half-lives and receptor binding make exact equivalence difficult. These are approximations for planning a taper, not interchangeable doses.`,
     `<b>Z-drug conversion is unclear and is deliberately excluded</b> from this table.`,
-    `Take particular care converting <b>from clonazepam</b> — reported equivalences vary widely.`,
+    `Take particular care converting <b>from clonazepam</b> - reported equivalences vary widely.`,
     `<b>Lorazepam may be relatively more potent at higher doses</b>, so a conversion that holds at 1mg may not hold at 6mg.`
 ];
