@@ -42,6 +42,28 @@ body.modal-open > #app-container {
     min-width: 0; /* Allow title to shrink and truncate */
 }
 
+/* Global back button — installed (PWA) use has no browser chrome to fall
+   back on, so this is the only back affordance on most pages. Hidden by
+   default and shown by script.js once the app has navigated away from
+   home; sits outside .header-controls so it never gets swallowed into the
+   mobile hamburger menu. */
+.header-back-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border-radius: 50%;
+}
+
+.header-back-btn.visible {
+    display: inline-flex;
+}
+
 .header-controls {
     display: flex;
     align-items: center;
@@ -128,6 +150,14 @@ body.modal-open > #app-container {
         align-items: flex-start;
         gap: 5px;
     }
+}
+
+/* Nav entries for sections not ready for publishing. The pages themselves
+   stay in the app (content, tests and cross-links all keep working) — this
+   only removes them from discovery via the home page. Un-hide by dropping
+   the class once a section is ready. */
+.pending-publish {
+    display: none !important;
 }
 
 /* Main Content and Page Styles */

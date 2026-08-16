@@ -73,12 +73,12 @@ describe('P2-08 — shared symptomatic medications', () => {
         }
     });
 
-    test('the local antipsychotic-first-line preference keeps its rationale', () => {
+    test('cannabis anxiety/agitation matches NSWCG Table 6.2, not the retired local preference', () => {
         const text = linesOf(SYMPTOMATIC.cannabis);
-        assert.ok(/Local preference/.test(text) && /src-local/.test(text),
-            'the cannabis antipsychotic preference lost its LOCAL tag');
-        assert.ok(/substituting\s+dependence/.test(text.replace(/\s+/g, ' ')),
-            'the rationale for preferring an antipsychotic was dropped');
+        assert.ok(/5-10mg oral BD or TDS PRN/.test(text), 'the Table 6.2 diazepam dose range is missing');
+        assert.ok(/olanzapine 2\.5-5mg oral BD PRN/.test(text), 'the Table 6.2 olanzapine option is missing');
+        assert.ok(!/quetiapine 25-50mg TDS/.test(text),
+            'the retired local antipsychotic-first-line dose is still present, conflicting with the Table 6.2 figure');
     });
 
     test('the universal rules are stated once and apply everywhere', () => {

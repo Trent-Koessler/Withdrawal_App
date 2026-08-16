@@ -71,6 +71,28 @@ body.modal-open > #app-container {
     min-width: 0; /* Allow title to shrink and truncate */
 }
 
+/* Global back button — installed (PWA) use has no browser chrome to fall
+   back on, so this is the only back affordance on most pages. Hidden by
+   default and shown by script.js once the app has navigated away from
+   home; sits outside .header-controls so it never gets swallowed into the
+   mobile hamburger menu. */
+.header-back-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border-radius: 50%;
+}
+
+.header-back-btn.visible {
+    display: inline-flex;
+}
+
 .header-controls {
     display: flex;
     align-items: center;
@@ -157,6 +179,14 @@ body.modal-open > #app-container {
         align-items: flex-start;
         gap: 5px;
     }
+}
+
+/* Nav entries for sections not ready for publishing. The pages themselves
+   stay in the app (content, tests and cross-links all keep working) — this
+   only removes them from discovery via the home page. Un-hide by dropping
+   the class once a section is ready. */
+.pending-publish {
+    display: none !important;
 }
 
 /* Main Content and Page Styles */
@@ -907,6 +937,7 @@ textarea {
     <div id="app-container">
         <!-- Main Header -->
         <header class="app-header">
+            <button id="global-back-btn" class="header-back-btn" aria-label="Go back" title="Go back">←</button>
             <h1 id="page-title">Substance Use Disorder (SUD) Toolkit</h1>
             <button class="hamburger" id="hamburger-menu" aria-label="Toggle menu">
                 <span></span>
@@ -931,11 +962,11 @@ textarea {
                     <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
                     <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol Detox Guidelines</button>
                     <button class="big-button" data-page="scales-page">Clinical Scales & Calculators</button>
-                    <button class="big-button" data-page="screening-page">Screening</button>
+                    <button class="big-button pending-publish" data-page="screening-page">Screening</button>
                     <button class="big-button" data-page="other-syndromes-page">Other Substances</button>
-                    <button class="big-button" data-page="populations-page">Specific Population Groups</button>
-                    <button class="big-button" data-page="capacity-page">Capacity, Consent & Involuntary Pathways</button>
-                    <button class="big-button" data-page="continuing-care-page">Continuing Care & Relapse Prevention</button>
+                    <button class="big-button pending-publish" data-page="populations-page">Specific Population Groups</button>
+                    <button class="big-button pending-publish" data-page="capacity-page">Capacity, Consent & Involuntary Pathways</button>
+                    <button class="big-button pending-publish" data-page="continuing-care-page">Continuing Care & Relapse Prevention</button>
                     <button class="big-button" data-page="contacts-page">Helpful Contacts & Helplines</button>
                 </nav>
             </div>
@@ -1695,7 +1726,7 @@ textarea {
 
             <!-- Opioid Withdrawal Page -->
             <div id="opioid-withdrawal-page" class="page substance-page" data-title="Opioid Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>Opioid Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 6-24 hours (short-acting, e.g., heroin), 36-72 hours (long-acting, e.g.,
                     methadone).</p>
@@ -1890,10 +1921,91 @@ textarea {
                     <span class="src-tag src-nswcg">NSWCG §8.3.6</span></p>
 
                 </div>
+
+                <div class="clinical-block">
+                <h4>4. Methadone</h4>
+                <p>Methadone's pharmacology makes induction slower and more overdose-prone than buprenorphine: it
+                    is sedating, has a long half-life (20-36 hours) that <b>accumulates over the first 4-7 days</b>
+                    before reaching steady state, and has a <b>delayed peak effect</b> (2-3 hours after dosing) —
+                    so a dose that feels adequate on Day 1 can be too much once it has accumulated.
+                    <span class="src-tag src-other">OTHER — NSW Health, NSW Clinical Guidelines: Treatment of
+                        Opioid Dependence (2018), §2.4.3</span></p>
+                <div class="danger-box">
+                    <strong>🚨 Overdose risk is highest in the first 1-2 weeks.</strong> Do not increase the dose
+                    faster than the review schedule below, even if the patient asks for more — a dose that seems
+                    insufficient on Day 2 may be more than enough by Day 5, once it has accumulated.
+                </div>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Regimen</th>
+                                <th scope="col">Recommendations and consideration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Patient supervision and review</td>
+                                <td>All doses should be supervised.* A clinician should review the patient
+                                    <b>daily before dosing during the first week</b> — the greatest risk period
+                                    for methadone-related overdose — assessing intoxication or withdrawal
+                                    symptoms, side effects, ongoing cravings, other substance use and general
+                                    wellbeing. Assess for <b>intoxication around 2-3 hours after a dose</b> (peak
+                                    effect), and for <b>withdrawal control at 24 hours</b>. Do not assume what is
+                                    prescribed is what is being taken.</td>
+                            </tr>
+                            <tr>
+                                <td>Starting dose of methadone</td>
+                                <td>Commence with <b>20-30mg daily</b>. Lower doses (&lt;20mg) suit low or
+                                    uncertain dependence, high-risk polydrug use (alcohol, benzodiazepines), or
+                                    other severe medical complications. Higher doses (30-40mg) should be
+                                    considered with caution, at the prescriber's discretion. <b>Specialist
+                                        consultation is required before starting above 40mg</b>, given the
+                                    overdose risk.</td>
+                            </tr>
+                            <tr>
+                                <td>Dose increase of methadone</td>
+                                <td>Increase by <b>5-10mg every 3-5 days</b> after review, if features of
+                                    withdrawal suggest not enough methadone. This typically results in doses of
+                                    30-50mg by the end of week 1, and 40-60mg by the end of week 2. The goal is
+                                    cessation or marked reduction of non-medical opioid use, alleviation of
+                                    cravings and withdrawal between doses, and minimal side effects — not a
+                                    target number. Doses above 80mg will markedly reduce the effect of any
+                                    ongoing heroin or other opioid use, but overdose risk remains.</td>
+                            </tr>
+                            <tr>
+                                <td>When to consider specialist advice or referral</td>
+                                <td>If higher or more rapid dose increases are needed; if the patient must
+                                    suddenly discontinue prescribed opioids; if tolerance is unclear, polydrug
+                                    use is high-risk, or other conditions or medicines may affect methadone
+                                    metabolism; or if the patient is having difficulty stabilising (missed
+                                    doses, diversion, or other aberrant behaviour).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><small>*Check pharmacy availability.</small>
+                    <span class="src-tag src-other">OTHER — NSW Health, NSW Clinical Guidelines: Treatment of
+                        Opioid Dependence (2018), Table 9</span></p>
+                </div>
+
+                <div class="clinical-block">
+                <h4>Quick-start reference</h4>
+                <p>A condensed, citation-free version of the Day 1-3 steps above for buprenorphine and methadone —
+                    for pasting into a treatment plan or handover note. It does not replace the full sections
+                    above, which carry the precipitated-withdrawal warnings, the source for every figure, and
+                    when to escalate.</p>
+                <textarea id="opioid-quickstart-summary" readonly
+                    aria-label="Buprenorphine and methadone quick-start summary for the EMR"></textarea>
+                <div class="button-group">
+                    <button id="copy-opioid-quickstart-btn">Copy quick-start guide</button>
+                </div>
+                </div>
+
                 <div class="clinical-block" data-symptomatic="opioid"></div>
 
                 <div class="clinical-block">
-                <h4>4. Estimating level of use</h4>
+                <h4>5. Estimating level of use</h4>
                 <p><strong>Frequency is a better indicator than grams</strong>, given how variable purity is.
                     <span class="src-tag src-nswcg">NSWCG §8.2</span></p>
                 <ul>
@@ -1907,7 +2019,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>5. Unplanned withdrawal in hospital or prison</h4>
+                <h4>6. Unplanned withdrawal in hospital or prison</h4>
                 <div class="warning-box">
                     <strong>⚠️ Consider opioid dependence</strong> where there are withdrawal signs, injection sites,
                     or <strong>difficult pain control and unexpectedly high analgesic requirements</strong> — the last
@@ -1917,7 +2029,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>6. Pain in a patient on buprenorphine</h4>
+                <h4>7. Pain in a patient on buprenorphine</h4>
                 <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
                     Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
                     <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
@@ -1927,7 +2039,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>7. NSW regulatory requirements</h4>
+                <h4>8. NSW regulatory requirements</h4>
                 <ul>
                     <li><strong>In hospital</strong>, doctors may use methadone or buprenorphine without an authority
                         for opioid-dependent inpatients — <strong>limited to 14 days by policy directive</strong>.
@@ -1944,7 +2056,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>8. Complications of chronic use</h4>
+                <h4>9. Complications of chronic use</h4>
                 <ul>
                     <li><strong>Endocrine:</strong> reduced testosterone, raised prolactin, reduced FSH/LH,
                         oligomenorrhoea or amenorrhoea, infertility.</li>
@@ -1962,7 +2074,7 @@ textarea {
 
             <!-- Benzo Withdrawal Page -->
             <div id="benzo-withdrawal-page" class="page substance-page" data-title="Benzodiazepine Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>Benzodiazepine Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 1-2 days (short-acting, e.g., alprazolam), 2-7 days (long-acting, e.g.,
                     diazepam).</p>
@@ -2000,8 +2112,12 @@ textarea {
                 <p>ODDE is the organising concept for this whole page — management differs by which side of the line
                     the patient sits on. <span class="src-tag src-nswcg">NSWCG §11</span></p>
                 <ul>
-                    <li><strong>Low-dose therapeutic dependence:</strong> ≤ 10mg ODDE.</li>
-                    <li><strong>High-dose dependence:</strong> &gt; 10mg ODDE.</li>
+                    <li><strong>Low-dose therapeutic dependence:</strong> ≤ 10mg ODDE. Reducing the original
+                        BZRA directly, <strong>without first switching to diazepam</strong>, may be appropriate.
+                        <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
+                    <li><strong>High-dose dependence:</strong> &gt; 10mg ODDE. <strong>Switching to diazepam is
+                            recommended for most patients</strong> — use the equivalence table below for the
+                        conversion. <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                 </ul>
 
                 </div>
@@ -2035,21 +2151,25 @@ textarea {
                         href="https://trent-koessler.github.io/Hypertaper/" target="_blank">HyperTaper</a>.</p>
                 <ul>
                     <li><strong>There is no standard regimen.</strong> A general suggestion is a
-                        <strong>10% reduction every 10-14 days</strong>. <span class="src-tag src-nswcg">NSWCG
-                            §11</span></li>
-                    <li>Withdrawal may take <strong>3 months to a year or longer</strong>. Titrate to symptoms and be
-                        guided by the patient. <span class="src-tag src-nswcg">NSWCG §11</span></li>
+                        <strong>10% reduction every 10-14 days</strong>. The actual rate depends on the starting
+                        dose, duration of therapy, relapse risk, and how well the patient tolerates tapering.
+                        <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
+                    <li>Withdrawal may take <strong>3 months to a year or longer</strong>, though some people
+                        withdraw in less time. Titrate to symptoms and be guided by the patient.
+                        <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                     <li>In most cases a <strong>daily maximum of 40mg diazepam</strong> will prevent major withdrawal,
-                        including seizures. <span class="src-tag src-nswcg">NSWCG §11</span></li>
+                        including seizures. <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                     <li><strong>Seek specialist advice before converting to diazepam in severe hepatic
-                            dysfunction</strong> — accumulation risk; oxazepam is preferred.
-                        <span class="src-tag src-nswcg">NSWCG §11</span></li>
+                            dysfunction</strong> — accumulation risk; oxazepam may be preferred.
+                        <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                     <li><strong>Not supported by evidence as taper adjuncts:</strong> carbamazepine, pregabalin.
-                        <span class="src-tag src-nswcg">NSWCG §11</span></li>
+                        <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                     <li><strong>CBT and relaxation training</strong> as adjuncts to a taper have short-term (3-month)
                         benefit. <span class="src-tag src-nswcg">NSWCG §11</span></li>
-                    <li><strong>Staged dispensing</strong> for community tapers — e.g. daily dispensing with
-                        fortnightly review. <span class="src-tag src-nswcg">NSWCG §11</span></li>
+                    <li><strong>Staged dispensing</strong> for community tapers is effective in both withdrawal and
+                        maintenance — e.g. daily dispensing at a local pharmacy with fortnightly clinical review.
+                        Liaison with the community pharmacist is a useful strategy.
+                        <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                 </ul>
 
                 </div>
@@ -2059,6 +2179,9 @@ textarea {
                     alcohol dependence, or significant untreated mental illness — where use is erratic, uncontrolled
                     and high-dose, or involves other CNS depressants, or where outpatient success is unlikely.
                     <span class="src-tag src-nswcg">NSWCG §11</span></p>
+                <p><strong>High-risk, high-dose patients may need to commence withdrawal as an inpatient</strong>,
+                    then continue a more gradual step-down regimen in the community after discharge.
+                    <span class="src-tag src-nswcg">NSWCG §11.3.7</span></p>
 
                 </div>
                 <div class="clinical-block">
@@ -2093,7 +2216,7 @@ textarea {
 
             <!-- Cannabis Withdrawal Page -->
             <div id="cannabis-withdrawal-page" class="page substance-page" data-title="Cannabis Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>Cannabis Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 1-2 days after cessation.</p>
                 <p><strong>Peak:</strong> 2-6 days.</p>
@@ -2167,7 +2290,7 @@ textarea {
 
             <!-- Psychostimulants Withdrawal Page -->
             <div id="stimulant-withdrawal-page" class="page substance-page" data-title="Psychostimulant Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>Psychostimulant Withdrawal (Amphetamines, Cocaine)</h3>
                 <p><strong>Onset:</strong> 1-2 days after cessation (the "crash").</p>
                 <p><strong>Peak:</strong> 2-4 days.</p>
@@ -2284,7 +2407,7 @@ textarea {
 
             <!-- Gabapentinoid Withdrawal Page -->
             <div id="gabapentinoid-withdrawal-page" class="page substance-page" data-title="Gabapentinoid Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>Gabapentinoid Withdrawal (Pregabalin, Gabapentin)</h3>
                 <p><strong>Onset:</strong> 1-2 days after last use.
                     <span class="src-tag src-nswcg">NSWCG §10</span></p>
@@ -2320,20 +2443,28 @@ textarea {
                 </div>
                 <div class="clinical-block">
                 <h4>Management — the taper is the mainstay</h4>
+                <p><strong>Negotiate the rate of reduction with the patient.</strong> Use a <strong>slower
+                        reduction</strong> for patients on high therapeutic or supratherapeutic doses, those on
+                    gabapentinoids for more than 4 weeks, and those with co-occurring mental health disorders or
+                    substance dependence. <span class="src-tag src-nswcg">NSWCG §10.3.4</span></p>
                 <ul>
                     <li><strong>Supratherapeutic users</strong> can start the taper at maximum doses — pregabalin
                         600mg or gabapentin 3600mg — divided QID. <strong>Reduce or withhold if sedated.</strong>
-                        <span class="src-tag src-nswcg">NSWCG §10</span></li>
+                        <span class="src-tag src-nswcg">NSWCG §10.3.4</span></li>
                     <li><strong>Where the stated dose is at or beyond maximum</strong>, begin the taper in a
                         controlled setting and <strong>admit for at least 24 hours</strong> to monitor for toxicity
                         from lower-than-expected tolerance — a stated dose may overstate what the patient is actually
-                        taking. <span class="src-tag src-nswcg">NSWCG §10</span></li>
+                        taking. <span class="src-tag src-nswcg">NSWCG §10.3.4</span></li>
                     <li><strong>Inpatient:</strong> taper over 5-7 days with a daily reduction.
-                        <span class="src-tag src-nswcg">NSWCG §10</span></li>
+                        <span class="src-tag src-nswcg">NSWCG §10.3.4</span></li>
+                    <li><strong>Unable to reach zero within 5-7 days</strong> — because of significant medical or
+                        mental health conditions, or significant distress from withdrawal symptoms — reduce to a
+                        <strong>manageable inpatient dose</strong> and continue tapering in the community rather
+                        than forcing completion. <span class="src-tag src-nswcg">NSWCG §10.3.4</span></li>
                     <li><strong>Hand over to community management</strong> below pregabalin 300mg/day or gabapentin
-                        1800mg/day. <span class="src-tag src-nswcg">NSWCG §10</span></li>
+                        1800mg/day. <span class="src-tag src-nswcg">NSWCG §10.3.4</span></li>
                     <li><strong>Outpatient:</strong> reduce over 4-6 weeks with weekly reductions and staged supply.
-                        <span class="src-tag src-nswcg">NSWCG §10</span></li>
+                        <span class="src-tag src-nswcg">NSWCG §10.3.4</span></li>
                 </ul>
 
                 </div>
@@ -2344,7 +2475,7 @@ textarea {
 
             <!-- GHB Withdrawal Page -->
             <div id="ghb-withdrawal-page" class="page substance-page" data-title="GHB Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>GHB/GBL Withdrawal Syndrome</h3>
                 <p><strong>Onset:</strong> 1-6 hours after last dose.</p>
                 <p><strong>Duration:</strong> 3-14 days.</p>
@@ -2425,7 +2556,7 @@ textarea {
 
             <!-- Nicotine Withdrawal Page -->
             <div id="nicotine-withdrawal-page" class="page substance-page" data-title="Nicotine Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>Nicotine Withdrawal Syndrome</h3>
                 <span class="src-tag src-local src-block">LOCAL — rationale: the NSW Clinical Guidance
                     deliberately excludes nicotine and defers to the separate NSW Health tobacco and
@@ -2462,7 +2593,7 @@ textarea {
 
             <!-- Volatile Substances Withdrawal Page -->
             <div id="volatile-withdrawal-page" class="page substance-page" data-title="Volatile Substances Withdrawal">
-                <button data-page="other-syndromes-page" class="back-to-selection-btn">← Back to Selection</button>
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
                 <h3>Volatile Substances (Inhalants) Withdrawal</h3>
                 <span class="src-tag src-local src-block">LOCAL — rationale: volatile substance
                     withdrawal is not covered by the NSW Clinical Guidance; this summary reflects other
@@ -3121,7 +3252,8 @@ textarea {
                         guidance.</li>
                     <li><strong>NSW Health</strong> — <em>NSW Clinical Guidelines: Treatment of Opioid
                             Dependence</em> (2018). A separate NSW Health document from the primary source above;
-                        used for the buprenorphine OAT induction protocol.</li>
+                        used for the buprenorphine and methadone OAT induction protocols, and the case for
+                        preferring OAT over withdrawal.</li>
                     <li><strong>Austroads</strong> — <em>Assessing Fitness to Drive</em>.</li>
                 </ul>
                 <p>Links to these documents are on the <button class="link-button"

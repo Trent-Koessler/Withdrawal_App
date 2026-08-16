@@ -30,12 +30,13 @@ export const SYMPTOMATIC_UNIVERSAL = [
     `Use <b>caution with any psychoactive medication</b> in a patient with a substance use disorder. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`
 ];
 
-// Shared GI/analgesic block, for benzodiazepine/cannabis/gabapentinoid/
-// psychostimulant withdrawal. The opioid page used to draw from this same
-// block, but NSWCG Table 8.6 (p.53) turned out to specify these exact
-// entries for opioid withdrawal specifically — see OPIOID_GENERAL_SYMPTOMS
-// below. This block stays unsourced pending the same check against each of
-// these four substances' own NSWCG sections.
+// Shared GI/analgesic block, for benzodiazepine/psychostimulant withdrawal.
+// The opioid, cannabis and gabapentinoid pages used to draw from this same
+// block, but NSWCG Table 8.6 (p.53), Table 6.2 and Table 10.2 turned out to
+// specify these exact entries for those three substances specifically — see
+// OPIOID_GENERAL_SYMPTOMS, CANNABIS_SYMPTOMATIC and GABAPENTINOID_SYMPTOMATIC
+// below. This block stays unsourced pending the same check against
+// benzodiazepine and psychostimulant's own NSWCG sections.
 const GENERAL_SYMPTOMS = [
     {
         symptom: 'Nausea and vomiting',
@@ -85,10 +86,57 @@ const OPIOID_GENERAL_SYMPTOMS = [
     }
 ];
 
-// The local antipsychotic-first-line preference for anxiety/agitation. This is
-// the site's clearest documented departure from NSWCG and the model the rest of
-// the tagging follows, so its rationale is spelled out in full.
-const ANTIPSYCHOTIC_FIRST_LINE = `<b>Local preference:</b> quetiapine 25-50mg TDS or olanzapine 2.5mg TDS first line for anxiety/agitation, with benzodiazepines second line. <span class="src-tag src-local">LOCAL — rationale: other published guidelines and local clinical experience suggest better symptom control with an antipsychotic first line, and it avoids introducing a benzodiazepine to a population at risk of substituting dependence.</span>`;
+// NSWCG Table 6.2 — verified against the published table, cannabis section.
+// Diarrhoea is deliberately absent: it is not a symptom row in this table,
+// unlike the shared GENERAL_SYMPTOMS block above. Nausea and the headache/
+// pain row name the drug classes but the table gives no doses for either;
+// the doses stated here are a separately-tagged local addition, not implied
+// by the NSWCG citation on the drug-choice line.
+const CANNABIS_SYMPTOMATIC = [
+    {
+        symptom: 'Nausea',
+        lines: [
+            `Metoclopramide, <b>or</b> ondansetron. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
+            `Standard dosing: metoclopramide 10mg oral up to TDS PRN, <b>or</b> ondansetron 4-8mg oral up to TDS PRN. <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drugs but gives no dose for this row; these are standard prescribing doses.</span>`
+        ]
+    },
+    {
+        symptom: 'Stomach pains',
+        lines: [`Hyoscine butylbromide (e.g. Buscopan) 20mg oral TDS PRN. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`]
+    },
+    {
+        symptom: 'Physical pain, headaches',
+        lines: [
+            `Paracetamol, <b>or</b> non-steroidal anti-inflammatory agents. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
+            `Standard dosing: paracetamol 1g oral every 4 hours PRN, <b>maximum 4g in 24 hours</b>, <b>or</b> ibuprofen 400mg oral every 6 hours PRN (avoid if history of peptic ulcer or gastritis). <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drug classes but gives no dose for this row; these are the same standard doses used for the equivalent opioid entry (NSWCG Table 8.6).</span>`
+        ]
+    }
+];
+
+// NSWCG Table 10.2 — verified against the published table, gabapentinoid
+// section. Content is identical to Table 6.2 (cannabis) except the stomach
+// pains row, which does not name a brand here. Diarrhoea is again absent —
+// not a symptom row in this table either.
+const GABAPENTINOID_SYMPTOMATIC = [
+    {
+        symptom: 'Nausea',
+        lines: [
+            `Metoclopramide, <b>or</b> ondansetron. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`,
+            `Standard dosing: metoclopramide 10mg oral up to TDS PRN, <b>or</b> ondansetron 4-8mg oral up to TDS PRN. <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drugs but gives no dose for this row; these are standard prescribing doses.</span>`
+        ]
+    },
+    {
+        symptom: 'Stomach pains',
+        lines: [`Hyoscine butylbromide 20mg oral TDS PRN. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`]
+    },
+    {
+        symptom: 'Physical pain, headaches',
+        lines: [
+            `Paracetamol, <b>or</b> non-steroidal anti-inflammatory agents. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`,
+            `Standard dosing: paracetamol 1g oral every 4 hours PRN, <b>maximum 4g in 24 hours</b>, <b>or</b> ibuprofen 400mg oral every 6 hours PRN (avoid if history of peptic ulcer or gastritis). <span class="src-tag src-local">LOCAL — rationale: NSWCG names the drug classes but gives no dose for this row; these are the same standard doses used for the equivalent opioid entry (NSWCG Table 8.6).</span>`
+        ]
+    }
+];
 
 export const SYMPTOMATIC = {
     opioid: {
@@ -128,19 +176,19 @@ export const SYMPTOMATIC = {
         title: 'Symptomatic medications — cannabis withdrawal',
         intro: `Medications are typically only required for severe symptoms.`,
         items: [
-            ...GENERAL_SYMPTOMS,
+            ...CANNABIS_SYMPTOMATIC,
             {
-                symptom: 'Severe anxiety or agitation',
+                symptom: 'Restlessness, anxiety, irritability',
                 lines: [
-                    `Diazepam 5mg oral BD-QID PRN, short course only (e.g. 3-5 days). <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
-                    ANTIPSYCHOTIC_FIRST_LINE
+                    `Diazepam 5-10mg oral BD or TDS PRN, short course only. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
+                    `<b>Or</b> olanzapine 2.5-5mg oral BD PRN. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`
                 ]
             },
             {
                 symptom: 'Insomnia',
                 lines: [
-                    `Promethazine 25mg oral nocte PRN. ${UNSOURCED}`,
-                    `Z-drugs are listed options for sleep: zolpidem 10-20mg nocte, or zopiclone 7.5-15mg nocte. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`
+                    `Diazepam 5-10mg oral nocte, <b>or</b> z-drugs: zolpidem 10-20mg nocte, or zopiclone 7.5-15mg nocte. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
+                    `Promethazine 25mg oral nocte PRN. ${UNSOURCED}`
                 ]
             },
             {
@@ -154,14 +202,17 @@ export const SYMPTOMATIC = {
         title: 'Symptomatic medications — gabapentinoid withdrawal',
         intro: `The taper is the mainstay of treatment; these are adjuncts, for no more than 7 days.`,
         items: [
-            ...GENERAL_SYMPTOMS,
+            ...GABAPENTINOID_SYMPTOMATIC,
             {
-                symptom: 'Anxiety or agitation',
-                lines: [`Diazepam 5mg oral BD-QID PRN, short course only. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`]
+                symptom: 'Restlessness, anxiety, irritability',
+                lines: [
+                    `Diazepam 5-10mg oral BD or TDS PRN, short course only. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`,
+                    `<b>Or</b> olanzapine 2.5-5mg oral BD PRN. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`
+                ]
             },
             {
                 symptom: 'Insomnia',
-                lines: [`Zolpidem 10-20mg nocte, or zopiclone 7.5-15mg nocte. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`]
+                lines: [`Diazepam 5-10mg oral nocte, <b>or</b> z-drugs: zolpidem 10-20mg nocte, or zopiclone 7.5-15mg nocte. <span class="src-tag src-nswcg">NSWCG Table 10.2</span>`]
             }
         ]
     },
@@ -173,15 +224,18 @@ export const SYMPTOMATIC = {
         items: [
             ...GENERAL_SYMPTOMS,
             {
-                symptom: 'Agitation and anxiety',
-                lines: [`Diazepam 5-10mg oral PRN 6-hourly, <b>maximum 40mg/day over 3 days</b>. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`]
+                symptom: 'Agitation',
+                lines: [
+                    `Diazepam 5-10mg oral PRN 6-hourly, <b>maximum 40mg/day over 3 days</b>. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`,
+                    `As benzodiazepine dependence may coexist with psychostimulant dependence, <b>assess for coexisting benzodiazepine dependence and withdrawal risk</b> before using diazepam. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`
+                ]
             },
             {
-                symptom: 'Severe agitation or psychotic symptoms',
+                symptom: 'Agitation or low-level psychotic symptoms (delusions, paranoia)',
                 lines: [
                     `Olanzapine 2.5-5mg oral PRN 6-8 hourly, <b>maximum 20mg/24 hours</b>. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`,
-                    `Quetiapine immediate release 25-50mg oral PRN 8-hourly, <b>maximum 150mg/24 hours</b>. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`,
-                    `Seek specialist psychiatric input for psychosis or severe agitation.`
+                    `<b>Alternative:</b> quetiapine immediate release 25-50mg oral PRN 8-hourly, <b>maximum 150mg/24 hours</b>. <span class="src-tag src-nswcg">NSWCG §7.3.4</span>`,
+                    `Seek specialist psychiatric input for psychosis or severe agitation. <span class="src-tag src-local">LOCAL — rationale: NSWCG §7.3.4 describes the medications for agitation and low-level psychotic symptoms but does not itself state when to escalate to psychiatry; this is a local addition.</span>`
                 ]
             }
         ]

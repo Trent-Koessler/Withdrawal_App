@@ -85,6 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeButton = document.getElementById('home-button');
     const aboutButton = document.getElementById('about-button');
     const feedbackButton = document.getElementById('feedback-button');
+    const globalBackBtn = document.getElementById('global-back-btn');
+
+    // How many in-app forward navigations are behind us this tab session.
+    // An installed PWA often has no browser chrome at all, so the global
+    // back button cannot lean on "does history.length look long enough" —
+    // that's unreliable across browsers and meaningless after a fresh deep
+    // link. This counts only navigations *this app* pushed, so the button
+    // can tell "go back within the app" from "there is nothing to go back
+    // to" and fall back to Home instead of leaving the app.
+    let inAppNavCount = 0;
 
     // Selects a scale tab on the scales page, used for deep links and for the
     // "Go to X Scale" buttons on the syndrome pages.
@@ -130,9 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (push) {
             if (location.hash !== hash) {
                 window.history.pushState({ pageId, tabId }, '', hash);
+                inAppNavCount++;
             }
         } else {
             window.history.replaceState({ pageId, tabId }, '', hash);
+        }
+
+        if (globalBackBtn) {
+            globalBackBtn.classList.toggle('visible', pageId !== 'home-page');
         }
 
         // Long pages otherwise keep the previous page's scroll position.
@@ -160,6 +175,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     homeButton.addEventListener('click', () => showPage('home-page'));
     aboutButton.addEventListener('click', () => showPage('about-page'));
+
+    if (globalBackBtn) {
+        globalBackBtn.addEventListener('click', () => {
+            // Real history.back() when we know it stays inside the app, so
+            // it lands on the actual previous page rather than a fixed
+            // destination — the .back-to-selection-btn buttons already
+            // cover "take me to the substance list regardless of how I got
+            // here"; this button means "undo my last navigation".
+            if (inAppNavCount > 0) {
+                inAppNavCount--;
+                window.history.back();
+            } else {
+                showPage('home-page');
+            }
+        });
+    }
 
     if (feedbackButton) {
         feedbackButton.addEventListener('click', () => {
@@ -448,6 +479,56 @@ document.addEventListener('DOMContentLoaded', () => {
         ].join('\n');
     }
 
+    // Condensed, citation-free version of the Day 1-3 buprenorphine and
+    // methadone steps above — for pasting into a treatment plan or handover
+    // note, where the source tags this app carries everywhere else would
+    // just be noise. The doses are the same ones cited (with sources) in the
+    // Buprenorphine and Methadone sections on this page; this function does
+    // not introduce any figure that is not already stated and sourced there.
+    function buildOpioidQuickStart() {
+        return [
+            '--- QUICK-START: BUPRENORPHINE COMMENCEMENT ---',
+            'WARNING: Defer the first dose until the patient is in objective withdrawal (COWS >= 8) to avoid precipitated withdrawal.',
+            '',
+            'Day 1:',
+            '  - Test dose: 2mg sublingually.',
+            '  - Review at 1 hour. If no increase in severity and still in withdrawal, give a further 6mg.',
+            '  - Mild withdrawal (COWS 4-8): an alternative is 4mg initially, plus a further 4mg after 1-2 hours.',
+            '  - Total Day 1 dose: 8-12mg outpatient, 8-16mg inpatient.',
+            '',
+            'Day 2 (if continuing as Opioid Agonist Treatment):',
+            '  - Increase in 2, 4 or 8mg increments as needed, up to 16mg.',
+            '  - (If instead tapering for time-limited withdrawal, see the full page — Day 2 reduces, it does not increase.)',
+            '',
+            'Day 3 onward (Opioid Agonist Treatment):',
+            '  - Continue increasing in 2, 4 or 8mg increments, up to 24mg on Day 3, toward a stable dose.',
+            '  - More for ongoing withdrawal; less for intoxication or oversedation.',
+            '  - Consult an addiction medicine specialist if higher or faster increases are needed, or the patient must suddenly stop a prescribed opioid.',
+            '',
+            '--- QUICK-START: METHADONE COMMENCEMENT ---',
+            'WARNING: Overdose risk is highest in the first 1-2 weeks, while methadone accumulates toward steady state (4-7 days). All doses supervised; review daily before dosing in week 1.',
+            '',
+            'Day 1:',
+            '  - Commence 20-30mg daily.',
+            '  - Consider lower (<20mg) for low/uncertain tolerance, high-risk polydrug use (alcohol, benzodiazepines), or other severe medical complications.',
+            '  - Specialist consultation required before starting above 40mg.',
+            '',
+            'Days 2-3:',
+            '  - Assess for intoxication ~2-3 hours after dosing (peak effect), and for withdrawal control at 24 hours.',
+            '',
+            'Day 4 onward:',
+            '  - Increase by 5-10mg every 3-5 days if withdrawal features suggest not enough methadone.',
+            '  - Typical trajectory: 30-50mg by end of week 1, 40-60mg by end of week 2.',
+            '  - Consult an addiction medicine specialist for faster/higher increases, unclear tolerance, high-risk polydrug use, or difficulty stabilising.',
+            '',
+            '---',
+            'Condensed quick-start reference only — see the full Opioid Withdrawal page for the complete protocol, ',
+            'precipitated-withdrawal recognition, and when to seek specialist advice.',
+            `Generated by SUD Toolkit v${APP_VERSION}. Adult patients only. Verify against local policy and current `
+            + 'NSW Health guidance before use; this is decision support, not a prescription.'
+        ].join('\n');
+    }
+
     // Shared by the regimen panel and the monitoring/equivalence tables. Wrapped
     // so a wide table scrolls inside its own box rather than widening the page
     // on a phone, which is where this app is mostly read.
@@ -586,6 +667,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const original = copyPlanBtn.textContent;
             copyPlanBtn.textContent = 'Copied!';
             setTimeout(() => { copyPlanBtn.textContent = original; }, 2000);
+        });
+    }
+
+    const opioidQuickStartEl = document.getElementById('opioid-quickstart-summary');
+    const copyOpioidQuickStartBtn = document.getElementById('copy-opioid-quickstart-btn');
+    if (opioidQuickStartEl && copyOpioidQuickStartBtn) {
+        copyOpioidQuickStartBtn.addEventListener('click', () => {
+            opioidQuickStartEl.value = buildOpioidQuickStart();
+            opioidQuickStartEl.select();
+            navigator.clipboard.writeText(opioidQuickStartEl.value);
+            const original = copyOpioidQuickStartBtn.textContent;
+            copyOpioidQuickStartBtn.textContent = 'Copied!';
+            setTimeout(() => { copyOpioidQuickStartBtn.textContent = original; }, 2000);
         });
     }
 
