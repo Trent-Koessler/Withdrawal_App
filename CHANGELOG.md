@@ -5,6 +5,36 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.3 — August 2026
+
+### Safety — these alter clinical meaning
+
+| Change | Why |
+|---|---|
+| Every EMR paste ends with a provenance line naming the release that produced it and how far it is guideline-derived. | 0.4.1 stripped citations from the paste. A regimen sitting in a patient record with no attribution cannot be checked back against its basis by whoever reads the note next, and regimens change between releases — the version says which one produced those numbers. |
+| The line says "NSW Health-derived **with local adaptations**" wherever the regimen carries content this app does not trace to NSWCG. | True of every cell except the severe regimens. The test-dose protocol is local outright, the oxazepam schedules are converted, the sub-mild options derive from this site's own ambulatory doses. A flat NSWCG claim on those would put a false attribution in a patient record — the failure the line exists to prevent. Computed from the cell's own source tags, so it cannot drift from the content. |
+
+## 0.4.2 — August 2026
+
+A caching defect that let one page load mix two releases, and a guard so it
+cannot happen silently again. No clinical content changed.
+
+### Safety — these alter clinical meaning
+
+| Change | Why |
+|---|---|
+| The service worker serves one release at a time (cache-first from the snapshot it installed) instead of deciding network-vs-cache per file. | Per-file network-first meant a single page load could take `index.html` from the network and `script.js` from the previous release's cache, because that one request exceeded the 5s timeout. The app then rendered the new markup against old code: controls that were present but wired to nothing, and the previous release's dosing content. Observed on a ward phone — new selector visible, old CIWA/AWS table and old EMR export beneath it. |
+| `index.html` and `script.js` each declare their release, and the app checks they match on load. | The mismatch above rendered as a working app. It now retries the update once and, if still mismatched, says so in a banner rather than presenting stale dosing content as current. |
+| A precached file whose content type does not match its URL is rejected at install. | Previously only checked when caching a live response; a web filter's HTML block page could be precached under `script.js`. |
+
+### Infrastructure
+
+- Cache name, `APP_VERSION`, `package.json` and the new `app-build` meta move
+  together, with tests asserting all four agree and that the fetch path never
+  writes into the release snapshot.
+- Recovery deliberately does **not** clear caches: offline, that would trade a
+  mismatched app for no app at all.
+
 ## 0.4.1 — August 2026
 
 How the inpatient alcohol regimens are presented, and what the EMR copy

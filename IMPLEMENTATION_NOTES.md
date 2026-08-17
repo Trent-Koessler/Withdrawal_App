@@ -24,7 +24,7 @@ Vanilla, build-step-free PWA served straight from the repo root by GitHub Pages.
 | `data/flowchart.js` | `FLOWCHART_LOGIC` — the triage decision tree. |
 | `data/regimens.js` | `REGIMEN_CONFIG` — the alcohol inpatient benzodiazepine regimens. |
 | `data/scales.js` | `SCALES` — every calculator. |
-| `sw.js` | Service worker: network-first with a 5 s timeout, falling back to cache. |
+| `sw.js` | Service worker: cache-first from one release snapshot — see §7 for why it is no longer network-first. |
 | `test/clinical.test.js` | `node:test` suite, run by `npm test` and by CI on every push. |
 
 There are **no runtime dependencies and no build step** other than the CSS
@@ -396,3 +396,51 @@ the observer matters because a strip inside a hidden page has no width to
 measure until its page is shown. The two longest inpatient tab labels also
 carry a short form for widths below 768px, swapped with `display`, so only one
 is ever in the accessibility tree.
+
+---
+
+## 7. 0.4.2 — the app could run two releases at once
+
+Reported from a phone: the 0.4.1 selector was on screen, the AWS button did
+nothing, the symptom-triggered regimen was still a table, and the EMR export
+was still the whole-tab version with bracketed citations. The footer read
+"Version 0.4.0".
+
+That combination is diagnostic rather than confusing. The collapsed footer
+disclaimer only exists in 0.4.1's `index.html`; `APP_VERSION`, the
+`=== REGIMEN ===` export and the dose table all come from `script.js` and
+`data/regimens.js`. So the page was running **new markup with old code** — not
+a failed deploy, and not a bug in the 0.4.1 work.
+
+**Cause.** `sw.js` was network-first *per request* with a 5s timeout. The
+decision was taken independently for every file, so a fast, small `index.html`
+could come from the network while `script.js` exceeded the timeout and fell
+back to the previous release's cache. Nothing anywhere checked that the files
+agreed. For a clinical tool this is the worst failure mode available: it does
+not look broken, it looks like the app, and the doses shown are a release out
+of date.
+
+**Fix, in two layers.**
+
+1. *Cache-first from one snapshot.* Everything in a cache was fetched by one
+   install, so serving only from the current `CACHE_NAME` makes a mixed load
+   structurally impossible. Nothing is written into the cache outside install —
+   an opportunistic `cache.put` at fetch time is exactly how a snapshot stops
+   being one version. Updates arrive the standard way: changed `sw.js` → new
+   cache name → precache the release → `skipWaiting` → `clients.claim` → the
+   next load is entirely the new version.
+2. *Check rather than trust.* `index.html` carries `<meta name="app-build">`
+   and `script.js` publishes `window.SUD_BUILD` before it can throw. A guard in
+   the HTML compares them after load. The guard lives in the markup because the
+   markup is the file that arrives fresh in a skew — recovery cannot depend on
+   the script that may be the stale one. It asks the worker to update and
+   reloads once; if the mismatch survives, it shows a banner. It does **not**
+   clear caches: offline, that trades a mismatched app for no app.
+
+Verified by simulation rather than by reasoning: serving `origin/main` until its
+worker was in control, deploying 0.4.2 over the top, and reloading three times —
+every load was a single consistent release. And by serving 0.4.2's HTML with
+`origin/main`'s `script.js` deliberately: one retry, then the banner, no loop.
+
+Four tests now pin this: the four version strings agree, the build is published
+before startup, and the fetch path contains no `cache.put`.

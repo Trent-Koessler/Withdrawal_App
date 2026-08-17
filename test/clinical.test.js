@@ -325,6 +325,40 @@ describe('deployment invariants', () => {
             'package.json version does not match APP_VERSION — bump both');
     });
 
+    // index.html and script.js are separate downloads and can be separately
+    // cached. When they came from different releases the app rendered new
+    // controls against old code and looked like it was working. The guard in
+    // index.html detects that at runtime by comparing these two strings, which
+    // only means anything if a matching build ships as a matching pair.
+    test('the markup and the script declare the same build', () => {
+        const appVersion = read('script.js').match(/APP_VERSION\s*=\s*'([^']+)'/)[1];
+        const metaBuild = read('index.html').match(/<meta name="app-build" content="([^"]+)"/)?.[1];
+
+        assert.ok(metaBuild, 'index.html carries no app-build meta for the skew guard to read');
+        assert.equal(metaBuild, appVersion,
+            'index.html declares a different build from script.js — every user would see the skew banner');
+    });
+
+    test('script.js publishes its build before it can fail', () => {
+        const js = read('script.js');
+        const publish = js.indexOf('window.SUD_BUILD');
+        assert.ok(publish !== -1, 'script.js does not publish its build for the skew guard');
+        assert.ok(publish < js.indexOf("document.addEventListener('DOMContentLoaded'"),
+            'the build must be published before startup, or a failure during startup reads as a skew');
+    });
+
+    // Serving one release's HTML with another release's script is what the
+    // cache-per-release model exists to prevent. Writing a fresh response into
+    // the current cache at fetch time is precisely how the two drift apart.
+    test('the service worker never writes into its cache outside install', () => {
+        const sw = read('sw.js');
+        const fetchHandler = sw.slice(sw.indexOf('async function cacheFirst'));
+        assert.ok(!/cache\.put\(/.test(fetchHandler),
+            'the fetch path caches responses again — a page load can then mix two releases');
+        assert.ok(/cache-first/i.test(sw),
+            'the fetch strategy should be cache-first from one release snapshot');
+    });
+
     test('every ES module script.js imports is precached by the service worker', () => {
         const imports = [...read('script.js').matchAll(/from\s+'\.\/([^']+)'/g)].map((m) => m[1]);
         assert.ok(imports.length > 0, 'expected script.js to import data modules');

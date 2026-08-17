@@ -6,8 +6,14 @@ import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
+// Published before anything else runs, and outside the DOMContentLoaded
+// handler, so the build-skew guard in index.html can read it even if this file
+// throws while starting up. That guard compares it against the release the
+// markup belongs to; see the comment above it.
+const APP_VERSION = '0.4.3';
+window.SUD_BUILD = APP_VERSION;
+
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.4.1';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
@@ -514,6 +520,20 @@ document.addEventListener('DOMContentLoaded', () => {
         ? 'PRN dosing'
         : 'Additional advice';
 
+    // Whether a regimen carries anything this app does not trace to NSWCG.
+    //
+    // The provenance line on the paste says "NSW Health-derived", which is true
+    // of the severe regimens and of nothing else here: the test-dose protocol is
+    // local outright, the oxazepam schedules are converted, the sub-mild options
+    // are derived from this site's own ambulatory doses. Stamping a flat NSWCG
+    // claim on those would put a false attribution in a patient record - the
+    // exact failure the line exists to prevent - so the claim is qualified from
+    // the cell's own source tags rather than asserted for all of them.
+    const cellHasLocalContent = (cell) => [
+        ...(cell.caveat || []), ...(cell.schedule || []), ...(cell.prn || []),
+        ...(cell.routing || []), ...(cell.setting || [])
+    ].some(s => typeof s === 'string' && /src-local|src-nswcg-adapted/.test(s));
+
     // Under AWS, the two PRN triggers on a fixed schedule collapse into one band
     // (both are AWS 4-14) at two different doses, because NSWCG's AWS mapping is
     // coarser than the CIWA-Ar split this app uses. Naming the CIWA-Ar sub-band
@@ -589,6 +609,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (config.reviewMax && !data.routing && !/in 24 hours/i.test(body)) {
             out.push(EMR_SAFETY_LINES.review(drug.toLowerCase(), config.reviewMax));
         }
+
+        // Where this came from. Pasted text outlives the screen it was read on:
+        // a regimen sitting in a patient record with no attribution cannot be
+        // checked back against its basis by whoever reads the note next. The
+        // version matters as much as the source - regimens change between
+        // releases, and this says which one produced these numbers.
+        //
+        // ASCII hyphen, not an em dash: the rest of this block is deliberately
+        // plain text because EMR fields mangle anything that is not.
+        out.push('', `Generated from SUD Toolkit v${APP_VERSION} - NSW Health-derived`
+            + `${cellHasLocalContent(data) ? ' with local adaptations' : ''}; sources in app.`);
 
         return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     }
