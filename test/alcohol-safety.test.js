@@ -19,7 +19,7 @@ const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // Flatten every string a severity renders, so a rule can be asserted against
 // the whole cell regardless of which field the text sits in.
 const textOf = (cell) => [
-    cell.title,
+    cell.name,
     ...(cell.schedule || []),
     ...(cell.prn || []),
     ...(cell.routing || []),
@@ -269,17 +269,32 @@ describe('P1-01 — symptom-triggered dosing is offered as its own regimen', () 
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
             const cell = REGIMEN_CONFIG[benzo].symptom;
             assert.ok(cell, `${benzo} has no symptom-triggered regimen`);
-            assert.ok(cell.table, `${benzo} symptom-triggered has no dose table`);
+            assert.ok(cell.bands && cell.bands.length === 3,
+                `${benzo} symptom-triggered has no three-band dosing list`);
         }
     });
 
-    test('the table carries the NSWCG bands, doses and monitoring frequencies', () => {
-        const { table } = REGIMEN_CONFIG.Diazepam.symptom;
-        assert.deepEqual(table.headers, ['CIWA-Ar', 'AWS', 'Dose', 'Monitoring']);
-        assert.deepEqual(table.rows.map((r) => r[2]),
+    // A list, not a table: this block is pasted into an EMR field, where a
+    // table degrades into unreadable pipe-separated rows. The guard is that the
+    // dosing data stays structured — one entry per band, not prose.
+    test('the bands carry the NSWCG thresholds, doses and monitoring frequencies', () => {
+        const { bands } = REGIMEN_CONFIG.Diazepam.symptom;
+        assert.deepEqual(bands.map((b) => b.ciwa), ['&lt; 10', '10-20', '&gt; 20']);
+        assert.deepEqual(bands.map((b) => b.aws), ['&lt; 4', '4-14', '&gt; 14']);
+        assert.deepEqual(bands.map((b) => b.dose),
             ['0-5mg diazepam', '10mg diazepam', '20mg diazepam']);
-        assert.deepEqual(table.rows.map((r) => r[3]),
+        assert.deepEqual(bands.map((b) => b.monitoring),
             ['4-6 hourly', '2-4 hourly', 'hourly']);
+    });
+
+    test('no dosing block renders as a table any more', () => {
+        for (const benzo of Object.keys(REGIMEN_CONFIG)) {
+            for (const [severity, cell] of Object.entries(REGIMEN_CONFIG[benzo])) {
+                if (!cell || typeof cell !== 'object') continue;
+                assert.ok(!cell.table,
+                    `${benzo}/${severity} carries a dose table again — it will not survive a paste into the EMR`);
+            }
+        }
     });
 
     test('the 80 mg medical review threshold is stated', () => {
@@ -299,14 +314,42 @@ describe('P1-01 — symptom-triggered dosing is offered as its own regimen', () 
     });
 });
 
-describe('P1-02 — no band is expressed in CIWA-Ar only', () => {
-    test('every severity title gives both scales', () => {
+// The Regimens tab now renders one scale at a time, so the guard moves from
+// the rendered title to the data: a band must carry BOTH thresholds even
+// though only one is ever shown. The toggle picks a view; it must never be the
+// reason a ward's scale has no threshold to show.
+describe('P1-02 — no band is expressed in one scale only', () => {
+    test('every band carries a CIWA-Ar and an AWS threshold', () => {
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
             for (const [severity, cell] of Object.entries(REGIMEN_CONFIG[benzo])) {
-                if (!cell || typeof cell !== 'object' || !cell.title) continue;
-                if (!/CIWA/i.test(cell.title)) continue;
-                assert.ok(/AWS/.test(cell.title),
-                    `${benzo}/${severity} title "${cell.title}" gives a CIWA-Ar band with no AWS equivalent`);
+                if (!cell || typeof cell !== 'object') continue;
+                for (const b of [...(cell.band ? [cell.band] : []), ...(cell.bands || [])]) {
+                    assert.ok(b.ciwa, `${benzo}/${severity} has a band with no CIWA-Ar threshold`);
+                    assert.ok(b.aws, `${benzo}/${severity} has a band with no AWS threshold`);
+                }
+            }
+        }
+    });
+
+    // A band stores thresholds only ('10-15'); the renderer supplies the scale
+    // name. A name baked into the data would survive a toggle it does not match.
+    test('bands store thresholds, not scale names', () => {
+        for (const benzo of Object.keys(REGIMEN_CONFIG)) {
+            for (const [severity, cell] of Object.entries(REGIMEN_CONFIG[benzo])) {
+                if (!cell || typeof cell !== 'object') continue;
+                for (const b of [...(cell.band ? [cell.band] : []), ...(cell.bands || [])]) {
+                    assert.ok(!/CIWA|AWS/i.test(`${b.ciwa} ${b.aws}`),
+                        `${benzo}/${severity} bakes a scale name into a band threshold`);
+                }
+            }
+        }
+    });
+
+    test('every severity that has a band names the band it applies to', () => {
+        for (const benzo of Object.keys(REGIMEN_CONFIG)) {
+            for (const severity of ['submild', 'mild', 'moderate', 'severe']) {
+                assert.ok(REGIMEN_CONFIG[benzo][severity].band,
+                    `${benzo}/${severity} renders a schedule with no band attached`);
             }
         }
     });

@@ -492,7 +492,52 @@ textarea {
 /* Ensure severity buttons are exactly equal in size and text scales/wraps */
 .regimen-severity-btn {
     flex: 1;
-    min-width: 0; 
+    min-width: 0;
+}
+
+/* CIWA-Ar / AWS choice - two narrow buttons, not full-width like the severity
+   grid: this picks a label for what follows, it is not one of the choices. */
+.scale-choice .button-group {
+    margin-top: 8px;
+}
+.scale-choice-btn {
+    flex: 0 0 auto;
+    min-width: 110px;
+}
+/* The selected scale has to be unmistakable: every band and dose trigger below
+   is labelled in it, and a clinician who misreads which one is showing reads
+   the right number under the wrong scale. */
+.scale-choice-btn.active {
+    background-color: var(--primary-btn-bg);
+    font-weight: bold;
+}
+.scale-choice-btn.active:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+/* Symptom-triggered dosing renders as a list rather than a table so it survives
+   a paste into an EMR field. The band leads the line; the rescoring interval
+   trails it in a lighter weight, so the eye lands on band -> dose first. */
+.band-list {
+    margin: 8px 0 16px;
+    padding-left: 22px;
+}
+.band-list li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+.band-monitoring {
+    opacity: 0.85;
+    font-size: 0.95em;
+}
+
+/* The EMR block is now short enough to read before pasting it, so show it
+   whole rather than through a four-line window. */
+#plan-summary {
+    min-height: 260px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
 }
 
 /* Specific styles for Standard Drinks by Type */
@@ -1097,26 +1142,43 @@ textarea {
                     <div id="regimens" class="tab-content">
                         <h3>3. Regimens</h3>
                         <p>Displaying Regimens for: <strong id="regimen-benzo-display">Diazepam</strong></p>
+                        <div class="scale-choice">
+                            <p><strong>Which scale does your ward chart?</strong> Bands, dose triggers and the EMR
+                                copy below are shown in the scale you pick. The mapping between the two is on the
+                                Monitoring, Escalation &amp; Discharge tab.</p>
+                            <div class="button-group" role="group" aria-label="Withdrawal scale">
+                                <button class="scale-choice-btn active" data-scale="ciwa" aria-pressed="true">CIWA-Ar</button>
+                                <button class="scale-choice-btn" data-scale="aws" aria-pressed="false">AWS</button>
+                            </div>
+                        </div>
                         <div class="button-group">
                             <button class="regimen-severity-btn" data-severity="symptom">
                                 <strong>Symptom-Triggered</strong><br>
-                                <small>Dose to the CIWA-Ar or AWS score | uncomplicated withdrawal, frequent skilled review</small>
+                                <small><span class="band-label" data-ciwa="Dose to the CIWA-Ar score"
+                                        data-aws="Dose to the AWS score">Dose to the CIWA-Ar score</span> |
+                                    uncomplicated withdrawal, frequent skilled review</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="submild">
                                 <strong>Sub-Mild</strong><br>
-                                <small>CIWA-Ar &lt; 10 / AWS &lt; 4 | supportive care or a halved schedule</small>
+                                <small><span class="band-label" data-ciwa="CIWA-Ar &lt; 10"
+                                        data-aws="AWS &lt; 4">CIWA-Ar &lt; 10</span> | supportive care or a halved
+                                    schedule</small>
                             </button>
                             <button class="regimen-severity-btn active" data-severity="mild">
                                 <strong>Mild-Mod</strong><br>
-                                <small>e.g. CIWA-Ar 10-15 / AWS 4-14 | ≤ 14 standard drinks/day</small>
+                                <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 10-15"
+                                        data-aws="AWS 4-14">CIWA-Ar 10-15</span> | ≤ 14 standard drinks/day</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="moderate">
                                 <strong>Mod-Sev</strong><br>
-                                <small>e.g. CIWA-Ar 15-20 / AWS 4-14 | ≥ 15 standard drinks/day</small>
+                                <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 15-20"
+                                        data-aws="AWS 4-14">CIWA-Ar 15-20</span> | ≥ 15 standard drinks/day</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="severe">
                                 <strong>Severe</strong><br>
-                                <small>e.g. CIWA-Ar &gt; 20 / AWS &gt; 14 | ≥ 15 drinks/day + complex features</small>
+                                <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar &gt; 20"
+                                        data-aws="AWS &gt; 14">CIWA-Ar &gt; 20</span> | ≥ 15 drinks/day + complex
+                                    features</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="unknown">
                                 <strong>Unknown Tolerance</strong><br>
@@ -1127,13 +1189,15 @@ textarea {
                         <div id="regimen-display"></div>
 
                         <div class="clinical-block">
-                            <h4>Copy this plan to the EMR</h4>
-                            <p>Copies the selected regimen with its doses and taper, the monitoring frequency, the
-                                escalation thresholds, the thiamine regimen and the discharge rules - with source tags
-                                intact, so the paste says where each part came from.</p>
-                            <textarea id="plan-summary" readonly aria-label="Plan summary for the EMR"></textarea>
+                            <h4>Copy this regimen to the EMR</h4>
+                            <p>A short prescribing block: the doses for the regimen selected above, how often to
+                                score, the 2-hourly dosing floor, the caution not to dose a sedated patient, and the
+                                24-hour total that requires medical review. Band selection, escalation triggers,
+                                discharge rules, thiamine and the source tags stay on this page - the paste is for
+                                the drug chart, not a substitute for reading them.</p>
+                            <textarea id="plan-summary" readonly aria-label="Regimen summary for the EMR"></textarea>
                             <div class="button-group">
-                                <button id="copy-plan-btn">Copy plan</button>
+                                <button id="copy-plan-btn">Copy for EMR</button>
                             </div>
                         </div>
                     </div>
@@ -3177,6 +3241,26 @@ textarea {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.1 - August 2026</h4>
+                <p><em>Presentation of the inpatient alcohol regimens, and what the EMR copy exports.</em></p>
+                <ul>
+                    <li><strong>Symptom-triggered dosing is a list, not a table.</strong> The four-column table did
+                        not survive being pasted into an EMR field; each band is now one line - band, dose,
+                        rescoring interval.</li>
+                    <li><strong>The Regimens tab asks which scale your ward charts.</strong> Pick CIWA-Ar or AWS and
+                        the bands, PRN triggers and EMR copy are shown in that scale alone, instead of every band
+                        carrying both. Both thresholds are still held for every band; the mapping between the two
+                        remains on the Monitoring, Escalation &amp; Discharge tab, and the caveat that AWS 4-14
+                        spans both fixed schedules still applies.</li>
+                    <li><strong>The EMR copy is now a prescribing block, not the whole tab.</strong> It carries the
+                        doses, how often to score, the 2-hourly dosing floor, the caution not to dose a sedated
+                        patient, and the 24-hour total that requires medical review. Band selection, escalation
+                        triggers, discharge rules and thiamine stay on the page; source tags are no longer included
+                        in the paste.</li>
+                    <li>Advice given under PRN - the test-dose protocol's monitoring instructions, for instance - is
+                        no longer headed "PRN dosing", which read as an instruction to give something.</li>
+                </ul>
 
                 <h4>0.4.0 - August 2026</h4>
                 <p><em>Revision against NSW Health, Management of Withdrawal from Alcohol and Other Drugs: Clinical

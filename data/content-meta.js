@@ -19,8 +19,13 @@ export const CONTENT_META_DEFAULTS = {
 const NSWCG_2022 = 'NSW Health Clinical Guidance (Aug 2022)';
 const REVISED = '2026-08-10';
 
+// The inpatient regimens were revisited after the main revision, when the
+// symptom-triggered regimen moved to list form, the CIWA-Ar/AWS toggle was
+// added and the EMR export was cut back to a prescribing block (0.4.1).
+const INPATIENT_REVISED = '2026-08-17';
+
 export const CONTENT_META = {
-    'inpatient-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
+    'inpatient-guidelines-page': { source: NSWCG_2022, lastReviewed: INPATIENT_REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'alcohol-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'screening-page': { source: NSWCG_2022, lastReviewed: REVISED },

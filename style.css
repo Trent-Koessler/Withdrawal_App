@@ -463,7 +463,52 @@ textarea {
 /* Ensure severity buttons are exactly equal in size and text scales/wraps */
 .regimen-severity-btn {
     flex: 1;
-    min-width: 0; 
+    min-width: 0;
+}
+
+/* CIWA-Ar / AWS choice - two narrow buttons, not full-width like the severity
+   grid: this picks a label for what follows, it is not one of the choices. */
+.scale-choice .button-group {
+    margin-top: 8px;
+}
+.scale-choice-btn {
+    flex: 0 0 auto;
+    min-width: 110px;
+}
+/* The selected scale has to be unmistakable: every band and dose trigger below
+   is labelled in it, and a clinician who misreads which one is showing reads
+   the right number under the wrong scale. */
+.scale-choice-btn.active {
+    background-color: var(--primary-btn-bg);
+    font-weight: bold;
+}
+.scale-choice-btn.active:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+/* Symptom-triggered dosing renders as a list rather than a table so it survives
+   a paste into an EMR field. The band leads the line; the rescoring interval
+   trails it in a lighter weight, so the eye lands on band -> dose first. */
+.band-list {
+    margin: 8px 0 16px;
+    padding-left: 22px;
+}
+.band-list li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+.band-monitoring {
+    opacity: 0.85;
+    font-size: 0.95em;
+}
+
+/* The EMR block is now short enough to read before pasting it, so show it
+   whole rather than through a four-line window. */
+#plan-summary {
+    min-height: 260px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
 }
 
 /* Specific styles for Standard Drinks by Type */

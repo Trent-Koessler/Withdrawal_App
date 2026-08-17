@@ -167,7 +167,7 @@ describe('benzodiazepine regimens', () => {
             for (const severity of SEVERITIES) {
                 const data = REGIMEN_CONFIG[benzo][severity];
                 assert.ok(data, `${benzo}/${severity} missing`);
-                assert.ok(data.title, `${benzo}/${severity} has no title`);
+                assert.ok(data.name, `${benzo}/${severity} has no name`);
                 const schedule = Array.isArray(data.schedule) && data.schedule.length > 0;
                 const routing = Array.isArray(data.routing) && data.routing.length > 0;
                 assert.ok(schedule || routing, `${benzo}/${severity} renders nothing`);

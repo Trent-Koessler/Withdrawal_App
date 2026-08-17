@@ -1,5 +1,5 @@
 import { FLOWCHART_LOGIC } from './data/flowchart.js';
-import { REGIMEN_CONFIG } from './data/regimens.js';
+import { REGIMEN_CONFIG, EMR_SAFETY_LINES, INITIAL_SCORING_INTERVAL } from './data/regimens.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
@@ -7,7 +7,7 @@ import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from '.
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.4.0';
+    const APP_VERSION = '0.4.1';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
@@ -387,31 +387,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const benzoSelectionDisplay = document.getElementById('benzo-selection-display');
     const regimenBenzoDisplay = document.getElementById('regimen-benzo-display');
     const regimenDisplayDiv = document.getElementById('regimen-display');
+    const scaleChoiceBtns = document.querySelectorAll('.scale-choice-btn');
     let selectedBenzo = 'Diazepam';
     let selectedSeverity = 'mild';
+    // Which withdrawal scale the ward charts. Scoped to the Regimens tab: it
+    // decides how bands are labelled here and in the EMR paste. The Monitoring
+    // tab deliberately keeps both scales, since its table is the mapping.
+    let selectedScale = 'ciwa';
+    const SCALE_LABEL = { ciwa: 'CIWA-Ar', aws: 'AWS' };
 
+    // Bands are stored as thresholds only, in both scales. The label is applied
+    // here so a band can never render under the wrong scale's name.
+    const bandLabel = (b) => `${SCALE_LABEL[selectedScale]} ${b[selectedScale]}`;
 
+    // Title is composed rather than stored: the same cell reads
+    // "Mild-Moderate (CIWA-Ar 10-15) - Diazepam" or "Mild-Moderate (AWS 4-14) -
+    // Oxazepam". The drug is appended here, once, rather than being written
+    // into some cell names and not others.
+    const regimenTitle = (cell) => (cell.band ? `${cell.name} (${bandLabel(cell.band)})` : cell.name)
+        + ` - ${REGIMEN_CONFIG[selectedBenzo].name}`;
 
-    // --- EMR PLAN EXPORT (AUTH-06) --- //
+    // --- EMR EXPORT (AUTH-06) --- //
 
     // Turns rendered clinical markup into something that survives being pasted
     // into an EMR text field. Built from the live DOM rather than from the data
-    // modules, so what is copied is by construction what the clinician read -
-    // including the source tags by default, rendered as [NSWCG §5.4.4]. Pass
-    // stripSources for the quick-start copies, which drop citations entirely
-    // rather than bracket them - the point there is an uncluttered paste, and
-    // the full page is still the source of record.
-    function elementToPlainText(root, { stripSources = false } = {}) {
+    // modules, so what is copied is by construction what the clinician read.
+    // Citations are dropped rather than bracketed: the point of a paste is an
+    // uncluttered prescribing block, and the app remains the source of record.
+    function elementToPlainText(root) {
         if (!root) return '';
         const clone = root.cloneNode(true);
 
-        clone.querySelectorAll('.src-tag').forEach(tag => {
-            if (stripSources) {
-                tag.remove();
-            } else {
-                tag.replaceWith(document.createTextNode(` [${tag.textContent.trim()}]`));
-            }
-        });
+        clone.querySelectorAll('.src-tag').forEach(tag => tag.remove());
         // Buttons are controls, not content; copying their labels is noise.
         clone.querySelectorAll('button, .clinical-table-wrap').forEach(el => {
             if (el.tagName === 'BUTTON') el.remove();
@@ -449,40 +456,106 @@ document.addEventListener('DOMContentLoaded', () => {
         return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     }
 
-    // Assembles the whole plan: what was selected, where to manage it, the
-    // doses, how often to look at the patient, and when to stop following the
-    // plan and call someone. No published guideline hands a clinician that as
-    // one pasteable block, which is the point of it.
-    function buildPlanSummary() {
-        // Selected by id, not by position: the blocks on this tab have been
-        // reordered twice already during this revision.
-        const sections = [
-            ['REGIMEN', document.getElementById('regimen-display')],
-            ['BAND SELECTION', document.getElementById('block-band-selection')],
-            ['INTERPRETING THE SCORE', document.getElementById('block-interpreting-score')],
-            ['MONITORING', document.getElementById('block-monitoring')],
-            ['ESCALATION AND DE-ESCALATION', document.getElementById('block-escalation')],
-            ['DISCHARGE', document.getElementById('block-discharge')],
-            ['THIAMINE', document.getElementById('thiamine')]
-        ];
+    // Clinical strings in data/regimens.js are markup. This renders one as the
+    // single plain line it becomes in an EMR field, citations removed.
+    function plainLine(html) {
+        return html
+            .replace(/<span class="src-tag[\s\S]*?<\/span>/g, '')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+            .replace(/&asymp;/g, '~').replace(/&rarr;/g, '->').replace(/&ge;/g, '>=')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
 
-        const body = sections
-            .map(([heading, el]) => {
-                const text = elementToPlainText(el);
-                return text ? `=== ${heading} ===\n${text}` : '';
-            })
-            .filter(Boolean)
-            .join('\n\n');
+    // Some cells use the `prn` slot for advice rather than doses - the test-dose
+    // protocol's "monitor closely, consult D&A" pair, for instance. Labelling
+    // those "PRN dosing" reads as an instruction to give something. A dose
+    // object, or free text naming a dose, is dosing; the rest is advice. Severe
+    // withdrawal states its PRN as prose ("diazepam 10-20mg 2-hourly PRN"), so
+    // the test cannot be "is it an object".
+    const prnHeading = (entries) => entries.some(e => (typeof e === 'string' ? /\d\s*mg/i.test(e) : e.dose))
+        ? 'PRN dosing'
+        : 'Additional advice';
 
-        return [
-            `ALCOHOL WITHDRAWAL PLAN - ${selectedBenzo}`,
-            `Selected regimen: ${REGIMEN_CONFIG[selectedBenzo][selectedSeverity].title}`,
-            '',
-            body,
-            '',
-            `--- Generated by SUD Toolkit v${APP_VERSION}. Adult patients only. Verify against local policy `
-            + `and current NSW Health guidance before use; this is decision support, not a prescription. ---`
-        ].join('\n');
+    // Under AWS, the two PRN triggers on a fixed schedule collapse into one band
+    // (both are AWS 4-14) at two different doses, because NSWCG's AWS mapping is
+    // coarser than the CIWA-Ar split this app uses. Naming the CIWA-Ar sub-band
+    // alongside is the honest resolution: silently rendering "AWS 4-14" twice
+    // with different doses would be an instruction a nurse cannot follow.
+    function prnBandLabel(entry, allEntries) {
+        const label = selectedScale === 'aws' ? `AWS ${entry.aws}` : `CIWA-Ar ${entry.range}`;
+        if (selectedScale !== 'aws') return label;
+        const ambiguous = allEntries.filter((e) => typeof e !== 'string' && e.aws === entry.aws).length > 1;
+        return ambiguous ? `${label} (CIWA-Ar ${entry.range})` : label;
+    }
+
+    // The EMR paste. Deliberately short: the doses, how often to score, and the
+    // three things that stop a schedule being followed off a cliff - the
+    // 2-hourly floor, withholding when sedated, and the 24-hour review total.
+    //
+    // It is built from REGIMEN_CONFIG rather than scraped from the rendered
+    // page, so band selection, monitoring frequency, escalation triggers,
+    // discharge rules and thiamine - all of which the clinician has on screen -
+    // stay out of the paste. Citations are dropped: the app is the source of
+    // record, and a prescribing block is read at the drug chart, not audited.
+    function buildRegimenSummary() {
+        const config = REGIMEN_CONFIG[selectedBenzo];
+        const data = config[selectedSeverity];
+        const drug = config.name;
+        const scale = SCALE_LABEL[selectedScale];
+        const out = [`ALCOHOL WITHDRAWAL - ${plainLine(regimenTitle(data))}`, ''];
+
+        if (data.routing) {
+            // No regimen exists for this cell (severe withdrawal on oxazepam).
+            // The routing advice IS the medication advice, so it is the body.
+            data.routing.forEach((item) => out.push(`- ${plainLine(item)}`));
+        } else if (data.bands) {
+            out.push(`Score ${scale} at the interval for the current band, and give that band's dose:`);
+            data.bands.forEach((b) => {
+                out.push(`  - ${plainLine(bandLabel(b))}: ${plainLine(b.dose)}, rescore ${b.monitoring}`);
+            });
+        } else if (typeof data.schedule[0] === 'string') {
+            data.schedule.forEach((item) => out.push(`- ${plainLine(item)}`));
+        } else {
+            out.push('Scheduled dosing:');
+            data.schedule.forEach((s, i) => {
+                out.push(`  - Day ${i + 1}: ${drug} ${s.dose}mg ${s.freq}`);
+            });
+        }
+
+        if (data.prn && data.prn.length > 0) {
+            out.push('', `${prnHeading(data.prn)}:`);
+            data.prn.forEach((p) => {
+                out.push(typeof p === 'string'
+                    ? `  - ${plainLine(p)}`
+                    : `  - ${prnBandLabel(p, data.prn)}: extra ${drug} ${p.dose}mg PRN`);
+            });
+        }
+
+        // The tail lines are added only where the regimen has not already said
+        // the same thing in its own words. A loading regimen states its own
+        // 2-hourly interval and its own 80mg review point; repeating them
+        // underneath invites the reader to treat the two as different rules.
+        const body = out.join('\n');
+        out.push('');
+        // Symptom-triggered dosing states its own frequency per band above, so
+        // repeating a single figure here would contradict the list.
+        if (data.monitoring && !data.bands) {
+            out.push(data.monitoring === 'hourly'
+                ? `Score ${scale} hourly.`
+                : `Score ${scale} ${INITIAL_SCORING_INTERVAL}, then ${data.monitoring} while the score stays in band.`);
+        }
+        if (!data.routing && !/2-hourly|q2hrly/i.test(body)) {
+            out.push(EMR_SAFETY_LINES.dosingInterval);
+        }
+        out.push(EMR_SAFETY_LINES.sedation);
+        if (config.reviewMax && !data.routing && !/in 24 hours/i.test(body)) {
+            out.push(EMR_SAFETY_LINES.review(drug.toLowerCase(), config.reviewMax));
+        }
+
+        return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     }
 
     // Condensed, citation-free version of the Day 1-3 buprenorphine and
@@ -555,15 +628,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // A `routing` cell is one where no regimen should be rendered at all —
         // severe withdrawal on oxazepam, for instance. Returning advice instead
-        // of a dose table is the point, so bail out before the schedule loop
-        // rather than rendering an empty one.
+        // of a dose list is the point, so bail out before the schedule loop
+        // rather than rendering an empty one. The EMR preview is still refreshed
+        // on the way out: a routing card that left the previous regimen's doses
+        // sitting in the textarea would be the worst possible stale paste.
         if (data.routing) {
-            regimenDisplayDiv.innerHTML = `<h3>${data.title}</h3>`
+            regimenDisplayDiv.innerHTML = `<h3>${regimenTitle(data)}</h3>`
                 + data.routing.map(item => `<div class="routing-card">${item}</div>`).join('');
+            refreshRegimenSummary();
             return;
         }
 
-        let displayHTML = `<h3>${data.title}</h3>`;
+        let displayHTML = `<h3>${regimenTitle(data)}</h3>`;
 
         // Where to manage the patient comes before what to prescribe, so it is
         // rendered above everything else rather than under PRN dosing.
@@ -591,14 +667,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // A score-banded dose table (symptom-triggered dosing, monitoring
-        // frequency). Rendered above the instructions because the table is the
-        // regimen and the instructions qualify it.
-        if (data.table) {
-            displayHTML += renderClinicalTable(data.table);
+        // Score-banded dosing (symptom-triggered). A list, not a table: this is
+        // the block clinicians paste into the EMR, where a table degrades into
+        // pipe-separated rows, and one scale is shown rather than two so the
+        // line a nurse reads at the drug chart is the one their ward charts.
+        // Rendered above the notes because the bands are the regimen and the
+        // notes qualify them.
+        if (data.bands) {
+            displayHTML += `<b>Dose to the ${SCALE_LABEL[selectedScale]} score:</b><ul class="band-list">`
+                + data.bands.map(b => `<li><b>${bandLabel(b)}</b> &rarr; ${b.dose}`
+                    + ` <span class="band-monitoring">(rescore ${b.monitoring})</span></li>`).join('')
+                + `</ul>`;
         }
 
-        displayHTML += `<b>${data.table ? 'Notes' : 'Scheduled Dosing'}:</b><ul>`;
+        displayHTML += `<b>${data.bands ? 'Notes' : 'Scheduled Dosing'}:</b><ul>`;
         data.schedule.forEach((s, index) => {
             if (typeof s === 'string') {
                 displayHTML += `<li>${s}</li>`;
@@ -613,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
         displayHTML += `</ul>`;
 
         if (data.prn && data.prn.length > 0) {
-            displayHTML += `<b>PRN Dosing:</b>`;
+            displayHTML += `<b>${prnHeading(data.prn)}:</b>`;
             if (selectedSeverity === 'mild' || selectedSeverity === 'moderate') {
                 displayHTML += `<div><i>Consider increasing the regular regimen by a band if PRN is being used `
                     + `frequently (e.g. more than two times daily).</i></div>`;
@@ -623,8 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof p === 'string') {
                     displayHTML += `<li>${p}</li>`;
                 } else {
-                    const band = p.aws ? `CIWA-Ar ${p.range} / AWS ${p.aws}` : `CIWA-Ar ${p.range}`;
-                    displayHTML += `<li>${band}: extra ${b_name} ${p.dose}mg PRN</li>`;
+                    displayHTML += `<li>${prnBandLabel(p, data.prn)}: extra ${b_name} ${p.dose}mg PRN</li>`;
                 }
             });
             displayHTML += `</ul>`;
@@ -640,7 +721,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         regimenDisplayDiv.innerHTML = displayHTML;
+        updateBandLabels();
+        refreshRegimenSummary();
     }
+
+    // The preview is rebuilt with the panel, not on click: a textarea still
+    // showing the previous regimen's doses after switching severity, drug or
+    // scale is a paste waiting to go into the wrong chart.
+    function refreshRegimenSummary() {
+        const preview = document.getElementById('plan-summary');
+        if (preview) preview.value = buildRegimenSummary();
+    }
+
+    // The severity buttons name their band too, so they have to follow the
+    // toggle or the page would offer "Mild-Mod (CIWA-Ar 10-15)" as the route to
+    // a panel headed "AWS 4-14".
+    function updateBandLabels() {
+        document.querySelectorAll('.band-label').forEach(el => {
+            const text = el.dataset[selectedScale];
+            if (text) el.textContent = text;
+        });
+    }
+
+    scaleChoiceBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedScale = btn.dataset.scale;
+            scaleChoiceBtns.forEach(b => {
+                const on = b.dataset.scale === selectedScale;
+                b.classList.toggle('active', on);
+                b.setAttribute('aria-pressed', String(on));
+            });
+            updateRegimenDisplay();
+        });
+    });
 
     benzoChoiceBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -662,13 +775,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Rebuilt on demand rather than on every selection change: it reads the
-    // whole tab, and there is no reason to pay for that until asked.
+    // Built from REGIMEN_CONFIG, so it is cheap enough to rebuild with the
+    // panel; this handler only has to copy what is already shown.
     const planSummaryEl = document.getElementById('plan-summary');
     const copyPlanBtn = document.getElementById('copy-plan-btn');
     if (planSummaryEl && copyPlanBtn) {
         copyPlanBtn.addEventListener('click', () => {
-            planSummaryEl.value = buildPlanSummary();
+            planSummaryEl.value = buildRegimenSummary();
             planSummaryEl.select();
             navigator.clipboard.writeText(planSummaryEl.value);
             const original = copyPlanBtn.textContent;
@@ -706,7 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const blocks = [...page.querySelectorAll('[data-quickcopy]')];
             const body = blocks
-                .map(el => elementToPlainText(el, { stripSources: true }))
+                .map(el => elementToPlainText(el))
                 .filter(Boolean)
                 .join('\n\n');
             const text = [
