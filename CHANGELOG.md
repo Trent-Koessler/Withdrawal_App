@@ -5,6 +5,37 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.4 — August 2026
+
+Intended purpose, the entry gate, and a privacy statement. No clinical content
+changed.
+
+### Safety — these alter clinical meaning
+
+None. What changed is what the site says about itself and who it lets in.
+
+### Intended purpose and the gate
+
+| Change | Why |
+|---|---|
+| The entry modal asks "are you a qualified health professional?" and offers a real second answer. Declining swaps the gate for ADIS, the national AOD hotline, Lifeline and 000, and does not dismiss the modal. | A site that states it is for clinicians but admits everyone equally has its intended purpose decided by whoever opens it. Asking the question, and turning away the answer that does not qualify, is what makes the stated purpose the actual one. The answer is deliberately **not** remembered: a shared ward terminal has more than one user, and a stored attestation would speak for all of them. |
+| "It is not a medical device" is gone from the modal, the About page and the README, replaced by a positive statement of intended purpose: decision support for qualified health professionals, supporting and not replacing clinical judgement, not diagnosing, not directing treatment, not analysing medical images or signals. | The old sentence asserted a regulatory conclusion the author is not in a position to reach, and asserting it wrongly is worse than not asserting it. The replacement states the facts that bear on the question and leaves the conclusion to whoever is entitled to draw it. |
+| Three statements move from inner pages onto the opening screen: no section has completed independent clinical review; the site is not produced, authorised or endorsed by NSW Health; the source guideline governs where this site disagrees with it. | All three were already on the site and all three were reachable only by someone who went looking. The absence of external review is the site's largest single limitation, and a warning of limitations that the user never sees is not a warning. NSW phone numbers, NSW terminology and citations to NSW Clinical Guidance make the site look official; the denial has to arrive before the content does, not after. |
+| The footer disclaimer summary leads with "Health professionals only". | It is the one piece of disclaimer text present on every page. |
+
+### Privacy
+
+- A privacy statement on the About page: calculator inputs are processed in the
+  browser and never transmitted, there is no server-side application, no
+  accounts, no analytics, no third-party requests and no cookies.
+- It also states what *does* leave or persist, since a partial disclosure is
+  the kind that gets picked apart: GitHub Pages logs requests including IP
+  addresses under GitHub's own privacy statement and the author cannot see
+  them; localStorage holds the theme preference and the build-skew marker and
+  no clinical content; the offline cache holds app files only; and the Feedback
+  button opens the user's own mail client to a personal address, so feedback
+  must not carry patient-identifying detail.
+
 ## 0.4.3 — August 2026
 
 ### Safety — these alter clinical meaning

@@ -1,7 +1,7 @@
 // A cache name is a version stamp. Everything in one cache was fetched by one
 // install, so serving only from the current cache means a page load can never
 // mix files from two releases — see the fetch handler for why that matters.
-const CACHE_NAME = 'withdrawal-app-cache-v30';
+const CACHE_NAME = 'withdrawal-app-cache-v31';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 // style.css is deliberately absent: it is inlined into index.html by
 // tools/build-css.py, so the app never requests it as a separate file.

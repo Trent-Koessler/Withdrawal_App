@@ -843,6 +843,32 @@ textarea {
     background-color: var(--primary-btn-bg);
 }
 
+/* The two gate answers. Stacked rather than side by side: at the lengths these
+   labels need to be unambiguous, a row wraps into two ragged lines on a phone
+   and the reader has to work out which fragment belongs to which button. */
+.gate-buttons {
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.gate-buttons button {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+}
+
+/* Deliberately not styled as a warning or a dead end. It is a real answer, and
+   dressing it in red would push a patient towards clicking the other one. It is
+   quieter than the primary answer and no harder to reach. The ID raises
+   specificity past `#disclaimer-modal button` above. */
+#disclaimer-modal button.secondary-btn {
+    background-color: var(--secondary-btn-bg);
+}
+
+#disclaimer-modal button.secondary-btn:hover {
+    background-color: var(--secondary-btn-hover-bg);
+}
+
 /* Link-style button */
 .link-button {
     background: none!important;
