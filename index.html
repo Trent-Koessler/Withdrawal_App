@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUD Toolkit</title>
     <meta name="theme-color" content="#f0f0f0" />
+    <!-- The release this markup belongs to. script.js publishes the release IT
+         belongs to; the check at the bottom of this file compares the two. A
+         test keeps this in step with APP_VERSION and package.json. -->
+    <meta name="app-build" content="0.4.2" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -3365,6 +3369,17 @@ textarea {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
+                <h4>0.4.2 - August 2026</h4>
+                <p><em>An update problem that could leave the app part-updated.</em></p>
+                <ul>
+                    <li><strong>The app now updates as one piece.</strong> On a slow connection a page could
+                        previously load the current page layout alongside the previous release's dosing content and
+                        behaviour - so a control could appear and do nothing, and a regimen could show the older
+                        version of itself. The app now serves one release at a time.</li>
+                    <li><strong>If a part-updated state is ever detected, the app says so</strong> rather than
+                        showing stale content as though it were current.</li>
+                </ul>
+
                 <h4>0.4.1 - August 2026</h4>
                 <p><em>Presentation of the inpatient alcohol regimens, and what the EMR copy exports.</em></p>
                 <ul>
@@ -3728,6 +3743,85 @@ textarea {
     </div>
 
     <script type="module" src="script.js"></script>
+
+    <!--
+      Build-skew guard.
+
+      This markup and script.js are separate downloads and can be separately
+      cached. When they came from different releases the app still rendered:
+      new controls appeared, wired to a previous release's code that had never
+      heard of them, alongside that release's clinical content. It looked
+      working and was not. sw.js no longer allows the mismatch, but a proxy or
+      an HTTP cache can still produce one, so the app checks rather than trusts.
+
+      This lives in the HTML on purpose: the HTML is the file that arrives fresh
+      in a skew, so recovery cannot depend on the script that may be stale. ES5,
+      no modules — same reasoning as the diagnostics block below.
+
+      Recovery asks the service worker to update and reloads ONCE. It does not
+      delete caches: offline, that would trade a mismatched app for no app at
+      all. If the mismatch survives the retry, the banner says so plainly rather
+      than looping.
+    -->
+    <script>
+        (function () {
+            var meta = document.querySelector('meta[name="app-build"]');
+            var expected = meta && meta.getAttribute('content');
+            if (!expected) { return; }
+
+            function banner(text) {
+                var el = document.createElement('div');
+                el.setAttribute('role', 'alert');
+                el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;'
+                    + 'background:#721c24;color:#fff;padding:10px 14px;font:14px/1.4 Arial,sans-serif;'
+                    + 'text-align:center';
+                el.textContent = text;
+                document.body.appendChild(el);
+            }
+
+            function check() {
+                // An old script.js does not set this at all, so undefined is a
+                // mismatch — which is exactly the case that has to be caught.
+                if (window.SUD_BUILD === expected) { return; }
+
+                var key = 'sud-build-retry';
+                var tried = null;
+                try { tried = sessionStorage.getItem(key); } catch (e) { }
+
+                if (tried === expected) {
+                    banner('This app is part-updated (page ' + expected + ', code '
+                        + (window.SUD_BUILD || 'older') + ') and some controls may not work. '
+                        + 'Reload while online to finish updating.');
+                    return;
+                }
+
+                try { sessionStorage.setItem(key, expected); } catch (e) { }
+
+                var done = false;
+                function reloadOnce() {
+                    if (done) { return; }
+                    done = true;
+                    location.reload();
+                }
+
+                if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+                    navigator.serviceWorker.getRegistration().then(function (reg) {
+                        return reg ? reg.update() : null;
+                    }).then(reloadOnce, reloadOnce);
+                    // Do not wait indefinitely on a worker update that cannot
+                    // reach the network.
+                    setTimeout(reloadOnce, 4000);
+                } else {
+                    reloadOnce();
+                }
+            }
+
+            // After the module has executed. A module script is deferred, so it
+            // runs before `load` but after `DOMContentLoaded` handlers queued here.
+            if (document.readyState === 'complete') { check(); }
+            else { window.addEventListener('load', check); }
+        })();
+    </script>
 
     <!--
       Load diagnostics. Dormant unless the URL carries ?diag, so normal users

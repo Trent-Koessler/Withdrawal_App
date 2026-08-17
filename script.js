@@ -6,8 +6,14 @@ import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
+// Published before anything else runs, and outside the DOMContentLoaded
+// handler, so the build-skew guard in index.html can read it even if this file
+// throws while starting up. That guard compares it against the release the
+// markup belongs to; see the comment above it.
+const APP_VERSION = '0.4.2';
+window.SUD_BUILD = APP_VERSION;
+
 document.addEventListener('DOMContentLoaded', () => {
-    const APP_VERSION = '0.4.1';
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
 
     // --- PREVENT TRANSITION FLASH --- //
