@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.3" />
+    <meta name="app-build" content="0.4.4" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -874,6 +874,32 @@ textarea {
 /* Style for the mandatory disclaimer modal button */
 #disclaimer-modal button {
     background-color: var(--primary-btn-bg);
+}
+
+/* The two gate answers. Stacked rather than side by side: at the lengths these
+   labels need to be unambiguous, a row wraps into two ragged lines on a phone
+   and the reader has to work out which fragment belongs to which button. */
+.gate-buttons {
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.gate-buttons button {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+}
+
+/* Deliberately not styled as a warning or a dead end. It is a real answer, and
+   dressing it in red would push a patient towards clicking the other one. It is
+   quieter than the primary answer and no harder to reach. The ID raises
+   specificity past `#disclaimer-modal button` above. */
+#disclaimer-modal button.secondary-btn {
+    background-color: var(--secondary-btn-bg);
+}
+
+#disclaimer-modal button.secondary-btn:hover {
+    background-color: var(--secondary-btn-hover-bg);
 }
 
 /* Link-style button */
@@ -3369,6 +3395,27 @@ textarea {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
+                <h4>0.4.4 - August 2026</h4>
+                <p><em>Who this site is for, and what it says about itself. No clinical content changed.</em></p>
+                <ul>
+                    <li><strong>The opening screen now asks whether you are a health professional</strong> instead of
+                        offering a single "Accept" button. Answering no leads to ADIS, the national hotline and
+                        Lifeline rather than into the app. The site states that it is for clinicians; admitting
+                        everyone equally made that a claim rather than a fact.</li>
+                    <li><strong>"This is not a medical device" has been replaced by a statement of what the site is
+                            for</strong> - decision support for qualified health professionals, supporting clinical
+                        judgement rather than replacing it, not diagnosing, not directing treatment, and not
+                        analysing images or signals. The old sentence asserted a regulatory conclusion the author is
+                        not in a position to reach.</li>
+                    <li><strong>Three things that were buried are now on the opening screen:</strong> that no section
+                        has completed independent clinical review, that the site is not endorsed by NSW Health, and
+                        that the source guideline governs wherever this site disagrees with it.</li>
+                    <li><strong>A privacy statement has been added</strong> to the About page. Nothing you type into a
+                        calculator leaves your browser; the page sets out what the site does and does not collect,
+                        including the fact that feedback emails travel outside any health service system and must not
+                        carry patient details.</li>
+                </ul>
+
                 <h4>0.4.3 - August 2026</h4>
                 <ul>
                     <li><strong>The EMR copy now ends with a line saying where the regimen came from</strong> - the
@@ -3632,14 +3679,21 @@ textarea {
                 <p>It provides quick access to summarised guidelines, interactive triage flowcharts, and common clinical
                     calculators in a fast, offline-capable, and installable web app format.</p>
 
-                <h4>Disclaimer</h4>
-                <p><strong>This application is intended for educational and informational purposes only.</strong></p>
+                <h4>Intended purpose</h4>
+                <p><strong>This site is intended solely for use by appropriately qualified health professionals, as a
+                        clinical reference and decision-support aid. It is not intended for use by patients, carers or
+                        members of the public.</strong></p>
+                <p>It supports clinical judgement and does not replace it. Every recommendation, calculation and
+                    pathway it produces is to be independently reviewed by the treating clinician, against the current
+                    source guideline and the patient in front of them, before it is acted on. It does not diagnose, it
+                    does not direct treatment, and it does not analyse medical images or signals. All content assumes
+                    that patients are adults.</p>
                 <p>It is an informal quality improvement project based on guidelines and operating procedures from
-                    various health districts. It is <strong>not a medical device</strong> and is not a substitute for
-                    professional clinical judgment, diagnosis, or treatment. The author bears no responsibility for
-                    decisions made using it.</p>
-                <p>All information, calculations, and recommendations generated by this tool must be independently
-                    verified by a qualified clinician before being used for patient care.</p>
+                    various health districts, and <strong>no section of it has completed independent clinical
+                        review</strong> - see <button class="link-button" data-page="contributors-page">Contributors
+                        &amp; Clinical Review</button> for what has been reviewed and by whom. It is not produced,
+                    authorised or endorsed by NSW Health or by any other organisation named in it, and where anything
+                    here disagrees with the source guideline it cites, the source guideline governs.</p>
 
                 <h4>Sources and copyright</h4>
                 <p>The clinical content of this site is derived from published guidelines - principally the NSW Health
@@ -3653,6 +3707,29 @@ textarea {
                 <div class="button-container" style="margin: 20px 0;">
                     <button class="big-button" data-page="sources-page">Sources &amp; Attribution</button>
                 </div>
+
+                <h4>Privacy</h4>
+                <p><strong>Clinical information you enter into the calculators, scales and planning tools is processed
+                        entirely in your browser. It is never transmitted to, or stored by, this website.</strong> The
+                    site has no server-side application, no accounts, no database and no submission form: there is
+                    nowhere for it to go. Closing the tab discards it.</p>
+                <p>In full, so that the statement above can be checked rather than taken on trust:</p>
+                <ul>
+                    <li><strong>No analytics and no third-party scripts.</strong> The site loads no code, fonts,
+                        images or trackers from any other party, and sets no cookies.</li>
+                    <li><strong>Hosting.</strong> The site is served by GitHub Pages, which - like any web host -
+                        records requests to it, including IP addresses, in GitHub's own server logs under GitHub's
+                        privacy statement. The author has no access to those logs and receives no visitor data.</li>
+                    <li><strong>On-device storage.</strong> Only your dark-mode preference, and a one-shot marker used
+                        to recover from a bad cached copy of the app. No clinical content is stored. The offline cache
+                        holds the app's own files only - never anything you have typed.</li>
+                    <li><strong>Copy for EMR.</strong> Copying places the text on your device's clipboard for you to
+                        paste. Nothing is sent anywhere by the site.</li>
+                    <li><strong>Feedback.</strong> The Feedback button opens your own email program, addressed to the
+                        author's personal email account. Anything you send is an ordinary email outside any health
+                        service system, so <strong>please do not include patient-identifying information</strong> -
+                        describe the problem with the site, not the patient.</li>
+                </ul>
 
                 <h4>Version and review</h4>
                 <p>Current version: <strong><span class="app-version"></span></strong>. Each page carries its own
@@ -3674,10 +3751,12 @@ textarea {
                      states what the app is and who it is for; the full wording is one
                      tap away and is unchanged. On a wide screen it renders open. -->
                 <details class="footer-disclaimer">
-                    <summary>Decision support only - adults. Full disclaimer</summary>
-                    <span>Information contained herein is not a substitute for professional medical advice. We
-                        recommend seeking assistance from D&A, consultation-liaison addiction, DASAS or similar
-                        services for this. All information assumes that patients are adults.</span>
+                    <summary>Health professionals only - decision support, adults. Full disclaimer</summary>
+                    <span>For use by appropriately qualified health professionals only. Decision support: it does not
+                        replace your own clinical judgement, and every recommendation is to be verified against the
+                        current source guideline before it is acted on. We recommend seeking assistance from D&A,
+                        consultation-liaison addiction, DASAS or similar services. No section has completed
+                        independent clinical review. All information assumes that patients are adults.</span>
                 </details>
             </div>
         </footer>
@@ -3731,21 +3810,73 @@ textarea {
         </div>
     </div>
 
-    <!-- Mandatory Disclaimer Modal -->
+    <!--
+      Mandatory disclaimer and professional-use gate.
+
+      Two things are being done here at once, and they are separate.
+
+      The disclaimer is risk management: it says what the site is, what it is
+      not, and what the user is expected to do with it.
+
+      The gate is evidence of intended purpose. A site that states it is for
+      clinicians but admits everyone equally is a site whose intended purpose
+      is decided by whoever happens to open it. Asking the question, and
+      turning away the answer that does not qualify, is what makes the stated
+      purpose the actual one. That is why the second button is a real exit to
+      patient-appropriate services and not a politer way through the door, and
+      why the answer is not remembered - a shared ward terminal has more than
+      one user, and an attestation stored on the device would speak for all of
+      them.
+    -->
     <div id="disclaimer-modal" class="modal" style="display: block;" role="dialog" aria-modal="true"
         aria-labelledby="disclaimer-modal-title">
         <div class="modal-content">
-            <h3 id="disclaimer-modal-title">Disclaimer & Terms of Use</h3>
-            <p><strong>This application is intended for educational and informational purposes only.</strong></p>
-            <p>It is an informal quality improvement project and is <strong>not a medical device</strong>. It is not a
-                substitute for professional clinical judgment, diagnosis, or treatment. The author bears no
-                responsibility for decisions made using it.</p>
-            <p>All information, calculations, and recommendations generated by this tool must be independently verified
-                by a qualified clinician before being used for patient care. All information assumes that patients are
-                adults.</p>
-            <p>By clicking "Accept", you acknowledge and agree to these terms.</p>
-            <div class="button-group" style="justify-content: center; margin-top: 20px;">
-                <button id="accept-disclaimer-btn">Accept and Continue</button>
+            <div id="disclaimer-gate">
+                <h3 id="disclaimer-modal-title">Intended use and terms</h3>
+
+                <p><strong>This site is intended solely for use by appropriately qualified health professionals, as a
+                        clinical reference and decision-support aid. It is not intended for use by patients, carers or
+                        members of the public.</strong></p>
+                <p>It supports clinical judgement and does not replace it. Every recommendation it produces is to be
+                    independently reviewed by the treating clinician, against the current source guideline, before it
+                    is acted on. It does not diagnose, does not direct treatment, and does not analyse medical images
+                    or signals. All content assumes adult patients.</p>
+                <p><strong>No section has completed independent clinical review.</strong> This is an informal quality
+                    improvement project written by one clinician, and may contain errors.</p>
+                <p><strong>It is not produced, authorised or endorsed by NSW Health or any government health
+                        department.</strong> Where anything here disagrees with the source guideline it cites, the
+                    source guideline governs.</p>
+
+                <p>Continuing confirms that you are an appropriately qualified health professional and accept these
+                    terms.</p>
+                <div class="button-group gate-buttons">
+                    <button id="accept-disclaimer-btn">I am a qualified health professional - continue</button>
+                    <button id="decline-disclaimer-btn" class="secondary-btn">I am not - leave this site</button>
+                </div>
+            </div>
+
+            <!-- Shown in place of the gate when the user answers "I am not". No
+                 route back: a back button here would make the question a formality. -->
+            <div id="disclaimer-declined" hidden>
+                <h3>This site is not for you - and that is not a brush-off</h3>
+                <p>It is written for clinicians prescribing withdrawal medication in a hospital or clinic, in the
+                    shorthand they use with each other. Read outside that setting it is easy to misread in ways that
+                    are genuinely dangerous - <strong>withdrawal from alcohol, benzodiazepines or GHB can kill, and
+                        stopping suddenly without medical supervision is the most dangerous way to do it</strong>.</p>
+                <p>These services are for you, they are free, and they are staffed by people who do this all day:</p>
+                <ul class="contact-list">
+                    <li><strong>In an emergency, or if someone is having a seizure or cannot be roused:</strong>
+                        <a href="tel:000">000</a></li>
+                    <li><strong>Alcohol and Drug Information Service (ADIS), NSW:</strong>
+                        <a href="tel:1800422599">1800 422 599</a> - 24 hours, confidential, for anyone including
+                        family and carers. They can advise on withdrawal and arrange access to treatment.</li>
+                    <li><strong>National Alcohol and Other Drug Hotline:</strong> <a href="tel:1800250015">1800 250
+                            015</a> - 24 hours, connects you to the service in your state or territory.</li>
+                    <li><strong>Lifeline:</strong> <a href="tel:131114">13 11 14</a> - 24 hours, phone counselling.</li>
+                    <li><strong>Your GP</strong> can arrange supervised withdrawal, and can prescribe the medications
+                        described on this site safely and with monitoring.</li>
+                </ul>
+                <p>Please close this page.</p>
             </div>
         </div>
     </div>

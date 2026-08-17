@@ -10,7 +10,7 @@ import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.4.3';
+const APP_VERSION = '0.4.4';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,6 +39,23 @@ document.addEventListener('DOMContentLoaded', () => {
         disclaimerModal.style.display = 'none';
         document.body.classList.remove('modal-open');
     });
+
+    // Answering "I am not a health professional" swaps the gate for the
+    // referral panel and leaves it there. The modal is never dismissed and
+    // `modal-open` stays on the body, so the app behind it stays inert: the
+    // point of asking is that one of the answers does not get in.
+    const declineDisclaimerBtn = document.getElementById('decline-disclaimer-btn');
+    if (declineDisclaimerBtn) {
+        declineDisclaimerBtn.addEventListener('click', () => {
+            document.getElementById('disclaimer-gate').hidden = true;
+            const declined = document.getElementById('disclaimer-declined');
+            declined.hidden = false;
+            // The heading is the first thing a screen reader should reach, and
+            // focus is still on a button that no longer exists on screen.
+            declined.querySelector('h3').setAttribute('tabindex', '-1');
+            declined.querySelector('h3').focus();
+        });
+    }
 
 
 
