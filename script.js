@@ -36,6 +36,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    // --- TAB STRIP SCROLL AFFORDANCE --- //
+    // A tab strip wider than the screen just clips its last label, which reads
+    // as broken text rather than as "scroll for more". These classes drive an
+    // edge mask (see .can-scroll-left / .can-scroll-right in style.css) on
+    // whichever side actually has tabs past it.
+    //
+    // ResizeObserver rather than a resize listener: a strip inside a hidden
+    // page has no width to measure, so the first honest measurement is the one
+    // taken when its page is shown.
+    document.querySelectorAll('.tab-buttons').forEach(strip => {
+        const sync = () => {
+            const max = strip.scrollWidth - strip.clientWidth;
+            strip.classList.toggle('can-scroll-left', strip.scrollLeft > 2);
+            strip.classList.toggle('can-scroll-right', strip.scrollLeft < max - 2);
+        };
+        strip.addEventListener('scroll', sync, { passive: true });
+        new ResizeObserver(sync).observe(strip);
+        sync();
+    });
+
+    // --- FOOTER DISCLAIMER --- //
+    // Collapsed on a phone, where four lines of disclaimer took a seventh of
+    // the screen on every page; open on anything wide enough to hold it, since
+    // a disclaimer nobody has to tap for is a better disclaimer. `open` cannot
+    // be set from CSS and a closed <details> is not laid out at all, so the
+    // width test lives here. Reacting to the change event covers rotation and
+    // desktop window resizing, not just first load.
+    const footerDisclaimer = document.querySelector('.footer-disclaimer');
+    if (footerDisclaimer) {
+        const wideEnough = window.matchMedia('(min-width: 768px)');
+        const syncDisclaimer = (e) => { footerDisclaimer.open = e.matches; };
+        syncDisclaimer(wideEnough);
+        wideEnough.addEventListener('change', syncDisclaimer);
+    }
+
     // --- HAMBURGER MENU --- //
     const hamburger = document.getElementById('hamburger-menu');
     const headerControls = document.getElementById('header-controls');

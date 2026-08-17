@@ -361,3 +361,38 @@ Three consequences worth naming:
 Not done, and deliberately: the scale choice is not persisted between visits
 (it resets to CIWA-Ar on load), and the selected severity and benzodiazepine
 buttons still have no active-state styling — the new scale toggle does.
+
+### 6.1 Phone layout
+
+The app is read on a ward phone. Four fixes, all in `style.css` except where
+noted:
+
+**The severity selector was six flex children with `flex: 1; min-width: 0`.**
+That combination never wraps — it compresses. Measured at 412px: each button
+47px wide, all six clipping their labels mid-word. It is now a grid: two
+columns on a phone, three from 600px, six from 992px. Nothing clips at any
+width, because `overflow-wrap: break-word` is on the button rather than being
+implied by the layout.
+
+**Nothing showed which regimen or drug was selected.** `.regimen-severity-btn`
+and `.benzo-choice-btn` had no `.active` rule at all — the only signal was the
+heading below the selector, which is off-screen on a phone once you have
+scrolled to the doses. Both now take the same filled treatment as the scale
+toggle.
+
+**The footer disclaimer was 130px — a seventh of a phone screen, on every
+page.** It is a `<details>` collapsed to one line, opened by `matchMedia` at
+768px and above (`script.js`). CSS cannot do this: `open` is not settable from
+CSS, and a closed `<details>` is not laid out even if its children are forced
+visible — verified in Chromium before writing the script.
+
+**Tab strips clipped their last label with no affordance.** The pure-CSS
+scroll-shadow technique (`background-attachment: local` covering layers over
+`scroll` shadow layers) does not work here: the tab buttons are opaque and
+paint over the container's background. It is a mask on the strip instead,
+toggled by `.can-scroll-left` / `.can-scroll-right`, which `script.js` sets
+from the real scroll position via a `scroll` listener and a `ResizeObserver` —
+the observer matters because a strip inside a hidden page has no width to
+measure until its page is shown. The two longest inpatient tab labels also
+carry a short form for widths below 768px, swapped with `display`, so only one
+is ever in the accessibility tree.

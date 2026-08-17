@@ -253,6 +253,37 @@ body.modal-open > #app-container {
 
 .footer-disclaimer {
     text-align: right; /* Aligns disclaimer text to the right if it wraps */
+    font-size: 14px;
+    min-width: 0;
+}
+
+.footer-disclaimer > summary {
+    cursor: pointer;
+    /* One line, ellipsised rather than wrapped: the point of collapsing it is
+       that the footer has a fixed, small height on a phone. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.footer-disclaimer > span {
+    display: block;
+    margin-top: 6px;
+}
+
+/* There is room for the full text on a wide screen, so the disclaimer is opened
+   there — see the matchMedia block in script.js. `open` cannot be set from CSS,
+   and a closed <details> is not laid out even if its children are forced
+   visible, so this one case needs script. The summary is hidden once open,
+   because it would otherwise duplicate the text below it. */
+@media (min-width: 768px) {
+    .footer-disclaimer[open] > summary {
+        display: none;
+    }
+
+    .footer-disclaimer[open] > span {
+        margin-top: 0;
+    }
 }
 
 /* --- Light Theme --- */
@@ -415,6 +446,49 @@ textarea {
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
+/* Scroll affordance. Without one, a clipped tab label ("4. Monitoring, Escala")
+   reads as broken text rather than as "there is more this way".
+   A mask rather than an edge shadow, because the tab buttons are opaque and
+   would paint over any gradient on the container's own background. The classes
+   are set by script.js from the real scroll position, so an edge fades only
+   when there is something past it - and stops fading once you reach the end. */
+.tab-buttons.can-scroll-left {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 28px);
+    mask-image: linear-gradient(to right, transparent 0, #000 28px);
+}
+
+.tab-buttons.can-scroll-right {
+    -webkit-mask-image: linear-gradient(to left, transparent 0, #000 28px);
+    mask-image: linear-gradient(to left, transparent 0, #000 28px);
+}
+
+.tab-buttons.can-scroll-left.can-scroll-right {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+}
+
+/* Tab labels come in two lengths. The full label is the accessible name on a
+   screen wide enough to show it; below that the strip would clip it mid-word,
+   so a short form is shown instead. Only one is ever in the accessibility tree,
+   because the hidden one is display: none rather than visually hidden. */
+.tab-label-short {
+    display: inline;
+}
+
+.tab-label-full {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .tab-label-short {
+        display: none;
+    }
+
+    .tab-label-full {
+        display: inline;
+    }
+}
+
 .tab-button {
     background: var(--tab-bg);
     color: var(--text-color);
@@ -489,10 +563,57 @@ textarea {
     gap: 10px;
 }
 
-/* Ensure severity buttons are exactly equal in size and text scales/wraps */
+/* The severity selector is a grid, not a flex row. Six equal flex children with
+   min-width: 0 never wrap - they compress, and on a phone that left each button
+   47px wide with its label cut mid-word. Two columns on a phone, three on a
+   tablet, all six across on a desktop. */
+.severity-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (min-width: 600px) {
+    .severity-group {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .severity-group {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
 .regimen-severity-btn {
-    flex: 1;
+    flex: none;
     min-width: 0;
+    /* A band label must never be cut mid-word, at any width. */
+    overflow-wrap: break-word;
+    text-align: left;
+    padding: 10px 12px;
+    line-height: 1.35;
+}
+
+.regimen-severity-btn small {
+    display: block;
+    margin-top: 3px;
+    opacity: 0.85;
+}
+
+/* Which regimen and which drug are selected had no visual state at all: the
+   only signal was the heading below, which is off-screen on a phone once you
+   have scrolled to the doses. Same filled treatment as the scale toggle, so
+   "this is selected" reads the same way everywhere on the tab. */
+.regimen-severity-btn.active,
+.benzo-choice-btn.active {
+    background-color: var(--primary-btn-bg);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.regimen-severity-btn.active:hover,
+.benzo-choice-btn.active:hover {
+    background-color: var(--primary-btn-hover-bg);
 }
 
 /* CIWA-Ar / AWS choice - two narrow buttons, not full-width like the severity
@@ -1028,9 +1149,12 @@ textarea {
                         <button class="tab-button active" data-tab="prerequisites">Prerequisites</button>
                         <button class="tab-button" data-tab="thiamine">Thiamine</button>
                         <button class="tab-button" data-tab="benzo-choice">1. Benzo Choice</button>
-                        <button class="tab-button" data-tab="assessment-banding">2. Assessment &amp; Banding</button>
+                        <button class="tab-button" data-tab="assessment-banding"><span class="tab-label-full">2.
+                                Assessment &amp; Banding</span><span class="tab-label-short">2. Assessment</span></button>
                         <button class="tab-button" data-tab="regimens">3. Regimens</button>
-                        <button class="tab-button" data-tab="monitoring-discharge">4. Monitoring, Escalation &amp; Discharge</button>
+                        <button class="tab-button" data-tab="monitoring-discharge"><span class="tab-label-full">4.
+                                Monitoring, Escalation &amp; Discharge</span><span class="tab-label-short">4.
+                                Monitoring</span></button>
                         <button class="tab-button" data-tab="special-cases">Special Cases</button>
                         <button class="tab-button" data-tab="alcohol-harm-reduction">Harm Reduction</button>
                     </div>
@@ -1143,15 +1267,14 @@ textarea {
                         <h3>3. Regimens</h3>
                         <p>Displaying Regimens for: <strong id="regimen-benzo-display">Diazepam</strong></p>
                         <div class="scale-choice">
-                            <p><strong>Which scale does your ward chart?</strong> Bands, dose triggers and the EMR
-                                copy below are shown in the scale you pick. The mapping between the two is on the
-                                Monitoring, Escalation &amp; Discharge tab.</p>
+                            <p><strong>Which scale does your ward chart?</strong> The bands, PRN triggers and EMR
+                                copy below follow this choice.</p>
                             <div class="button-group" role="group" aria-label="Withdrawal scale">
                                 <button class="scale-choice-btn active" data-scale="ciwa" aria-pressed="true">CIWA-Ar</button>
                                 <button class="scale-choice-btn" data-scale="aws" aria-pressed="false">AWS</button>
                             </div>
                         </div>
-                        <div class="button-group">
+                        <div class="button-group severity-group">
                             <button class="regimen-severity-btn" data-severity="symptom">
                                 <strong>Symptom-Triggered</strong><br>
                                 <small><span class="band-label" data-ciwa="Dose to the CIWA-Ar score"
@@ -3261,6 +3384,17 @@ textarea {
                     <li>Advice given under PRN - the test-dose protocol's monitoring instructions, for instance - is
                         no longer headed "PRN dosing", which read as an instruction to give something.</li>
                 </ul>
+                <h5>Readability on a phone</h5>
+                <ul>
+                    <li><strong>The regimen selector now fits a phone screen.</strong> Two columns instead of six
+                        squeezed side by side, so band labels are no longer cut mid-word.</li>
+                    <li><strong>The selected regimen and benzodiazepine are highlighted.</strong> Previously
+                        nothing on screen showed which was selected once you had scrolled to the doses.</li>
+                    <li><strong>The footer disclaimer collapses to one line on a phone</strong> and expands on tap.
+                        The wording is unchanged, and it stays open on a larger screen.</li>
+                    <li>Tab strips fade at the edge when there are more tabs to scroll to, and the longest tab
+                        labels shorten on narrow screens.</li>
+                </ul>
 
                 <h4>0.4.0 - August 2026</h4>
                 <p><em>Revision against NSW Health, Management of Withdrawal from Alcohol and Other Drugs: Clinical
@@ -3512,10 +3646,16 @@ textarea {
         <footer class="app-footer">
             <div class="footer-content">
                 <span class="footer-version">Version <span class="app-version"></span></span>
-                <span class="footer-disclaimer" style="font-size: 14px;">Information contained herein is not a
-                    substitute for professional medical advice. We recommend seeking assistance from D&A,
-                    consultation-liaison addiction, DASAS or similar services for this. All information assumes that
-                    patients are adults.</span>
+                <!-- Collapsed by default because at four lines it took a seventh of a
+                     phone screen on every page, permanently. The summary line still
+                     states what the app is and who it is for; the full wording is one
+                     tap away and is unchanged. On a wide screen it renders open. -->
+                <details class="footer-disclaimer">
+                    <summary>Decision support only - adults. Full disclaimer</summary>
+                    <span>Information contained herein is not a substitute for professional medical advice. We
+                        recommend seeking assistance from D&A, consultation-liaison addiction, DASAS or similar
+                        services for this. All information assumes that patients are adults.</span>
+                </details>
             </div>
         </footer>
 

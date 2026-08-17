@@ -21,6 +21,23 @@ exports. No dose, band threshold or monitoring frequency changed.
 | Source tags are no longer carried into any EMR paste. | Reverses part of AUTH-06. The app is the source of record; a prescribing block is read at the drug chart, not audited. |
 | Advice held in a cell's PRN slot (the test-dose protocol's monitoring instructions) is headed "Additional advice", not "PRN dosing". | The old heading read as an instruction to give something. |
 
+### Readability on a phone
+
+The app is mostly read on a ward phone, and the inpatient tab did not fit one.
+
+- **The severity selector is a grid**, two columns on a phone and three on a
+  tablet. Six equal flex children never wrapped — they compressed, leaving each
+  button 47px wide with its band label cut mid-word.
+- **The selected regimen and the selected benzodiazepine now look selected.**
+  Neither had any active state; on a phone, once scrolled to the doses, nothing
+  on screen said which regimen was showing.
+- **The footer disclaimer collapses to one line on a phone**, expanding on tap,
+  and opens automatically on a wider screen. It was taking 130px — a seventh of
+  the screen — on every page. Wording unchanged.
+- **Tab strips fade at whichever edge has more tabs**, so a clipped label reads
+  as "scroll this way" rather than as broken text. The two longest inpatient tab
+  labels also shorten below 768px.
+
 ### Infrastructure
 
 - The EMR export is built from `REGIMEN_CONFIG` rather than scraped from the
