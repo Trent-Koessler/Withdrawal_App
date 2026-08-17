@@ -13,9 +13,27 @@ const symptomTriggeredNote = (drugName) => `For unclear alcohol intake, or antic
 const OXAZEPAM_CONVERSION_CAVEAT = `<b>Conversion caveat.</b> Diazepam 10mg &asymp; oxazepam 30mg is an <b>approximate</b> ratio, not an equivalence. Oxazepam has no long-acting active metabolites, so it needs <b>more frequent administration and a slower step-down</b> than a diazepam taper of the same shape. Treat the schedule below as a starting point to be <b>titrated against response</b>, not a fixed course to complete. <span class="src-tag src-nswcg-adapted">NSWCG-adapted §5.6.3 - rationale: NSWCG gives the equivalence ratio and advises careful titration for this group, but publishes no oxazepam taper table; converting the diazepam schedule is a local step and the resulting shape is not guideline-derived.</span>`;
 
 // Many NSW wards chart AWS rather than CIWA-Ar, so no band in this app is
-// expressed in CIWA-Ar alone. NSWCG Table 5.6 maps CIWA-Ar <10 / 10-20 / >20 to
-// AWS <4 / 4-14 / >14 — which is coarser than the local CIWA bands, so AWS 4-14
-// covers both fixed schedules and cannot separate them.
+// expressed in one scale alone: every band carries both thresholds and the
+// Regimens tab renders whichever the ward charts. The toggle chooses a view —
+// it never deletes the other scale's threshold from the data, which is what
+// this helper exists to make hard to get wrong.
+//
+// Values are the thresholds only ('10-15'), not the scale name: the renderer
+// supplies 'CIWA-Ar' or 'AWS' so a band can never be labelled with the wrong one.
+const band = (ciwa, aws) => ({ ciwa, aws });
+
+// NSWCG Table 5.6. Observation frequency is a property of the band, so it
+// travels with the band rather than being restated per schedule.
+const BAND_MONITORING = { submild: '4-6 hourly', mild: '2-4 hourly', moderate: '2-4 hourly', severe: 'hourly' };
+
+// Stated on the Assessment & Banding tab for every patient commenced on a
+// regimen, and repeated in the EMR export so a fixed schedule never pastes with
+// a band frequency alone.
+export const INITIAL_SCORING_INTERVAL = '2-hourly at least initially';
+
+// NSWCG Table 5.6 maps CIWA-Ar <10 / 10-20 / >20 to AWS <4 / 4-14 / >14 —
+// which is coarser than the local CIWA bands, so AWS 4-14 covers both fixed
+// schedules and cannot separate them.
 const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> NSWCG maps CIWA-Ar &lt; 10 / 10-20 / &gt; 20 to AWS &lt; 4 / 4-14 / &gt; 14. Those bands are <b>coarser</b> than the CIWA-Ar bands this app uses to separate Mild-Moderate from Moderate-Severe: <b>AWS 4-14 spans both</b>. An AWS score alone will not choose between the two fixed schedules - use reported intake, risk factors and clinical assessment for that, and use AWS to track severity within the schedule you choose. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6 - rationale: NSWCG publishes the three-band AWS mapping but no AWS equivalent for the local CIWA-Ar 10-15 / 15-20 split, so the overlap is stated rather than a finer mapping being invented.</span>`;
 
 // TODO(clinical): how should a ward that charts AWS only choose between the
@@ -28,7 +46,9 @@ const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> NSWCG maps CIWA-Ar &lt;
 // nothing gentler available. NSWCG Table 5.5 notes milder cases may respond to
 // half the ambulatory regimen doses.
 const subMildCell = (drug, halved, extraCaveats = []) => ({
-    title: `Sub-Mild (CIWA-Ar &lt; 10 | AWS &lt; 4)`,
+    name: 'Sub-Mild',
+    band: band('&lt; 10', '&lt; 4'),
+    monitoring: BAND_MONITORING.submild,
     caveat: [...extraCaveats, `<b>Two options, and they are not equivalent.</b> A patient below the Mild-Moderate band does not automatically need a fixed schedule. Decide between supportive care with symptom-triggered dosing, and a halved fixed schedule, before prescribing. <span class="src-tag src-nswcg">NSWCG Table 5.5, §5.4.4</span>`],
     schedule: [
         `<b>Option A - supportive care and symptom-triggered dosing only.</b> No scheduled benzodiazepine. Monitor 4-6 hourly, treat to the score using the Symptom-Triggered regimen, and reassess. This is the NSWCG-preferred approach for uncomplicated withdrawal with frequent review. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
@@ -40,25 +60,28 @@ const subMildCell = (drug, halved, extraCaveats = []) => ({
     // schedule? Both are presented until this is decided; only one should be.
 });
 
-// NSWCG Table 5.4 / 5.6. The dose column is drug-specific; the score bands and
-// the monitoring frequency are not, so they are written once here.
-const symptomTriggeredTable = (doses) => ({
-    headers: ['CIWA-Ar', 'AWS', 'Dose', 'Monitoring'],
-    rows: [
-        ['&lt; 10', '&lt; 4', doses[0], '4-6 hourly'],
-        ['10-20', '4-14', doses[1], '2-4 hourly'],
-        ['&gt; 20', '&gt; 14', doses[2], 'hourly']
-    ]
-});
+// NSWCG Table 5.4 / 5.6. The dose is drug-specific; the score bands and the
+// monitoring frequency are not, so they are written once here.
+//
+// A list rather than a four-column table: this is the block clinicians paste
+// into the EMR, and a table becomes unreadable pipe-separated rows there. Each
+// band still carries both scales - the renderer shows one.
+const symptomTriggeredBands = (doses) => [
+    { ...band('&lt; 10', '&lt; 4'), dose: doses[0], monitoring: BAND_MONITORING.submild },
+    { ...band('10-20', '4-14'), dose: doses[1], monitoring: BAND_MONITORING.mild },
+    { ...band('&gt; 20', '&gt; 14'), dose: doses[2], monitoring: BAND_MONITORING.severe }
+];
 
 // Symptom-triggered dosing is the regimen NSWCG §5.4.4 calls ideal for
 // uncomplicated withdrawal reviewed frequently by skilled clinicians — i.e. the
 // one a specialist withdrawal unit would reach for first. It was absent from
 // this app entirely, surviving only as a sub-block under Mild-Moderate.
+// The drug is not in the name: the renderer appends it, so the panel heading
+// and the EMR header cannot end up naming it twice or disagreeing about it.
 const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
-    title: `Symptom-Triggered (${drug})`,
+    name: 'Symptom-Triggered',
     caveat: [...extraCaveats, `<b>When this regimen is appropriate.</b> Symptom-triggered dosing suits <b>uncomplicated withdrawal</b> in patients without co-occurring conditions, in an inpatient setting with <b>frequent review by skilled clinicians</b>. Where those conditions do not hold - complex inpatients with co-occurring conditions - a <b>hybrid</b> regimen (a fixed schedule reviewed daily, plus PRN) is often the most appropriate choice. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`],
-    table: symptomTriggeredTable(doses),
+    bands: symptomTriggeredBands(doses),
     schedule: [
         `Score the patient at the interval shown for their current band, and give the dose for that band. There is no fixed daily total to complete. <span class="src-tag src-nswcg">NSWCG Table 5.4, Table 5.6</span>`,
         `<b>Medical review required</b> for rising scores, or for severe withdrawal not responding to medication. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
@@ -72,7 +95,7 @@ const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
 // same information from a smaller first dose, so the reason for preferring a
 // test dose locally has to be stated rather than assumed.
 const testDoseCell = (drug, testDose, extraCaveats = []) => ({
-    title: 'Unknown Tolerance (Test-Dose Protocol)',
+    name: 'Unknown Tolerance (Test-Dose Protocol)',
     caveat: [...extraCaveats,
         `<b>This protocol is local, not guideline.</b> NSWCG does not describe a test-dose protocol. Its answer to uncertain tolerance is <b>symptom-triggered dosing</b>, which produces the same information about tolerance from a smaller first dose and is the safer default where frequent skilled review is available. <span class="src-tag src-local">LOCAL - rationale: a single observed test dose is preferred locally where review is not frequent enough to run a symptom-triggered regimen safely, because it establishes tolerance at a known time under direct observation rather than across a shift; where frequent review IS available, use symptom-triggered dosing instead. Reassessing at a fixed timeframe also gives the clinician a clear decision point for which subsequent regimen to commence, rather than an open-ended judgement call.</span>`],
     schedule: [
@@ -100,11 +123,37 @@ const testDoseCell = (drug, testDose, extraCaveats = []) => ({
 // them at 30mg qid, which is a substantial dose for the population it is aimed
 // at, and the conversion caveat may not be enough on its own.
 
+// The three safety lines that travel with every regimen pasted into the EMR.
+//
+// Plain text, not markup: the EMR export carries no citations by design (the
+// app is the source of record and the paste is a prescribing aid), so these are
+// the rendered sentences rather than tagged clinical blocks. Each is the
+// plain-text twin of a statement already on the page - keeping them here rather
+// than inline in script.js is what lets a test assert the two say the same thing.
+export const EMR_SAFETY_LINES = {
+    // Twin of the symptom-triggered regimen's dosing-interval note (LOCAL, with
+    // the DT exception matching NSWCG §5.6.2).
+    dosingInterval: 'Do not dose more frequently than 2-hourly, unless the patient has delirium tremens '
+        + 'and is in a heavily medically monitored environment (HDU, or 1:1 nursing with continuous observation).',
+    // Twin of "De-escalate / withhold if sedated" in the Escalation triggers block.
+    sedation: 'DO NOT give a regular or PRN dose if the patient is sedated - withhold the dose and review '
+        + 'the regular schedule. If multiple doses are withheld, the schedule is too high.',
+    // Twin of the escalation block's review threshold (NSWCG §5.4.4).
+    review: (drug, max) => `Medical review if scores are rising, if withdrawal is not responding, or if the `
+        + `total ${drug} dose exceeds ${max} in 24 hours.`
+};
+
 export const REGIMEN_CONFIG = {
     "Diazepam": {
         name: "Diazepam",
+        // The 24-hour total at which a medical officer must review. Held at drug
+        // level because it applies to every regimen for that drug, not only to
+        // symptom-triggered dosing where it was previously stated.
+        reviewMax: '80mg',
         mild: {
-            title: 'Mild-Moderate (CIWA-Ar 10-15 | AWS 4-14)',
+            name: 'Mild-Moderate',
+            band: band('10-15', '4-14'),
+            monitoring: BAND_MONITORING.mild,
             caveat: [AWS_BAND_CAVEAT],
             schedule: [{ dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' }],
             prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }],
@@ -115,13 +164,15 @@ export const REGIMEN_CONFIG = {
         },
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
-        moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }] },
+        moderate: { name: 'Moderate-Severe', band: band('15-20', '4-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }] },
         // TODO(clinical): confirm the preferred Day 2 default after a loading day —
         // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
         // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
         // while local practice has used the latter; only one should be the default.
         severe: {
-            title: 'Severe (CIWA-Ar > 20 | AWS > 14)',
+            name: 'Severe',
+            band: band('&gt; 20', '&gt; 14'),
+            monitoring: BAND_MONITORING.severe,
             // Setting is a first-order decision — it was previously buried under
             // PRN dosing, where it read as an afterthought to the drug chart.
             setting: [
@@ -145,8 +196,13 @@ export const REGIMEN_CONFIG = {
     },
     "Oxazepam": {
         name: "Oxazepam",
+        // 240mg = the 80mg diazepam review point at the 1:3 conversion ratio,
+        // carried over from the symptom-triggered regimen where it already applied.
+        reviewMax: '240mg',
         mild: {
-            title: 'Mild-Moderate (CIWA-Ar 10-15 | AWS 4-14)',
+            name: 'Mild-Moderate',
+            band: band('10-15', '4-14'),
+            monitoring: BAND_MONITORING.mild,
             caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT],
             schedule: [{ dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' }],
             prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }],
@@ -157,14 +213,16 @@ export const REGIMEN_CONFIG = {
         },
         submild: subMildCell('oxazepam', 'oxazepam 15mg qid on Day 1, 15mg tds on Day 2, 15mg bd on Day 3, 7.5mg bd on Day 4, then 7.5mg nocte on Day 5', [OXAZEPAM_CONVERSION_CAVEAT]),
         symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),
-        moderate: { title: 'Moderate-Severe (CIWA-Ar 15-20 | AWS 4-14)', caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }] },
+        moderate: { name: 'Moderate-Severe', band: band('15-20', '4-14'), monitoring: BAND_MONITORING.moderate, caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }] },
         // Deliberately has no schedule. The population that needs oxazepam —
         // decompensated liver disease, respiratory insufficiency, elderly/frail,
         // cerebral trauma — is precisely the population NSWCG §5.6.3 says must not
         // receive a loading regimen, so a severe-withdrawal oxazepam regimen is a
         // combination that should never render as a set of numbers to follow.
         severe: {
-            title: 'Severe (CIWA-Ar > 20 | AWS > 14) - oxazepam',
+            name: 'Severe',
+            band: band('&gt; 20', '&gt; 14'),
+            monitoring: BAND_MONITORING.severe,
             routing: [
                 `<b>There is no oxazepam regimen for severe withdrawal.</b> Loading is a diazepam concept: it works because of diazepam's long-acting active metabolites, which oxazepam does not have. Converting a diazepam loading dose would give roughly 240mg of oxazepam to the patients least able to tolerate it. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>This is not specific to severe withdrawal.</b> The situations that favour oxazepam over diazepam - significant liver impairment, respiratory insufficiency, elderly or frail patients, cerebral trauma - are the same situations in which a loading regimen would not be appropriate. Loading regimens for oxazepam have therefore been omitted entirely, at every severity. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,

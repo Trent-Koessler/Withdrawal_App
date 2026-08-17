@@ -1,4 +1,4 @@
-const CACHE_NAME = 'withdrawal-app-cache-v27';
+const CACHE_NAME = 'withdrawal-app-cache-v28';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 // style.css is deliberately absent: it is inlined into index.html by
 // tools/build-css.py, so the app never requests it as a separate file.

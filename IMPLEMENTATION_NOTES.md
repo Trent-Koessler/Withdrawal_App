@@ -240,7 +240,7 @@ Where the spec's guess was wrong, the actual location is given in bold.
 | AUTH-03 | `index.html` (`#contributors-page`) | |
 | AUTH-04 | `index.html` (`#sources-page`), `#about-page` copyright | |
 | AUTH-05 | `data/scales.js` (`caveats`), `script.js` (`setupCalculator`) | Rendered inside each calculator, above the results grid. |
-| AUTH-06 | `script.js` (`buildPlanSummary`), `index.html` `#regimens` | Copies the rendered regimen, monitoring, escalation and thiamine plan. |
+| AUTH-06 | `script.js` (`buildRegimenSummary`), `index.html` `#regimens` | Superseded in 0.4.1 — see §6. Originally copied the rendered regimen, monitoring, escalation and thiamine plan with source tags bracketed inline. |
 | AUTH-07 | `index.html` (`#capacity-page`) | Scaffold only — every clinical/legal statement is a `TODO(clinical):`. |
 
 ---
@@ -310,3 +310,89 @@ benzodiazepine × severity cells render, and there are no console errors.
    are unchanged in dose but now say their provenance is unconfirmed, with a
    `TODO(review):` to establish it. Giving them an NSWCG tag they had not
    earned would have been the easier and worse option.
+
+---
+
+## 6. 0.4.1 — regimen presentation and the EMR export
+
+Bedside feedback after the revision: the symptom-triggered regimen would not
+paste into an EMR field, and the plan export was too long to use. Both are
+presentation problems, and neither is fixed by changing what the app says.
+
+**Symptom-triggered dosing is a list.** The four-column
+`CIWA-Ar | AWS | Dose | Monitoring` table became pipe-separated rows in a
+plain-text field. It is now one line per band. `symptomTriggeredTable` became
+`symptomTriggeredBands`, and a test asserts no cell carries a `table` again.
+
+**One scale at a time, chosen on the Regimens tab.** Every band previously
+rendered both scales, doubling the width of the line a nurse reads at the drug
+chart. Bands are now stored as `{ ciwa, aws }` threshold pairs with no scale
+name in them — the renderer supplies the label — and a toggle picks which is
+shown. Two guards keep the original P1-02 invariant intact: a band must carry
+both thresholds, and a threshold must not bake in a scale name.
+
+The toggle is scoped to the Regimens tab. The Monitoring tab still shows both
+scales, because its table *is* the mapping between them. The AWS band caveat
+still renders on the fixed schedules under either selection: AWS 4-14 spans
+both, and hiding CIWA-Ar makes that more important to state, not less.
+
+**PRN under AWS.** The Mild-Mod PRN triggers (CIWA-Ar 10-15 → 10mg,
+15-20 → 20mg) are both AWS 4-14. Rendering that band twice at two doses would
+be unfollowable, so under AWS the CIWA-Ar sub-band is named alongside it.
+
+**The export is a prescribing block.** `buildPlanSummary` scraped seven blocks
+out of the DOM — about 120 lines, 9,300 characters. `buildRegimenSummary`
+builds from `REGIMEN_CONFIG` and emits 10-17 lines: the doses, how often to
+score, the 2-hourly floor, the withhold-if-sedated caution, and the 24-hour
+review total. Everything else stays on the page.
+
+Three consequences worth naming:
+
+1. **Citations are dropped from every EMR paste, not bracketed.** This reverses
+   the AUTH-06 decision. The reasoning that survives: the app is the source of
+   record, and a block read at a drug chart is not audited from the paste.
+2. **The tail lines are suppressed where the regimen already states them.** The
+   severe cell sets its own 2-hourly interval and its own 80mg review point;
+   appending generic versions underneath would read as two different rules.
+3. **The preview rebuilds with the panel.** Previously the textarea was filled
+   on click, and a routing cell returned before filling it — so switching to
+   severe/oxazepam left the previous regimen's doses in the box.
+
+Not done, and deliberately: the scale choice is not persisted between visits
+(it resets to CIWA-Ar on load), and the selected severity and benzodiazepine
+buttons still have no active-state styling — the new scale toggle does.
+
+### 6.1 Phone layout
+
+The app is read on a ward phone. Four fixes, all in `style.css` except where
+noted:
+
+**The severity selector was six flex children with `flex: 1; min-width: 0`.**
+That combination never wraps — it compresses. Measured at 412px: each button
+47px wide, all six clipping their labels mid-word. It is now a grid: two
+columns on a phone, three from 600px, six from 992px. Nothing clips at any
+width, because `overflow-wrap: break-word` is on the button rather than being
+implied by the layout.
+
+**Nothing showed which regimen or drug was selected.** `.regimen-severity-btn`
+and `.benzo-choice-btn` had no `.active` rule at all — the only signal was the
+heading below the selector, which is off-screen on a phone once you have
+scrolled to the doses. Both now take the same filled treatment as the scale
+toggle.
+
+**The footer disclaimer was 130px — a seventh of a phone screen, on every
+page.** It is a `<details>` collapsed to one line, opened by `matchMedia` at
+768px and above (`script.js`). CSS cannot do this: `open` is not settable from
+CSS, and a closed `<details>` is not laid out even if its children are forced
+visible — verified in Chromium before writing the script.
+
+**Tab strips clipped their last label with no affordance.** The pure-CSS
+scroll-shadow technique (`background-attachment: local` covering layers over
+`scroll` shadow layers) does not work here: the tab buttons are opaque and
+paint over the container's background. It is a mask on the strip instead,
+toggled by `.can-scroll-left` / `.can-scroll-right`, which `script.js` sets
+from the real scroll position via a `scroll` listener and a `ResizeObserver` —
+the observer matters because a strip inside a hidden page has no width to
+measure until its page is shown. The two longest inpatient tab labels also
+carry a short form for widths below 768px, swapped with `display`, so only one
+is ever in the accessibility tree.

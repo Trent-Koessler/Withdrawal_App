@@ -5,6 +5,50 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.1 — August 2026
+
+How the inpatient alcohol regimens are presented, and what the EMR copy
+exports. No dose, band threshold or monitoring frequency changed.
+
+### Safety — these alter clinical meaning
+
+| Change | Why |
+|---|---|
+| Symptom-triggered dosing renders as a list, one line per band, instead of a four-column CIWA-Ar/AWS table. | The table was the block clinicians paste into the EMR, where it degraded into pipe-separated rows. |
+| The Regimens tab carries a CIWA-Ar / AWS toggle; bands, PRN triggers and the EMR copy render in the selected scale only. | Showing every band in both scales was clutter at the drug chart. Both thresholds are still held in the data — the toggle picks a view, and a test asserts no band can exist in one scale alone. |
+| Under AWS, the two Mild-Mod PRN triggers name their CIWA-Ar sub-band as well. | NSWCG's AWS mapping is coarser than the CIWA-Ar split this app uses, so both triggers sit in AWS 4-14 at different doses. Rendering "AWS 4-14" twice with two doses would be an instruction a nurse cannot follow. |
+| The EMR copy exports a prescribing block (~10-17 lines) rather than the whole tab (~120 lines): doses, scoring frequency, the 2-hourly dosing floor, the withhold-if-sedated caution, and the 24-hour review total. | The whole-tab export was too long to paste, so the parts that matter at the drug chart were buried. Band selection, escalation, discharge and thiamine remain on the page. |
+| Source tags are no longer carried into any EMR paste. | Reverses part of AUTH-06. The app is the source of record; a prescribing block is read at the drug chart, not audited. |
+| Advice held in a cell's PRN slot (the test-dose protocol's monitoring instructions) is headed "Additional advice", not "PRN dosing". | The old heading read as an instruction to give something. |
+
+### Readability on a phone
+
+The app is mostly read on a ward phone, and the inpatient tab did not fit one.
+
+- **The severity selector is a grid**, two columns on a phone and three on a
+  tablet. Six equal flex children never wrapped — they compressed, leaving each
+  button 47px wide with its band label cut mid-word.
+- **The selected regimen and the selected benzodiazepine now look selected.**
+  Neither had any active state; on a phone, once scrolled to the doses, nothing
+  on screen said which regimen was showing.
+- **The footer disclaimer collapses to one line on a phone**, expanding on tap,
+  and opens automatically on a wider screen. It was taking 130px — a seventh of
+  the screen — on every page. Wording unchanged.
+- **Tab strips fade at whichever edge has more tabs**, so a clipped label reads
+  as "scroll this way" rather than as broken text. The two longest inpatient tab
+  labels also shorten below 768px.
+
+### Infrastructure
+
+- The EMR export is built from `REGIMEN_CONFIG` rather than scraped from the
+  rendered page, and the preview textarea is rebuilt whenever drug, severity or
+  scale changes — a routing cell previously left the previous regimen's doses
+  sitting in the box.
+- Band thresholds moved into the data as `{ ciwa, aws }` pairs without scale
+  names, so a band cannot render under the wrong scale's label.
+- The three safety sentences in the paste live in `EMR_SAFETY_LINES`, with a
+  test asserting they still match the statements on the page.
+
 ## 0.4.0 — August 2026
 
 Revision against NSW Health, *Management of Withdrawal from Alcohol and Other
@@ -54,7 +98,7 @@ as NSWCG. Task IDs refer to `SUDTOOLKIT_REVISION_SPEC.md`; see
 - **AUTH-03** Contributors and clinical review register.
 - **AUTH-04** Sources and attribution page; the copyright notice now covers original content and site code rather than derived clinical material.
 - **AUTH-05** Scale caveats rendered inside each calculator, above the score.
-- **AUTH-06** The EMR copy function exports a whole plan, with source tags intact.
+- **AUTH-06** The EMR copy function exports a whole plan, with source tags intact. *(Superseded in 0.4.1: the export is now a short prescribing block and drops citations.)*
 - **AUTH-07** Capacity, consent and involuntary pathways scaffolded — deliberately not written.
 
 ### Not resolved

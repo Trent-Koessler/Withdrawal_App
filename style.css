@@ -224,6 +224,37 @@ body.modal-open > #app-container {
 
 .footer-disclaimer {
     text-align: right; /* Aligns disclaimer text to the right if it wraps */
+    font-size: 14px;
+    min-width: 0;
+}
+
+.footer-disclaimer > summary {
+    cursor: pointer;
+    /* One line, ellipsised rather than wrapped: the point of collapsing it is
+       that the footer has a fixed, small height on a phone. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.footer-disclaimer > span {
+    display: block;
+    margin-top: 6px;
+}
+
+/* There is room for the full text on a wide screen, so the disclaimer is opened
+   there — see the matchMedia block in script.js. `open` cannot be set from CSS,
+   and a closed <details> is not laid out even if its children are forced
+   visible, so this one case needs script. The summary is hidden once open,
+   because it would otherwise duplicate the text below it. */
+@media (min-width: 768px) {
+    .footer-disclaimer[open] > summary {
+        display: none;
+    }
+
+    .footer-disclaimer[open] > span {
+        margin-top: 0;
+    }
 }
 
 /* --- Light Theme --- */
@@ -386,6 +417,49 @@ textarea {
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
+/* Scroll affordance. Without one, a clipped tab label ("4. Monitoring, Escala")
+   reads as broken text rather than as "there is more this way".
+   A mask rather than an edge shadow, because the tab buttons are opaque and
+   would paint over any gradient on the container's own background. The classes
+   are set by script.js from the real scroll position, so an edge fades only
+   when there is something past it - and stops fading once you reach the end. */
+.tab-buttons.can-scroll-left {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 28px);
+    mask-image: linear-gradient(to right, transparent 0, #000 28px);
+}
+
+.tab-buttons.can-scroll-right {
+    -webkit-mask-image: linear-gradient(to left, transparent 0, #000 28px);
+    mask-image: linear-gradient(to left, transparent 0, #000 28px);
+}
+
+.tab-buttons.can-scroll-left.can-scroll-right {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+}
+
+/* Tab labels come in two lengths. The full label is the accessible name on a
+   screen wide enough to show it; below that the strip would clip it mid-word,
+   so a short form is shown instead. Only one is ever in the accessibility tree,
+   because the hidden one is display: none rather than visually hidden. */
+.tab-label-short {
+    display: inline;
+}
+
+.tab-label-full {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .tab-label-short {
+        display: none;
+    }
+
+    .tab-label-full {
+        display: inline;
+    }
+}
+
 .tab-button {
     background: var(--tab-bg);
     color: var(--text-color);
@@ -460,10 +534,102 @@ textarea {
     gap: 10px;
 }
 
-/* Ensure severity buttons are exactly equal in size and text scales/wraps */
+/* The severity selector is a grid, not a flex row. Six equal flex children with
+   min-width: 0 never wrap - they compress, and on a phone that left each button
+   47px wide with its label cut mid-word. Two columns on a phone, three on a
+   tablet, all six across on a desktop. */
+.severity-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (min-width: 600px) {
+    .severity-group {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .severity-group {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
 .regimen-severity-btn {
-    flex: 1;
-    min-width: 0; 
+    flex: none;
+    min-width: 0;
+    /* A band label must never be cut mid-word, at any width. */
+    overflow-wrap: break-word;
+    text-align: left;
+    padding: 10px 12px;
+    line-height: 1.35;
+}
+
+.regimen-severity-btn small {
+    display: block;
+    margin-top: 3px;
+    opacity: 0.85;
+}
+
+/* Which regimen and which drug are selected had no visual state at all: the
+   only signal was the heading below, which is off-screen on a phone once you
+   have scrolled to the doses. Same filled treatment as the scale toggle, so
+   "this is selected" reads the same way everywhere on the tab. */
+.regimen-severity-btn.active,
+.benzo-choice-btn.active {
+    background-color: var(--primary-btn-bg);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.regimen-severity-btn.active:hover,
+.benzo-choice-btn.active:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+/* CIWA-Ar / AWS choice - two narrow buttons, not full-width like the severity
+   grid: this picks a label for what follows, it is not one of the choices. */
+.scale-choice .button-group {
+    margin-top: 8px;
+}
+.scale-choice-btn {
+    flex: 0 0 auto;
+    min-width: 110px;
+}
+/* The selected scale has to be unmistakable: every band and dose trigger below
+   is labelled in it, and a clinician who misreads which one is showing reads
+   the right number under the wrong scale. */
+.scale-choice-btn.active {
+    background-color: var(--primary-btn-bg);
+    font-weight: bold;
+}
+.scale-choice-btn.active:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+/* Symptom-triggered dosing renders as a list rather than a table so it survives
+   a paste into an EMR field. The band leads the line; the rescoring interval
+   trails it in a lighter weight, so the eye lands on band -> dose first. */
+.band-list {
+    margin: 8px 0 16px;
+    padding-left: 22px;
+}
+.band-list li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+.band-monitoring {
+    opacity: 0.85;
+    font-size: 0.95em;
+}
+
+/* The EMR block is now short enough to read before pasting it, so show it
+   whole rather than through a four-line window. */
+#plan-summary {
+    min-height: 260px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
 }
 
 /* Specific styles for Standard Drinks by Type */

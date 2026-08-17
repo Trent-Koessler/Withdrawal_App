@@ -17,6 +17,7 @@ import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 import { CONTENT_META, formatReviewMonth } from '../data/content-meta.js';
+import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -681,42 +682,67 @@ describe('AUTH-05 — scale caveats live inside the calculators', () => {
     });
 });
 
-describe('AUTH-06 — the EMR copy function exports a plan', () => {
+// AUTH-06 originally exported the whole tab — regimen, band selection, score
+// interpretation, monitoring, escalation, discharge and thiamine, with source
+// tags bracketed inline. In use that was unpasteable: hundreds of lines of
+// context around the twenty a prescriber needs at the drug chart. The export is
+// now a prescribing block, and these guards pin what must not fall out of it.
+describe('AUTH-06 — the EMR copy function exports a prescribing block', () => {
     const html = read('index.html');
     const js = read('script.js');
+    const summary = js.slice(js.indexOf('function buildRegimenSummary'),
+        js.indexOf('// Condensed, citation-free version'));
 
-    test('the regimens tab offers a plan export', () => {
-        assert.ok(/id="plan-summary"/.test(html), 'no plan textarea');
+    test('the regimens tab offers the export', () => {
+        assert.ok(/id="plan-summary"/.test(html), 'no summary textarea');
         assert.ok(/id="copy-plan-btn"/.test(html), 'no copy button');
     });
 
-    test('the plan covers every section the spec names', () => {
-        const summary = js.slice(js.indexOf('function buildPlanSummary'), js.indexOf('// Shared by the regimen panel'));
-        for (const section of ['REGIMEN', 'MONITORING', 'ESCALATION', 'DISCHARGE', 'THIAMINE']) {
-            assert.ok(summary.includes(section), `plan section missing: ${section}`);
+    test('it is built from the regimen data, not scraped from the whole tab', () => {
+        assert.ok(summary.length > 200, 'buildRegimenSummary is missing');
+        assert.ok(/REGIMEN_CONFIG\[selectedBenzo\]/.test(summary),
+            'the export should read the selected regimen directly');
+        for (const id of ['block-band-selection', 'block-monitoring', 'block-escalation',
+            'block-discharge', 'thiamine']) {
+            assert.ok(!summary.includes(id),
+                `the export pulls in #${id} again — that context belongs on the page, not in the paste`);
         }
     });
 
-    test('sections are selected by id, not by position', () => {
-        const summary = js.slice(js.indexOf('function buildPlanSummary'), js.indexOf('// Shared by the regimen panel'));
-        assert.ok(!/querySelectorAll\([^)]*\)\[\d\]/.test(summary),
-            'positional selection breaks silently when a block is reordered');
-        for (const id of ['block-band-selection', 'block-monitoring', 'block-escalation', 'block-discharge']) {
-            assert.ok(html.includes(`id="${id}"`), `index.html has no #${id} for the plan export to find`);
-            assert.ok(summary.includes(id), `buildPlanSummary does not read #${id}`);
-        }
+    test('the three things that stop a schedule being followed off a cliff travel with it', () => {
+        assert.ok(/EMR_SAFETY_LINES\.dosingInterval/.test(summary), 'the 2-hourly dosing floor is missing');
+        assert.ok(/EMR_SAFETY_LINES\.sedation/.test(summary), 'the withhold-if-sedated caution is missing');
+        assert.ok(/EMR_SAFETY_LINES\.review/.test(summary), 'the 24-hour medical review total is missing');
     });
 
-    test('source tags survive into the copied text', () => {
-        assert.ok(/querySelectorAll\('\.src-tag'\)/.test(js),
-            'the exporter must convert source chips, not drop them — provenance has to survive the paste');
-        assert.ok(/\[\$\{tag\.textContent\.trim\(\)\}\]/.test(js), 'tags should render as [NSWCG §x.y]');
+    test('the paste says how often to score, in the scale the ward charts', () => {
+        assert.ok(/INITIAL_SCORING_INTERVAL/.test(summary),
+            'a fixed schedule must paste with a scoring interval, not doses alone');
+        assert.ok(/SCALE_LABEL\[selectedScale\]/.test(summary),
+            'the paste must name the scale the clinician selected');
     });
 
-    test('the exported plan carries its own disclaimer', () => {
-        assert.ok(/decision support, not a prescription/.test(js),
-            'a block of text pasted into an EMR outlives its context and needs to say what it is');
-        assert.ok(/Adult patients only/.test(js), 'the adults-only limit must travel with the plan');
+    // The counterpart of dropping citations: the safety sentences in the paste
+    // are the plain-text twins of statements on the page, so if one is reworded
+    // and the other is not, the two disagree in a clinician's note.
+    test('the safety lines match what the page says', () => {
+        assert.ok(/sedated/.test(EMR_SAFETY_LINES.sedation) && /withhold the dose/.test(EMR_SAFETY_LINES.sedation),
+            'the sedation line no longer says to withhold the dose');
+        assert.ok(/withhold if sedated/i.test(html),
+            'the escalation block no longer carries the withhold-if-sedated rule the paste mirrors');
+        assert.ok(/delirium tremens/i.test(EMR_SAFETY_LINES.dosingInterval),
+            'the dosing-interval line no longer states the DT exception the page allows');
+        assert.ok(/exceeds 80mg in 24 hours/.test(EMR_SAFETY_LINES.review('diazepam', '80mg')),
+            'the review line no longer states a 24-hour total');
+    });
+
+    test('citations are dropped from every EMR copy, not bracketed', () => {
+        assert.ok(/querySelectorAll\('\.src-tag'\)\.forEach\(tag => tag\.remove\(\)\)/.test(js),
+            'source chips must be removed from pasted text — the app is the source of record');
+        assert.ok(!/\[\$\{tag\.textContent\.trim\(\)\}\]/.test(js),
+            'tags are being bracketed into the paste again');
+        assert.ok(/src-tag[\s\S]{0,40}replace/.test(js),
+            'the data-driven export must strip source spans from clinical strings too');
     });
 });
 
