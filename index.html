@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.2" />
+    <meta name="app-build" content="0.4.3" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -3368,6 +3368,14 @@ textarea {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.3 - August 2026</h4>
+                <ul>
+                    <li><strong>The EMR copy now ends with a line saying where the regimen came from</strong> - the
+                        version of this app that produced it, and whether it is drawn from NSW Health guidance
+                        alone or includes local adaptations. A regimen pasted into a record otherwise carries no
+                        way for the next reader to check it back against its source.</li>
+                </ul>
 
                 <h4>0.4.2 - August 2026</h4>
                 <p><em>An update problem that could leave the app part-updated.</em></p>

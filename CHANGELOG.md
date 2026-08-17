@@ -5,6 +5,15 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.3 — August 2026
+
+### Safety — these alter clinical meaning
+
+| Change | Why |
+|---|---|
+| Every EMR paste ends with a provenance line naming the release that produced it and how far it is guideline-derived. | 0.4.1 stripped citations from the paste. A regimen sitting in a patient record with no attribution cannot be checked back against its basis by whoever reads the note next, and regimens change between releases — the version says which one produced those numbers. |
+| The line says "NSW Health-derived **with local adaptations**" wherever the regimen carries content this app does not trace to NSWCG. | True of every cell except the severe regimens. The test-dose protocol is local outright, the oxazepam schedules are converted, the sub-mild options derive from this site's own ambulatory doses. A flat NSWCG claim on those would put a false attribution in a patient record — the failure the line exists to prevent. Computed from the cell's own source tags, so it cannot drift from the content. |
+
 ## 0.4.2 — August 2026
 
 A caching defect that let one page load mix two releases, and a guard so it

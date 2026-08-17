@@ -736,6 +736,25 @@ describe('AUTH-06 — the EMR copy function exports a prescribing block', () => 
             'the review line no longer states a 24-hour total');
     });
 
+    // Citations are stripped from the paste, so the one line that says where a
+    // regimen came from is the only provenance a pasted note carries. It also
+    // has to be honest: "NSW Health-derived" alone is true of the severe cells
+    // and of nothing else here — the test-dose protocol is local outright.
+    test('the paste says which release produced it, and how far it is guideline-derived', () => {
+        assert.ok(/Generated from SUD Toolkit v\$\{APP_VERSION\}/.test(summary),
+            'the paste must name the release that produced the doses, not a hardcoded version');
+        assert.ok(/NSW Health-derived/.test(summary), 'the paste claims no source at all');
+        assert.ok(/cellHasLocalContent\(data\)/.test(summary),
+            'the source claim must be qualified per regimen, not asserted for all of them');
+    });
+
+    test('the local-content test reads the source tags rather than a hand-kept list', () => {
+        const js2 = read('script.js');
+        const helper = js2.slice(js2.indexOf('const cellHasLocalContent'), js2.indexOf('// Under AWS'));
+        assert.ok(/src-local\|src-nswcg-adapted/.test(helper),
+            'a list of which regimens are local would drift from the tags on the content');
+    });
+
     test('citations are dropped from every EMR copy, not bracketed', () => {
         assert.ok(/querySelectorAll\('\.src-tag'\)\.forEach\(tag => tag\.remove\(\)\)/.test(js),
             'source chips must be removed from pasted text — the app is the source of record');
