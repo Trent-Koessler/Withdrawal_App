@@ -5,6 +5,44 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## Unreleased
+
+### Safety - these alter clinical meaning
+
+**The AWS bands on the two fixed inpatient schedules have changed.** A ward
+charting AWS previously saw `AWS 4-14` on both Mild-Moderate and Moderate-Severe
+and had to pick between them on other grounds. The bands are now `4-7` and
+`8-14`. No dose, schedule or observation frequency changed - only which score
+points at which schedule.
+
+| Change | Why |
+|---|---|
+| Mild-Moderate is `AWS 4-7`, Moderate-Severe is `AWS 8-14`. Sub-Mild stays `< 4` and Severe stays `> 14`. PRN triggers and the severity buttons follow. | NSW Health Clinical Guidance Table 5.6 leaves `4-14` as one band, so an AWS score could not select a schedule - while a CIWA-Ar score could. AWS-charting wards were held to a stricter standard than CIWA-Ar wards for no stated reason. |
+| The boundaries come from the *Guidelines for the Treatment of Alcohol Problems* (4th ed, 2021): `4-7` is a published band in Table 8.4, and the break at 7/8 appears in both Table 8.4 (severe above 7) and p111 (severe 8-14). `15` is p111's very severe and matches NSWCG's `> 14`. | These are the only published subdivisions of the range the two schedules share. `4-7` and `8-14` union to NSWCG's `4-14` exactly, so NSWCG is subdivided rather than contradicted. |
+| **Observation frequency deliberately does not follow AGTAP.** The app keeps NSWCG's 2-4 hourly across `4-14`; the caveat states that AGTAP Table 8.4 rescores 1-2 hourly above AWS 7, and that more frequent observation in the `8-14` band is reasonable. | Taking the bands from one document and the monitoring from another, silently, is how a reader ends up trusting a mapping that no source published. Keeping NSWCG also stops the AWS and CIWA-Ar views of the same band disagreeing about monitoring. |
+| The symptom-triggered regimen keeps NSWCG's `< 4 / 4-14 / > 14` dose bands. | That is a published dose-per-score table, not a local banding choice. Subdividing it would mean inventing doses. Noted as an open question: at AWS 8-14 it gives 10mg where AGTAP Table 8.4 gives 20mg. |
+| The Regimens tab cites the document, and the inpatient page names it as a second source. | The page's bands now come from it. |
+
+### Recorded as open, not resolved
+
+- AGTAP Table 8.4's note expands AWS as "Alcohol Withdrawal Symptoms - Rating
+  Scale", where this app uses the NSW Health (2000) **Alcohol Withdrawal
+  Scale**. Almost certainly the same instrument - both documents map it against
+  the same CIWA-Ar bands - but unconfirmed against the source, and the bands do
+  not transfer if it is not.
+- AGTAP contradicts itself on a score of exactly 4: mild on p111, moderate in
+  Table 8.4. This app follows Table 8.4 and puts 4 in Mild-Moderate.
+- The AWS calculator on the Scales page still bands `<= 4 / <= 14 / > 14`, which
+  disagrees with both AGTAP tables at 8-14.
+
+### Tests
+
+The guard asserting that "AWS 4-14 spans both" fixed schedules is retired - it
+enforced the honesty of a state that no longer exists. Three replace it: the two
+bands must partition NSWCG's `4-14` with no gap and no overlap, PRN triggers must
+carry the same bands as the schedules they belong to, and the caveat must cite
+both AGTAP tables and state AGTAP's monitoring position.
+
 ## 0.4.4 — August 2026
 
 Intended purpose, the entry gate, and a privacy statement. No clinical content
