@@ -374,14 +374,57 @@ describe('P1-02 — no band is expressed in one scale only', () => {
             .map((m) => m[0])
             .filter((s) => /\d/.test(s));
         assert.ok(ciwaOnly.length > 0, 'no CIWA bands found at all — the selector is broken');
-        assert.ok(/AWS 4-14/.test(regimens) && /AWS &gt; 14/.test(regimens),
+        assert.ok(/AWS 4-7/.test(regimens) && /AWS 8-14/.test(regimens)
+            && /AWS &gt; 14/.test(regimens),
             'the severity buttons do not carry AWS equivalents');
     });
 
-    test('the AWS/CIWA band overlap is stated rather than papered over', () => {
+    // The two fixed schedules used to share one AWS band (NSWCG's 4-14), so an
+    // AWS score could not choose between them. They are now split at 7/8, per
+    // AGTAP Table 8.4 and p111. The split has to stay a partition of NSWCG's
+    // range: a gap would leave a score with no schedule, an overlap would put
+    // it back where it started, and running past 4-14 would contradict NSWCG
+    // rather than subdivide it.
+    test('the two fixed schedules partition NSWCG\'s AWS 4-14 exactly', () => {
+        for (const [benzo, config] of Object.entries(REGIMEN_CONFIG)) {
+            const parse = (b) => b.split('-').map(Number);
+            const [mildLo, mildHi] = parse(config.mild.band.aws);
+            const [modLo, modHi] = parse(config.moderate.band.aws);
+            assert.equal(mildLo, 4, `${benzo}: Mild-Moderate does not start at NSWCG's 4`);
+            assert.equal(modHi, 14, `${benzo}: Moderate-Severe does not end at NSWCG's 14`);
+            assert.equal(modLo, mildHi + 1,
+                `${benzo}: AWS ${config.mild.band.aws} and ${config.moderate.band.aws} `
+                + 'leave a gap or overlap — every score in 4-14 must select exactly one schedule');
+        }
+    });
+
+    // Each schedule's own band is the lower PRN trigger, and the band above it
+    // is the higher one. If the bands move and the triggers do not, a patient
+    // scoring into the next band up gets the wrong rescue dose.
+    test('PRN triggers carry the same AWS bands as the schedules', () => {
+        for (const [benzo, config] of Object.entries(REGIMEN_CONFIG)) {
+            const expected = { '10-15': config.mild.band.aws, '15-20': config.moderate.band.aws };
+            for (const severity of ['mild', 'moderate']) {
+                for (const entry of config[severity].prn) {
+                    if (typeof entry !== 'object' || !entry.range) continue;
+                    assert.equal(entry.aws, expected[entry.range],
+                        `${benzo}/${severity}: PRN at CIWA ${entry.range} is labelled AWS `
+                        + `${entry.aws}, but that CIWA band is AWS ${expected[entry.range]}`);
+                }
+            }
+        }
+    });
+
+    // The band boundaries are AGTAP's; the observation frequency stays NSWCG's.
+    // Adopting one without saying so about the other is the failure mode here:
+    // AGTAP rescores 1-2 hourly above AWS 7, and a reader who takes the bands
+    // from AGTAP is entitled to know the app did not take the monitoring too.
+    test('the caveat cites AGTAP for the split and states its monitoring position', () => {
         const caveats = REGIMEN_CONFIG.Diazepam.mild.caveat.join('\n');
-        assert.ok(/AWS 4-14<\/b> spans both|AWS 4-14 spans both/.test(caveats),
-            'AWS 4-14 covers both fixed schedules; presenting a clean mapping would be an invented equivalence');
+        assert.ok(/Table 8\.4/.test(caveats) && /p111/.test(caveats),
+            'the AWS split is AGTAP-derived but the caveat cites neither Table 8.4 nor p111');
+        assert.ok(/1-2 hourly/.test(caveats) && /2-4 hourly/.test(caveats),
+            'the caveat does not state that AGTAP monitors more frequently than the app does');
     });
 });
 

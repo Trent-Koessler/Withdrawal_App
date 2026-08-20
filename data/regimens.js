@@ -31,49 +31,61 @@ const BAND_MONITORING = { submild: '4-6 hourly', mild: '2-4 hourly', moderate: '
 // a band frequency alone.
 export const INITIAL_SCORING_INTERVAL = '2-hourly at least initially';
 
-// Two published sources band the AWS, and they do not have the same shape.
+// The AWS bands on the two fixed schedules are a local amalgamation of two
+// published sources, because neither one alone answers the question a ward
+// that charts AWS actually has: which of these two schedules?
 //
-//   NSWCG Table 5.6 maps CIWA-Ar <10 / 10-20 / >20 to AWS <4 / 4-14 / >14. That
-//   is the mapping this app's bands and observation frequencies are built on,
-//   and it is coarser than the local CIWA-Ar bands, so AWS 4-14 covers both
-//   fixed schedules and cannot separate them.
+//   NSWCG Table 5.6 maps CIWA-Ar <10 / 10-20 / >20 to AWS <4 / 4-14 / >14. Its
+//   middle band is a single range covering both fixed schedules, so it cannot
+//   separate them, and the observation frequencies hang off those three bands.
 //
-//   AGTAP p111 characterises the AWS more finely: up to 4 mild, 5-7 moderate,
-//   8-14 severe, 15 or more very severe.
+//   AGTAP splits that range. Table 8.4 bands the AWS <4 mild / 4-7 moderate /
+//   >7 severe, and p111 gives up to 4 mild, 5-7 moderate, 8-14 severe, 15 or
+//   more very severe. Both put the break at 7/8.
 //
-// They agree at the outer edges and differ inside NSWCG's middle band, which
-// AGTAP splits at 7/8. The caveat below states both rather than merging them:
-// the finer AGTAP wording is offered as a descriptor of how sick the patient
-// is, not as a rule for choosing between the two fixed schedules, because
-// neither document maps an AWS score to this site's schedules.
-const AGTAP_CITE = `<span class="src-tag src-other">OTHER - Haber PS, Riordan BC, et al. Guidelines for the Treatment of Alcohol Problems, 4th ed (2021), p111 - Specialty of Addiction Medicine, University of Sydney, for the Australian Government Department of Health.</span>`;
+// So: Mild-Moderate is AWS 4-7, Moderate-Severe is AWS 8-14, and Severe stays
+// at NSWCG's >14 (AGTAP's very severe, >=15). Every boundary is published
+// somewhere; the assignment of those bands to *these* schedules is local, and
+// the union 4-7 + 8-14 reconstitutes NSWCG's 4-14 exactly, so nothing NSWCG
+// says is overturned - the band it left undivided is subdivided.
+//
+// Two things deliberately NOT taken from AGTAP:
+//
+//   Observation frequency. AGTAP Table 8.4 rescores 1-2 hourly above AWS 7;
+//   NSWCG gives 2-4 hourly across its whole middle band. The app keeps NSWCG,
+//   so the AWS and CIWA-Ar views cannot disagree about monitoring for the
+//   equivalent band, and states AGTAP's position so escalation is a decision
+//   rather than an oversight.
+//
+//   The symptom-triggered dose table. That is NSWCG Table 5.4's published
+//   dose-per-score table and keeps its own <4 / 4-14 / >14 bands; subdividing
+//   it would mean inventing doses rather than splitting a range.
+const AGTAP_CITE = `<span class="src-tag src-other">OTHER - Haber PS, Riordan BC, et al. Guidelines for the Treatment of Alcohol Problems, 4th ed (2021), Table 8.4 and p111 - Specialty of Addiction Medicine, University of Sydney, for the Australian Government Department of Health.</span>`;
 
-const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> Two published sources band the AWS, and they do not have the same shape. Both are shown here rather than merged into one number line.
-<div class="clinical-table-wrap"><table class="clinical-table"><thead><tr><th scope="col">AWS</th><th scope="col">AGTAP p111</th><th scope="col">NSWCG Table 5.6 - the band this app runs on</th></tr></thead><tbody>
-<tr><td>0-3</td><td>mild</td><td>Below the middle band &rarr; Sub-Mild, 4-6 hrly</td></tr>
-<tr><td><b>4</b></td><td><b>mild</b></td><td><b>Middle band starts here</b> &rarr; 2-4 hrly</td></tr>
-<tr><td>5-7</td><td>moderate</td><td>Middle band 4-14 &rarr; 2-4 hrly</td></tr>
-<tr><td>8-14</td><td><b>severe</b></td><td>Middle band 4-14 &rarr; 2-4 hrly</td></tr>
-<tr><td>&ge; 15</td><td>very severe</td><td>&gt; 14 &rarr; Severe, hourly</td></tr>
+const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the two fixed schedules combine two published sources, because neither alone separates the schedules.
+<div class="clinical-table-wrap"><table class="clinical-table"><thead><tr><th scope="col">AWS</th><th scope="col">This app</th><th scope="col">AGTAP</th><th scope="col">NSWCG Table 5.6</th></tr></thead><tbody>
+<tr><td>0-3</td><td>Sub-Mild, 4-6 hrly</td><td>mild</td><td>&lt; 4, 4-6 hrly</td></tr>
+<tr><td><b>4-7</b></td><td><b>Mild-Moderate</b>, 2-4 hrly</td><td>moderate</td><td rowspan="2">4-14, 2-4 hrly<br>(one band, not two)</td></tr>
+<tr><td><b>8-14</b></td><td><b>Moderate-Severe</b>, 2-4 hrly</td><td>severe</td></tr>
+<tr><td>&ge; 15</td><td>Severe, hourly</td><td>very severe</td><td>&gt; 14, hourly</td></tr>
 </tbody></table></div>
-<b>The middle band is the problem.</b> NSWCG's single <b>AWS 4-14</b> spans both of this app's fixed schedules - Mild-Moderate and Moderate-Severe - so an AWS score alone will not choose between them. AGTAP subdivides that band at 7/8, and calls a score of exactly 4 mild where NSWCG's middle band already starts at 4. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> ${AGTAP_CITE}
-<b>What this does not change.</b> The AGTAP column tells you <b>how severe the withdrawal is</b>. It is not a published mapping to these schedules, so it is not used here to select one - use reported intake, risk factors and clinical assessment for that, and use AWS to track severity within the schedule you choose. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6, with AGTAP p111 - rationale: NSWCG publishes the three-band AWS mapping but no AWS equivalent for the local CIWA-Ar 10-15 / 15-20 split, and AGTAP's finer bands are a severity description rather than a mapping to any dosing schedule, so the overlap is stated and the two schemes are shown side by side rather than a combined mapping being invented.</span>`;
+<b>Where each boundary comes from.</b> <b>4-7</b> is published as a band in AGTAP Table 8.4, and the break at <b>7/8</b> appears in both Table 8.4 (severe above 7) and p111 (severe 8-14). <b>15</b> is p111's very severe, and matches NSWCG's &gt; 14. NSWCG's own middle band is the union of the two middle rows, so subdividing it does not overturn it. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> ${AGTAP_CITE}<br>
+<b>The score is not the whole decision.</b> The bands above are a starting point, not a rule - reported intake, risk factors and clinical assessment select the schedule with the score, exactly as they do on the CIWA-Ar side. <span class="src-tag src-nswcg">NSWCG §5.4.2</span><br>
+<b>Monitoring: this app follows NSWCG, and AGTAP would monitor more closely.</b> The app rescores <b>2-4 hourly</b> across AWS 4-14, per NSWCG. AGTAP Table 8.4 rescores <b>1-2 hourly</b> above AWS 7. If your patient is in the 8-14 band, treat more frequent observation as available and reasonable rather than a departure. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6, with AGTAP Table 8.4 and p111 - rationale: the two documents map the same CIWA-Ar bands to different AWS ranges (NSWCG CIWA 10-20 to AWS 4-14; AGTAP CIWA 10-20 to AWS 4-7), so no crosswalk between them is exact. The band boundaries follow AGTAP because it is the only source that splits the range these two schedules share, and the observation frequency follows NSWCG so the AWS and CIWA-Ar views of the same band cannot disagree about monitoring. AGTAP's more frequent rescoring is stated rather than silently dropped.</span>`;
 
-// TODO(clinical): should AGTAP's 5-7 / 8-14 split be adopted as the operative
-// AWS boundary between the Mild-Moderate and Moderate-Severe fixed schedules,
-// instead of only describing severity? It is the only published split of
-// NSWCG's 4-14 band, but AGTAP does not tie it to any dosing schedule.
-// TODO(clinical): a score of exactly 4 is mild under AGTAP and in the middle
-// band under NSWCG Table 5.6 - which boundary should the Sub-Mild band use,
-// AWS < 4 as now, or AWS <= 4?
+// TODO(clinical): AGTAP Table 8.4's note expands AWS as "Alcohol Withdrawal
+// Symptoms - Rating Scale", where this app uses the NSW Health (2000) Alcohol
+// Withdrawal Scale - confirm from the source document that these are the same
+// instrument, because the bands above do not transfer if they are not.
+// TODO(clinical): a score of exactly 4 is mild on AGTAP p111 but moderate in
+// AGTAP Table 8.4, and this app follows Table 8.4 by putting 4 in
+// Mild-Moderate - confirm that is the intended reading of the two.
 // TODO(clinical): the AWS calculator on the Scales page bands <=4 mild /
-// <=14 moderate / >14 severe, which now disagrees with the AGTAP wording
-// quoted on this page for 8-14 - should the calculator move to AGTAP's four
-// bands, or should both schemes be labelled there as they are here?
-// TODO(clinical): how should a ward that charts AWS only choose between the
-// Mild-Moderate and Moderate-Severe fixed schedules? Both sit inside AWS 4-14.
-// Options include defaulting to Mild-Moderate with escalation, or requiring a
-// CIWA-Ar at band selection even where AWS is charted thereafter.
+// <=14 moderate / >14 severe, which disagrees with both AGTAP tables for
+// 8-14 - should the calculator move to AGTAP's bands, or label both schemes?
+// TODO(clinical): the symptom-triggered table keeps NSWCG's <4 / 4-14 / >14
+// dose bands, so at AWS 8-14 it gives 10mg where AGTAP Table 8.4 gives 20mg -
+// should the local symptom-triggered doses be revisited against Table 8.4?
 
 // The lowest band in this app starts at CIWA-Ar 10-15 / <=14 standard drinks a
 // day, so a genuinely mild withdrawal received 40mg of diazepam on Day 1 with
@@ -186,11 +198,11 @@ export const REGIMEN_CONFIG = {
         reviewMax: '80mg',
         mild: {
             name: 'Mild-Moderate',
-            band: band('10-15', '4-14'),
+            band: band('10-15', '4-7'),
             monitoring: BAND_MONITORING.mild,
             caveat: [AWS_BAND_CAVEAT],
             schedule: [{ dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }],
+            prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }],
             symptom_triggered: {
                 title: 'Alternative: Symptom-Triggered Regimen',
                 note: symptomTriggeredNote('diazepam')
@@ -198,7 +210,7 @@ export const REGIMEN_CONFIG = {
         },
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
-        moderate: { name: 'Moderate-Severe', band: band('15-20', '4-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-14', dose: 10 }, { range: '15-20', aws: '4-14', dose: 20 }] },
+        moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }] },
         // TODO(clinical): confirm the preferred Day 2 default after a loading day —
         // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
         // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
@@ -235,11 +247,11 @@ export const REGIMEN_CONFIG = {
         reviewMax: '240mg',
         mild: {
             name: 'Mild-Moderate',
-            band: band('10-15', '4-14'),
+            band: band('10-15', '4-7'),
             monitoring: BAND_MONITORING.mild,
             caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT],
             schedule: [{ dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }],
+            prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }],
             symptom_triggered: {
                 title: 'Alternative: Symptom-Triggered Regimen',
                 note: symptomTriggeredNote('oxazepam')
@@ -247,7 +259,7 @@ export const REGIMEN_CONFIG = {
         },
         submild: subMildCell('oxazepam', 'oxazepam 15mg qid on Day 1, 15mg tds on Day 2, 15mg bd on Day 3, 7.5mg bd on Day 4, then 7.5mg nocte on Day 5', [OXAZEPAM_CONVERSION_CAVEAT]),
         symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),
-        moderate: { name: 'Moderate-Severe', band: band('15-20', '4-14'), monitoring: BAND_MONITORING.moderate, caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-14', dose: 30 }, { range: '15-20', aws: '4-14', dose: 60 }] },
+        moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }] },
         // Deliberately has no schedule. The population that needs oxazepam —
         // decompensated liver disease, respiratory insufficiency, elderly/frail,
         // cerebral trauma — is precisely the population NSWCG §5.6.3 says must not

@@ -1303,19 +1303,19 @@ textarea {
                                 <button class="scale-choice-btn active" data-scale="ciwa" aria-pressed="true">CIWA-Ar</button>
                                 <button class="scale-choice-btn" data-scale="aws" aria-pressed="false">AWS</button>
                             </div>
-                            <p><small><strong>Where the bands come from.</strong> The CIWA-Ar and AWS bands used
-                                    below, and the observation frequencies that follow from them, are the NSW Health
-                                    Clinical Guidance Table 5.6 mapping. The finer AWS severity wording quoted in the
-                                    AWS caveat - up to 4 mild, 5-7 moderate, 8-14 severe, 15 or more very severe - is
-                                    from p111 of the
+                            <p><small><strong>Where the bands come from.</strong> The CIWA-Ar bands, and the
+                                    observation frequencies for every band, are the NSW Health Clinical Guidance
+                                    Table 5.6 mapping. The AWS bands that separate Mild-Moderate (4-7) from
+                                    Moderate-Severe (8-14) come from Table 8.4 and p111 of the
                                     <a href="https://alcoholtreatmentguidelines.com.au/pdf/guidelines-for-the-treatment-of-alcohol-problems.pdf"
                                         target="_blank" rel="noopener">Australian Guidelines for the Treatment of
-                                        Alcohol Problems</a> (Haber PS, Riordan BC, et al., 4th ed, 2021). The two
-                                    schemes are shown side by side rather than merged; neither maps an AWS score to a
-                                    dosing schedule.
+                                        Alcohol Problems</a> (Haber PS, Riordan BC, et al., 4th ed, 2021), which
+                                    split the single AWS 4-14 band NSWCG leaves undivided. Their union is NSWCG's
+                                    4-14 exactly. Full derivation, and where the two documents disagree, is in the
+                                    AWS caveat on each schedule below.
                                     <span class="src-tag src-nswcg">NSWCG Table 5.6</span>
                                     <span class="src-tag src-other">OTHER - Guidelines for the Treatment of Alcohol
-                                        Problems, 4th ed (2021), p111</span></small></p>
+                                        Problems, 4th ed (2021), Table 8.4 and p111</span></small></p>
                         </div>
                         <div class="button-group severity-group">
                             <button class="regimen-severity-btn" data-severity="symptom">
@@ -1333,12 +1333,12 @@ textarea {
                             <button class="regimen-severity-btn active" data-severity="mild">
                                 <strong>Mild-Mod</strong><br>
                                 <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 10-15"
-                                        data-aws="AWS 4-14">CIWA-Ar 10-15</span> | ≤ 14 standard drinks/day</small>
+                                        data-aws="AWS 4-7">CIWA-Ar 10-15</span> | ≤ 14 standard drinks/day</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="moderate">
                                 <strong>Mod-Sev</strong><br>
                                 <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 15-20"
-                                        data-aws="AWS 4-14">CIWA-Ar 15-20</span> | ≥ 15 standard drinks/day</small>
+                                        data-aws="AWS 8-14">CIWA-Ar 15-20</span> | ≥ 15 standard drinks/day</small>
                             </button>
                             <button class="regimen-severity-btn" data-severity="severe">
                                 <strong>Severe</strong><br>
