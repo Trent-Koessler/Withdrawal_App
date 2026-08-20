@@ -5,6 +5,21 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## Unreleased
+
+### Safety — these alter clinical meaning
+
+None. No band, dose or schedule changed. What changed is what the Regimens tab
+says about the AWS.
+
+### The AWS bands on the Regimens tab now name both published schemes
+
+| Change | Why |
+|---|---|
+| The "if your ward charts AWS" caveat now sets the NSW Health Clinical Guidance Table 5.6 mapping (AWS &lt; 4 / 4-14 / &gt; 14) alongside the AWS severity characterisation on p111 of the *Guidelines for the Treatment of Alcohol Problems* (4th ed, 2021): up to 4 mild, 5-7 moderate, 8-14 severe, 15 or more very severe. | The two schemes agree at the edges and differ inside NSWCG's middle band, which the 2021 guidelines split at 7/8 — and they disagree about a score of exactly 4. A clinician reading one and charting against the other could not tell which they were looking at. |
+| The finer scheme is presented as a **description of severity**, not as a rule for choosing between the Mild-Moderate and Moderate-Severe fixed schedules. AWS 4-14 still spans both, and the schedule is still chosen from intake, risk factors and clinical assessment. | Neither document maps an AWS score to these schedules. Adopting the 5-7 / 8-14 split as the operative boundary would be an invented equivalence; it is recorded as an open clinical question instead. |
+| The Regimens tab carries a linked reference to the 2021 guidelines, and the inpatient page's footer now names it as a second source. | The page quotes the document, so the page has to cite it. |
+
 ## 0.4.4 — August 2026
 
 Intended purpose, the entry gate, and a privacy statement. No clinical content

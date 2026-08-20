@@ -22,10 +22,15 @@ const REVISED = '2026-08-10';
 // The inpatient regimens were revisited after the main revision, when the
 // symptom-triggered regimen moved to list form, the CIWA-Ar/AWS toggle was
 // added and the EMR export was cut back to a prescribing block (0.4.1).
-const INPATIENT_REVISED = '2026-08-17';
+const INPATIENT_REVISED = '2026-08-20';
+
+// The AWS bands on the Regimens tab now also quote the AWS severity
+// characterisation from p111 of the Australian Guidelines for the Treatment of
+// Alcohol Problems, so the inpatient page has a second named source.
+const AGTAP_2021 = 'Haber PS, Riordan BC, et al., Guidelines for the Treatment of Alcohol Problems, 4th ed (2021)';
 
 export const CONTENT_META = {
-    'inpatient-guidelines-page': { source: NSWCG_2022, lastReviewed: INPATIENT_REVISED },
+    'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: INPATIENT_REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'alcohol-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'screening-page': { source: NSWCG_2022, lastReviewed: REVISED },

@@ -31,11 +31,40 @@ const BAND_MONITORING = { submild: '4-6 hourly', mild: '2-4 hourly', moderate: '
 // a band frequency alone.
 export const INITIAL_SCORING_INTERVAL = '2-hourly at least initially';
 
-// NSWCG Table 5.6 maps CIWA-Ar <10 / 10-20 / >20 to AWS <4 / 4-14 / >14 —
-// which is coarser than the local CIWA bands, so AWS 4-14 covers both fixed
-// schedules and cannot separate them.
-const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> NSWCG maps CIWA-Ar &lt; 10 / 10-20 / &gt; 20 to AWS &lt; 4 / 4-14 / &gt; 14. Those bands are <b>coarser</b> than the CIWA-Ar bands this app uses to separate Mild-Moderate from Moderate-Severe: <b>AWS 4-14 spans both</b>. An AWS score alone will not choose between the two fixed schedules - use reported intake, risk factors and clinical assessment for that, and use AWS to track severity within the schedule you choose. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6 - rationale: NSWCG publishes the three-band AWS mapping but no AWS equivalent for the local CIWA-Ar 10-15 / 15-20 split, so the overlap is stated rather than a finer mapping being invented.</span>`;
+// Two published sources band the AWS, and they do not have the same shape.
+//
+//   NSWCG Table 5.6 maps CIWA-Ar <10 / 10-20 / >20 to AWS <4 / 4-14 / >14. That
+//   is the mapping this app's bands and observation frequencies are built on,
+//   and it is coarser than the local CIWA-Ar bands, so AWS 4-14 covers both
+//   fixed schedules and cannot separate them.
+//
+//   AGTAP p111 characterises the AWS more finely: up to 4 mild, 5-7 moderate,
+//   8-14 severe, 15 or more very severe.
+//
+// They agree at the outer edges and differ inside NSWCG's middle band, which
+// AGTAP splits at 7/8. The caveat below states both rather than merging them:
+// the finer AGTAP wording is offered as a descriptor of how sick the patient
+// is, not as a rule for choosing between the two fixed schedules, because
+// neither document maps an AWS score to this site's schedules.
+const AGTAP_CITE = `<span class="src-tag src-other">OTHER - Haber PS, Riordan BC, et al. Guidelines for the Treatment of Alcohol Problems, 4th ed (2021), p111 - Specialty of Addiction Medicine, University of Sydney, for the Australian Government Department of Health.</span>`;
 
+const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> Two published sources band the AWS differently, and both are shown here rather than merged into one number line.<br>
+<b>1. NSWCG Table 5.6 - the bands this app runs on.</b> CIWA-Ar &lt; 10 / 10-20 / &gt; 20 map to AWS &lt; 4 / 4-14 / &gt; 14, and the observation frequency for each band follows from that mapping. Those bands are <b>coarser</b> than the CIWA-Ar bands this app uses to separate Mild-Moderate from Moderate-Severe: <b>AWS 4-14</b> spans both. <span class="src-tag src-nswcg">NSWCG Table 5.6</span><br>
+<b>2. AGTAP p111 - a finer description of severity.</b> An AWS score of <b>up to 4</b> indicates mild withdrawal, <b>5-7</b> moderate, <b>8-14</b> severe, and <b>15 or more</b> very severe. ${AGTAP_CITE}<br>
+<b>Where they meet, and where they do not.</b> The two agree at the edges - mild at the bottom, and NSWCG's &gt; 14 is AGTAP's very severe &ge; 15. They differ in two places: AGTAP calls a score of exactly <b>4</b> mild, where NSWCG's middle band already starts at 4; and AGTAP <b>subdivides</b> NSWCG's single 4-14 band into moderate 5-7 and severe 8-14.<br>
+<b>What this does not change.</b> An AWS score alone still will not choose between the two fixed schedules - use reported intake, risk factors and clinical assessment for that, and use AWS to track severity within the schedule you choose. The AGTAP wording tells you <b>how severe the withdrawal is</b>; it is not a published mapping to these schedules, so it is not used here to select one. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6, with AGTAP p111 - rationale: NSWCG publishes the three-band AWS mapping but no AWS equivalent for the local CIWA-Ar 10-15 / 15-20 split, and AGTAP's finer bands are a severity description rather than a mapping to any dosing schedule, so the overlap is stated and the two schemes are shown side by side rather than a combined mapping being invented.</span>`;
+
+// TODO(clinical): should AGTAP's 5-7 / 8-14 split be adopted as the operative
+// AWS boundary between the Mild-Moderate and Moderate-Severe fixed schedules,
+// instead of only describing severity? It is the only published split of
+// NSWCG's 4-14 band, but AGTAP does not tie it to any dosing schedule.
+// TODO(clinical): a score of exactly 4 is mild under AGTAP and in the middle
+// band under NSWCG Table 5.6 - which boundary should the Sub-Mild band use,
+// AWS < 4 as now, or AWS <= 4?
+// TODO(clinical): the AWS calculator on the Scales page bands <=4 mild /
+// <=14 moderate / >14 severe, which now disagrees with the AGTAP wording
+// quoted on this page for 8-14 - should the calculator move to AGTAP's four
+// bands, or should both schemes be labelled there as they are here?
 // TODO(clinical): how should a ward that charts AWS only choose between the
 // Mild-Moderate and Moderate-Severe fixed schedules? Both sit inside AWS 4-14.
 // Options include defaulting to Mild-Moderate with escalation, or requiring a
