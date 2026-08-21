@@ -1396,18 +1396,15 @@ textarea {
                                 <button class="scale-choice-btn active" data-scale="ciwa" aria-pressed="true">CIWA-Ar</button>
                                 <button class="scale-choice-btn" data-scale="aws" aria-pressed="false">AWS</button>
                             </div>
-                            <p><small><strong>Where the bands come from.</strong> The CIWA-Ar bands, and the
-                                    observation frequencies for every band, are the NSW Health Clinical Guidance
-                                    Table 5.6 mapping. The AWS bands that separate Mild-Moderate (4-7) from
-                                    Moderate-Severe (8-14) come from Table 8.4 and p111 of the
-                                    <a href="https://alcoholtreatmentguidelines.com.au/pdf/guidelines-for-the-treatment-of-alcohol-problems.pdf"
-                                        target="_blank" rel="noopener">Australian Guidelines for the Treatment of
-                                        Alcohol Problems</a> (Haber PS, Riordan BC, et al., 4th ed, 2021), which
-                                    split the single AWS 4-14 band NSWCG leaves undivided. Their union is NSWCG's
-                                    4-14 exactly. Full derivation, and where the two documents disagree, is in the
-                                    AWS caveat on each schedule below.
-                                    <span class="src-tag src-nswcg">NSWCG Table 5.6</span>
-                                    <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span></small></p>
+                            <p><small>Bands and observation frequencies follow NSW Health Clinical Guidance
+                                    Table 5.6. <span class="src-tag src-nswcg">NSWCG Table 5.6</span>
+                                    <span id="aws-band-note" hidden>The AWS 4-7 / 8-14 split follows
+                                        <a href="https://alcoholtreatmentguidelines.com.au/pdf/guidelines-for-the-treatment-of-alcohol-problems.pdf"
+                                            target="_blank" rel="noopener">AGTAP</a>, which subdivides the single
+                                        4-14 band NSWCG leaves undivided; the derivation, and where the two
+                                        documents disagree, is in the AWS note on each schedule below.
+                                        <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span></span>
+                                </small></p>
                         </div>
                         <p class="axis-label">1 &middot; Regimen type &mdash; determined by the overall clinical context, not just
                             the withdrawal scores</p>

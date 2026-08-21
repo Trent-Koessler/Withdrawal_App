@@ -7,6 +7,19 @@ The user-facing version of this lives at `#changelog-page` in the app.
 
 ## Unreleased
 
+### Housekeeping
+
+- **The "Where the bands come from" note above the selector is now one line**, and
+  the AWS derivation appears only when the AWS scale is selected. It was four
+  lines and two citation chips shown to everyone, three of which duplicated the
+  AWS note already collapsed on each schedule, and none of which applied to a
+  ward charting CIWA-Ar. No provenance is lost: the CIWA-Ar statement is kept
+  because it is stated nowhere else on the tab, and the AWS derivation is
+  unchanged where it actually lives.
+- **The fixed-schedule button states its indication in clinical terms** rather
+  than listing "ambulatory" first - ambulatory withdrawal has its own pathway in
+  this app and is not a choice made on the inpatient tab.
+
 ### Safety - these alter clinical meaning
 
 **The regimen selector now asks two questions instead of one.** The row of six
