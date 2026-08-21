@@ -16,6 +16,16 @@ The user-facing version of this lives at `#changelog-page` in the app.
   ward charting CIWA-Ar. No provenance is lost: the CIWA-Ar statement is kept
   because it is stated nowhere else on the tab, and the AWS derivation is
   unchanged where it actually lives.
+- **Labels in both selector rows are aligned to the top of their button.** A grid
+  row sizes to its tallest button and a stretched button centres its content, so
+  a one-line label floated halfway down a box sized by a four-line neighbour.
+  The redundant `<br>` in each button went with it - `small` was already
+  `display: block`, and inside a flex container the `<br>` would have generated a
+  stray empty item.
+- **ASAM's alcohol withdrawal guideline is listed on Sources & Attribution.** It
+  is a United States guideline and no dose on this site comes from it; it is
+  listed because it will be cited here, and because it states plainly that
+  medications such as beta-blockers can mask the signs of withdrawal.
 - **The fixed-schedule button states its indication in clinical terms** rather
   than listing "ambulatory" first - ambulatory withdrawal has its own pathway in
   this app and is not a choice made on the inpatient tab.
