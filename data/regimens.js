@@ -4,7 +4,6 @@
 // Retained as the pointer shown under Mild-Moderate. The dosing table itself
 // now lives in one place — the Symptom-Triggered regimen — so the two cannot
 // drift apart.
-const symptomTriggeredNote = (drugName) => `For unclear alcohol intake, or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements, symptom-triggered dosing is an alternative to this fixed schedule. Monitor the amount of ${drugName} used and reassess requirements regularly. <b>Select the Symptom-Triggered regimen above for the full dosing and monitoring table.</b>`;
 
 // Shown above any oxazepam schedule. The 1:3 ratio is a rough equivalence, and
 // the taper *shape* below it was designed around diazepam's self-tapering
@@ -227,19 +226,11 @@ export const REGIMEN_CONFIG = {
             monitoring: BAND_MONITORING.mild,
             caveat: [AWS_BAND_CAVEAT],
             schedule: [{ dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }],
-            symptom_triggered: {
-                title: 'Alternative: Symptom-Triggered Regimen',
-                note: symptomTriggeredNote('diazepam')
-            }
+            prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }]
         },
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
         moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }] },
-        // TODO(clinical): confirm the preferred Day 2 default after a loading day —
-        // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
-        // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
-        // while local practice has used the latter; only one should be the default.
         severe: severeRoutesToLoading(),
         loading: {
             name: 'Loading',
@@ -255,8 +246,8 @@ export const REGIMEN_CONFIG = {
                 `<b>Day 1 - loading.</b> Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
                 `<b>Delirium tremens - hourly loading, monitored settings only.</b> For withdrawal delirium specifically, diazepam 20mg hourly to a total of 80mg/24h may be used in a monitored setting (HDU, or 1:1 nursing with continuous observation) - see Special Cases &rarr; Alcohol withdrawal delirium. Do not use hourly loading for severe withdrawal without delirium: oral diazepam peaks at around one hour, so hourly dosing outside DT stacks doses whose effect has not yet been observed. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`,
                 `<b>Day 2 onward - do not repeat a loading day.</b> Following loading, no further loading diazepam is generally needed once the patient is settled: diazepam's long-acting active metabolites are the reason loading works, and a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-                `<b>Preferred handover:</b> symptom-triggered dosing in a reducing regimen (see the Symptom-Triggered regimen). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-                `<b>Alternative handover:</b> if a fixed schedule is preferred, commence at the <b>Day 2 row</b> of the Moderate-Severe schedule - diazepam 15mg qid - and taper from there as written. Do not start that schedule at its Day 1 row. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+                `<b>Default handover - the Moderate-Severe schedule from its Day 2 row.</b> Commence diazepam <b>15mg qid</b> and taper from there as written. <b>Do not start that schedule at its Day 1 row</b>: the loading day was Day 1. <span class="src-tag src-local">LOCAL - rationale: NSWCG §5.4.4 names symptom-triggered dosing as its preferred post-loading handover, and this app makes the fixed Moderate-Severe schedule the default instead. A patient who has just required loading has usually declared a history, a complication or a comorbidity - which are the same features that make scale-driven dosing unreliable - so handing them to a schedule that depends on the score is inconsistent with the exclusions stated on the Symptom-Triggered regimen. AGTAP p122 offers a fixed reducing regimen and as-needed dosing as equally acceptable after loading.</span>`,
+                `<b>Alternative handover:</b> symptom-triggered dosing in a reducing regimen, where none of the exclusions on that regimen apply and frequent skilled review is available. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
             ],
             prn: [
                 `<b>80mg in 24 hours - medical officer review required.</b> This is a review threshold, not a ceiling. Assess for other pathology before giving more (see Special Cases &rarr; alcohol withdrawal delirium is a diagnosis of exclusion). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
@@ -277,11 +268,7 @@ export const REGIMEN_CONFIG = {
             monitoring: BAND_MONITORING.mild,
             caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT],
             schedule: [{ dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }],
-            symptom_triggered: {
-                title: 'Alternative: Symptom-Triggered Regimen',
-                note: symptomTriggeredNote('oxazepam')
-            }
+            prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }]
         },
         submild: subMildCell('oxazepam', 'oxazepam 15mg qid on Day 1, 15mg tds on Day 2, 15mg bd on Day 3, 7.5mg bd on Day 4, then 7.5mg nocte on Day 5', [OXAZEPAM_CONVERSION_CAVEAT]),
         symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),

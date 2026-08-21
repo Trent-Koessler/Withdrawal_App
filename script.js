@@ -810,15 +810,6 @@ document.addEventListener('DOMContentLoaded', () => {
             displayHTML += `</ul>`;
         }
 
-        // Points at the Symptom-Triggered regimen rather than restating its dose
-        // table, which used to be a second copy that could drift from the first.
-        if (selectedType === 'fixed' && selectedSeverity === 'mild' && data.symptom_triggered) {
-            const st = data.symptom_triggered;
-            displayHTML += `<hr style="margin: 20px 0;">`;
-            displayHTML += `<h3>${st.title}</h3>`;
-            displayHTML += `<p><i>${st.note}</i></p>`;
-        }
-
         regimenDisplayDiv.innerHTML = displayHTML;
         updateBandLabels();
         refreshRegimenSummary();
