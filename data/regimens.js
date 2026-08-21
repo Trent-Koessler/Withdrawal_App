@@ -166,6 +166,7 @@ const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
 // test dose locally has to be stated rather than assumed.
 const testDoseCell = (drug, testDose, extraCaveats = []) => ({
     name: 'Unknown Tolerance (Test-Dose Protocol)',
+    scheduleHeading: 'The protocol',
     caveat: [...extraCaveats,
         `<b>This protocol is local, not guideline.</b> NSWCG does not describe a test-dose protocol. Its answer to uncertain tolerance is <b>symptom-triggered dosing</b>, which produces the same information about tolerance from a smaller first dose and is the safer default where frequent skilled review is available. <span class="src-tag src-local">LOCAL - rationale: a single observed test dose is preferred locally where review is not frequent enough to run a symptom-triggered regimen safely, because it establishes tolerance at a known time under direct observation rather than across a shift; where frequent review IS available, use symptom-triggered dosing instead. Reassessing at a fixed timeframe also gives the clinician a clear decision point for which subsequent regimen to commence, rather than an open-ended judgement call.</span>`],
     schedule: [

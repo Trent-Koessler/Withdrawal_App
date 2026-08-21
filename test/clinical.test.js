@@ -157,7 +157,10 @@ describe('scale structure', () => {
 });
 
 describe('benzodiazepine regimens', () => {
-    const SEVERITIES = ['submild', 'mild', 'symptom', 'moderate', 'severe', 'unknown'];
+    // Every cell in the config, not only the ones on the intensity axis: `loading`
+    // and `unknown` are reached from the type axis and the Assessment tab, and
+    // are exactly as capable of rendering nothing.
+    const SEVERITIES = ['submild', 'mild', 'symptom', 'moderate', 'severe', 'loading', 'unknown'];
 
     // A cell renders either a schedule or a `routing` card. The routing shape
     // exists so a combination that must not produce doses (severe withdrawal on

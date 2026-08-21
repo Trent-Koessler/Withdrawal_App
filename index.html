@@ -1374,6 +1374,14 @@ textarea {
                                  with the ambulatory pathway, which already uses it as an inclusion criterion? Using
                                  two different band-selection methods across the two pathways is the current state. -->
                         </div>
+                        <div class="clinical-block">
+                            <h4>When tolerance is genuinely unknown</h4>
+                            <p>Reported intake is sometimes unusable - an unreliable history, no collateral, or a
+                                first presentation. A single observed test dose answers the banding question this
+                                page is otherwise asking you to answer from the history. It is an assessment step,
+                                not a regimen: it ends by telling you which regimen to start.</p>
+                            <div id="test-dose-protocol"></div>
+                        </div>
                     </div>
                     <div id="regimens" class="tab-content">
                         <h3>3. Regimens</h3>
@@ -1418,16 +1426,16 @@ textarea {
                                 <small>Severe withdrawal, delirium, seizure or hallucinations, or a history of
                                     withdrawal seizures at any score</small>
                             </button>
-                            <button class="regimen-type-btn" data-regimen-type="testdose" aria-pressed="false">
-                                <strong>Test dose</strong><br>
-                                <small>Local protocol | tolerance genuinely unknown</small>
-                            </button>
                         </div>
                         <p class="type-legend"><span class="type-legend-swatch"></span> Dosed to the score. AGTAP
                             rules this out where there is a history of withdrawal seizures, concurrent withdrawal from
                             other drugs, or significant medical or psychiatric comorbidity &mdash; use a fixed
                             schedule in those patients.
                             <span class="src-tag src-other">OTHER - AGTAP 8.10 (B), 8.26 (B), 8.28 (C)</span></p>
+                        <p class="type-legend"><b>Tolerance genuinely unknown?</b> The test-dose protocol is an
+                            assessment step rather than a regimen, and is on the
+                            <button class="link-button" data-tab-link="assessment-banding">Assessment &amp; Banding</button>
+                            tab. It ends by naming the regimen to start.</p>
 
                         <div id="intensity-axis">
                             <p class="axis-label">2 &middot; Physiological tolerance and expected withdrawal
