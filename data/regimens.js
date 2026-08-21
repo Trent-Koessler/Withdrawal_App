@@ -60,8 +60,6 @@ export const INITIAL_SCORING_INTERVAL = '2-hourly at least initially';
 //   The symptom-triggered dose table. That is NSWCG Table 5.4's published
 //   dose-per-score table and keeps its own <4 / 4-14 / >14 bands; subdividing
 //   it would mean inventing doses rather than splitting a range.
-const AGTAP_CITE = `<span class="src-tag src-other">OTHER - Haber PS, Riordan BC, et al. Guidelines for the Treatment of Alcohol Problems, 4th ed (2021), Table 8.4 and p111 - Specialty of Addiction Medicine, University of Sydney, for the Australian Government Department of Health.</span>`;
-
 // Short-form chip for the same document, for the places where AGTAP is cited
 // alongside an NSWCG chip rather than instead of one. The full bibliographic
 // citation is on the Sources & Attribution page, so repeating it beside every
@@ -70,6 +68,8 @@ const AGTAP_CITE = `<span class="src-tag src-other">OTHER - Haber PS, Riordan BC
 // being asked to weigh a second document against NSWCG, and cannot do that
 // without knowing whether they are looking at a Grade A finding or consensus.
 const agtap = (ref) => `<span class="src-tag src-other">OTHER - AGTAP ${ref}</span>`;
+
+const AGTAP_CITE = agtap('Table 8.4, p111');
 
 const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the two fixed schedules combine two published sources, because neither alone separates the schedules.
 <div class="clinical-table-wrap"><table class="clinical-table"><thead><tr><th scope="col">AWS</th><th scope="col">This app</th><th scope="col">AGTAP</th><th scope="col">NSWCG Table 5.6</th></tr></thead><tbody>

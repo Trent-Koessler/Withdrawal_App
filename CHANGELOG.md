@@ -9,6 +9,23 @@ The user-facing version of this lives at `#changelog-page` in the app.
 
 ### Safety - these alter clinical meaning
 
+**The alcohol pages were cross-checked against the national guideline.** The
+*Guidelines for the Treatment of Alcohol Problems* (4th ed, 2021 - AGTAP) was
+already the source of the AWS bands but was not listed as a source document, and
+three of its positions were not reflected. Where it is now cited beside NSWCG,
+the chip carries AGTAP's own grade of recommendation, because a reader weighing
+two documents cannot do it without knowing which is a Grade A finding and which
+is consensus.
+
+| Change | Why |
+|---|---|
+| **The symptom-triggered regimen now states AGTAP's exclusions.** Do not dose to the score where there is a **history of withdrawal seizures**, concurrent withdrawal from other drugs, or significant medical or psychiatric comorbidity; use a fixed schedule instead. | AGTAP 8.10 and 8.26 (both Grade B) rule scale-driven dosing out in these groups, and 8.28 sends them to a fixed schedule. NSWCG only cautions. The seizure exclusion was stated nowhere at the point of regimen choice, and it is the one that matters most: a seizure can arrive before the score rises. |
+| **Carbamazepine is no longer grouped with phenytoin and valproate.** The panel now says that adding *any* anticonvulsant to a benzodiazepine adds nothing; that phenytoin and valproate do not prevent withdrawal seizures at all; and that carbamazepine does prevent a first seizure but not a recurrent one in the same episode. | The previous blanket "no benefit" line contradicted AGTAP 8.29 (Grade A), which rates carbamazepine an effective alternative to benzodiazepines. The advice at the bedside is unchanged - do not add an anticonvulsant, assess the seizure for other causes - but the stated reason was wrong. |
+| **Continuing Care points at AGTAP Chapter 10 rather than the guideline's front page**, and names what is there: indications, the usual 3 to 6 month course, and that naltrexone is unsuitable in opioid dependence or where opioid analgesia is needed. | A reader sent to a homepage to find dosing for three drugs will not find it. The naltrexone contraindication (10.6) is the one most likely to matter on a ward where patients are also on opioids. |
+| **AGTAP is now listed on Sources & Attribution and on Helpful Contacts.** | It was cited on the Regimens tab but appeared in neither list, and the Helpful Contacts heading reads "State & National" while listing no national guideline. Sources & Attribution now carries the full citation once, which is what lets the inline chips shrink to `AGTAP 8.26 (B)`. |
+
+### Safety - these alter clinical meaning
+
 **The AWS bands on the two fixed inpatient schedules have changed.** A ward
 charting AWS previously saw `AWS 4-14` on both Mild-Moderate and Moderate-Severe
 and had to pick between them on other grounds. The bands are now `4-7` and
