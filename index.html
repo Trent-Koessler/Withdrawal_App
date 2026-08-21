@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.4" />
+    <meta name="app-build" content="0.4.5" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -3564,6 +3564,33 @@ textarea {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.5 - August 2026</h4>
+                <p><em>The alcohol pages were checked against the national guideline, and the regimen selector was
+                        rebuilt around two questions instead of one.</em></p>
+                <ul>
+                    <li><strong>If you have been using this app already, this is the first release you will actually
+                            see.</strong> Three earlier releases changed clinical content without changing the file
+                        that tells your device a new version exists, so an installed copy kept serving the older
+                        one. That is fixed, and a test now prevents it recurring.</li>
+                    <li><strong>Choosing a regimen is now two questions.</strong> Regimen type - fixed schedule,
+                        symptom-triggered, or loading - is decided by the overall clinical picture. Expected
+                        withdrawal severity is decided by the reported intake and the scale score, and is asked only
+                        where a fixed schedule needs it.</li>
+                    <li><strong>Loading is offered for a history of withdrawal seizures at any score</strong>, not
+                        only for a score above 20. A patient scoring in the mild-moderate band whose previous
+                        withdrawals were complicated by seizures was previously offered a fixed taper.</li>
+                    <li><strong>Symptom-triggered dosing now states when not to use it:</strong> a history of
+                        withdrawal seizures, concurrent withdrawal from other drugs, or significant medical or
+                        psychiatric comorbidity.</li>
+                    <li><strong>Carbamazepine is no longer grouped with phenytoin and valproate.</strong> The advice
+                        is unchanged - do not add an anticonvulsant, assess the seizure for other causes - but the
+                        stated reason was wrong.</li>
+                    <li><strong>The test-dose protocol has moved to the Assessment tab</strong>, because it is an
+                        assessment step that ends by naming which regimen to start.</li>
+                    <li><strong>The national guideline is now listed as a source</strong>, along with ASAM's alcohol
+                        withdrawal guideline.</li>
+                </ul>
 
                 <h4>0.4.4 - August 2026</h4>
                 <p><em>Who this site is for, and what it says about itself. No clinical content changed.</em></p>

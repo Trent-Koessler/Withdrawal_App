@@ -5,7 +5,7 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
-## Unreleased
+## 0.4.5 - August 2026
 
 ### Housekeeping
 

@@ -1,7 +1,14 @@
 // A cache name is a version stamp. Everything in one cache was fetched by one
 // install, so serving only from the current cache means a page load can never
 // mix files from two releases — see the fetch handler for why that matters.
-const CACHE_NAME = 'withdrawal-app-cache-v32';
+//
+// It is the app version verbatim, and a test asserts that. Releases 0.4.5's
+// predecessors shipped real clinical changes behind an unchanged 'v32' stamp:
+// the worker is cache-first and only reinstalls when this file changes, so
+// every device that had already installed kept serving the older snapshot and
+// never saw them. An opaque counter made that easy to forget. Tying it to the
+// version people can read in the footer makes the omission visible.
+const CACHE_NAME = 'withdrawal-app-cache-v0.4.5';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 // style.css is deliberately absent: it is inlined into index.html by
 // tools/build-css.py, so the app never requests it as a separate file.
