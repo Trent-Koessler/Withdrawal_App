@@ -589,11 +589,11 @@ describe('P1-08 — severe / delirium content', () => {
     // blanket claim that would also pass for a page that had lost it.
     test('the anticonvulsant position separates carbamazepine from phenytoin and valproate', () => {
         const flat = special.replace(/\s+/g, ' ');
-        assert.ok(/adds nothing/i.test(flat),
-            'the "adding an anticonvulsant to benzodiazepines adds nothing" position is missing');
-        assert.ok(/Phenytoin and sodium valproate do not prevent them at all/i.test(flat),
+        assert.ok(/not a reliable alternative to benzodiazepines/i.test(flat),
+            'the "anticonvulsants are not a reliable alternative" position is missing');
+        assert.ok(/Phenytoin and sodium valproate do not prevent withdrawal seizures at all/i.test(flat),
             'phenytoin and valproate are no longer stated to be ineffective');
-        assert.ok(/carbamazepine/i.test(flat) && /not a recurrent one in the same episode/i.test(flat),
+        assert.ok(/carbamazepine/i.test(flat) && /does not extend to a recurrent one/i.test(flat),
             'carbamazepine is not distinguished from the agents that do not work at all');
     });
 
