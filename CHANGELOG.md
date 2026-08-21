@@ -9,6 +9,30 @@ The user-facing version of this lives at `#changelog-page` in the app.
 
 ### Safety - these alter clinical meaning
 
+**The regimen selector now asks two questions instead of one.** The row of six
+buttons mixed two different kinds of answer: *regimen type* (Symptom-Triggered,
+Unknown Tolerance) sat beside *predicted severity* (Sub-Mild to Severe) as
+though a clinician were choosing between peers. They are now two rows - type
+first, decided by the patient; intensity second, decided by the score - and the
+intensity row is hidden for the types that do not take one.
+
+| Change | Why |
+|---|---|
+| **Loading is a regimen type, and its indication is broader than a score.** It is offered for severe withdrawal, a withdrawal complication, **or a history of withdrawal seizures at any current score**. | AGTAP Figure 8.2 asks "is a loading regimen required?" before anything else, and 8.27 (Grade B) answers it from three things, only one of which is a score. This app reached loading only through the Severe band, so a patient scoring 12 with a past withdrawal seizure was offered a fixed taper - while the site's own Special Cases panel said to load them (NSWCG §5.6.1). The clinical content of the cell is unchanged; what changed is who is routed to it. |
+| **The Severe intensity no longer carries a schedule.** It explains that severe withdrawal is managed by loading, and offers a control that switches the type axis. | For diazepam the severe regimen *was* the loading regimen, which now lives on the type axis. Leaving Severe in place, rather than deleting it, means anyone looking for it still finds an answer. |
+| **Sub-Mild carries one option, not two.** The halved fixed schedule stays here; supportive care with symptom-triggered dosing is now reached by selecting that regimen type, and the cell says so. | The cell previously held two alternatives and could not present either as the default without contradicting the other - recorded as an open `TODO(clinical)`. On two axes they stop being alternatives inside one cell, so the question no longer arises. That TODO is resolved and removed. |
+| **Symptom-Triggered carries an amber top edge and a one-line legend** naming AGTAP's three exclusions. | Per-button rather than a rule spanning a group: the selector reflows at several breakpoints and a group-spanning bar would land mid-row at some of them. |
+
+### Housekeeping
+
+- `REGIMEN_CONFIG` gains a `loading` cell per drug (the former `severe` content)
+  and `severe` becomes a routing cell. Oxazepam's refusal to offer any loading
+  regimen at any severity is unchanged, and now answers the Loading button
+  directly.
+- The EMR export, the band labels and the scale toggle all follow the resolved
+  cell rather than a severity key, so switching type re-targets the paste.
+
+
 **The alcohol pages were cross-checked against the national guideline.** The
 *Guidelines for the Treatment of Alcohol Problems* (4th ed, 2021 - AGTAP) was
 already the source of the AWS bands but was not listed as a source document, and

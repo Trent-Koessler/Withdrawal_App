@@ -34,7 +34,7 @@ describe('P0-01 — a loading day is not followed by a second full day', () => {
 
     test('the severe cell never hands over to the Mod-Sev schedule at Day 1', () => {
         for (const benzo of LOADING_BENZOS) {
-            const text = textOf(REGIMEN_CONFIG[benzo].severe);
+            const text = textOf(REGIMEN_CONFIG[benzo].loading);
             assert.ok(!/Then commence Moderate-Severe schedule/i.test(text),
                 `${benzo}: severe still hands over to the Mod-Sev schedule without naming a start day, which stacks a second 80mg day behind the load`);
         }
@@ -42,7 +42,7 @@ describe('P0-01 — a loading day is not followed by a second full day', () => {
 
     test('any handover to a fixed schedule names Day 2 as its start', () => {
         for (const benzo of LOADING_BENZOS) {
-            const text = textOf(REGIMEN_CONFIG[benzo].severe);
+            const text = textOf(REGIMEN_CONFIG[benzo].loading);
             if (!/Moderate-Severe schedule/i.test(text)) continue; // e.g. a routing card
             assert.ok(/Day 2 row/i.test(text),
                 `${benzo}: severe offers the Mod-Sev schedule but does not start it at the Day 2 row`);
@@ -51,7 +51,7 @@ describe('P0-01 — a loading day is not followed by a second full day', () => {
 
     test('the severe cell states that the loading day is Day 1', () => {
         for (const benzo of LOADING_BENZOS) {
-            const cell = REGIMEN_CONFIG[benzo].severe;
+            const cell = REGIMEN_CONFIG[benzo].loading;
             if (cell.routing) continue; // no regimen is offered at all
             assert.ok(/loading day is Day 1/i.test(textOf(cell)),
                 `${benzo}: severe does not make clear that the loading day IS Day 1`);
@@ -154,7 +154,7 @@ describe('P0-05 — oxazepam is never loaded and never routed by conversion alon
     });
 
     test('severe + oxazepam routes to specialist advice instead of a schedule', () => {
-        const cell = REGIMEN_CONFIG.Oxazepam.severe;
+        const cell = REGIMEN_CONFIG.Oxazepam.loading;
         assert.ok(cell.routing, 'severe + oxazepam still renders a dose schedule');
         assert.ok(!cell.schedule, 'severe + oxazepam must not carry a schedule at all');
         const text = textOf(cell);
@@ -239,14 +239,14 @@ describe('P0-07 — thiamine route', () => {
 
 describe('P0-08 — the 80 mg statement is a ladder, not a ceiling', () => {
     test('both thresholds are surfaced in the Severe cell itself', () => {
-        const text = textOf(REGIMEN_CONFIG.Diazepam.severe);
+        const text = textOf(REGIMEN_CONFIG.Diazepam.loading);
         assert.ok(/80mg in 24 hours/.test(text), 'the 80 mg review threshold is not in the Severe cell');
         assert.ok(/120mg in 24 hours/.test(text),
             'the 120 mg maximum is not in the Severe cell — it must not live only in general notes');
     });
 
     test('80 mg is presented as a review threshold rather than a ceiling', () => {
-        const text = textOf(REGIMEN_CONFIG.Diazepam.severe);
+        const text = textOf(REGIMEN_CONFIG.Diazepam.loading);
         assert.ok(/review threshold, not a ceiling/i.test(text),
             'the Severe cell does not say 80 mg is a review point rather than a limit');
         assert.ok(/10-20mg 2-hourly PRN/.test(text),
@@ -308,8 +308,11 @@ describe('P1-01 — symptom-triggered dosing is offered as its own regimen', () 
         assert.ok(/hybrid/i.test(cell.caveat), 'the hybrid option for complex inpatients is missing');
     });
 
-    test('the regimens tab exposes it as a selectable severity', () => {
-        assert.ok(/data-severity="symptom"/.test(read('index.html')),
+    test('the regimens tab exposes it as a selectable regimen type', () => {
+        // It sits on the type axis, not the intensity axis: symptom-triggered
+        // dosing is a way of dosing, not a predicted severity, and its own
+        // dose-per-score table supplies the intensity.
+        assert.ok(/data-regimen-type="symptom"/.test(read('index.html')),
             'no button selects the symptom-triggered regimen');
     });
 });
@@ -458,10 +461,21 @@ describe('P1-04 — something exists below the Mild-Moderate band', () => {
         }
     });
 
-    test('both options are offered and neither is presented as settled', () => {
-        const text = textOf(REGIMEN_CONFIG.Diazepam.submild);
-        assert.ok(/supportive care and symptom-triggered dosing only/i.test(text),
-            'the supportive-care-only option is missing');
+    // Sub-Mild used to hold two alternatives - supportive care with
+    // symptom-triggered dosing, or a halved fixed schedule - and could not
+    // present either as the default without contradicting the other. On the
+    // two-axis selector they are no longer alternatives inside one cell: the
+    // first is the Symptom-Triggered type, the second is this cell. What has to
+    // survive is that the gentler route is still named here, so choosing a
+    // halved schedule stays a decision rather than the only thing on offer.
+    test('the halved schedule names the symptom-triggered alternative', () => {
+        const cell = REGIMEN_CONFIG.Diazepam.submild;
+        // The caveat, not the schedule: its bold lead-in becomes the always-visible
+        // <summary>, so "there is a gentler option than any fixed schedule" is read
+        // before the doses rather than hidden behind the toggle.
+        assert.ok(/symptom-triggered/i.test(cell.caveat.join('\n')),
+            'the sub-mild cell no longer points at supportive care with symptom-triggered dosing');
+        const text = textOf(cell);
         assert.ok(/half<\/b> the ambulatory regimen doses|half the ambulatory regimen doses/i.test(text),
             'the NSWCG Table 5.5 half-dose option is missing');
     });
@@ -503,7 +517,7 @@ describe('P1-05 — band selection carries risk modifiers, not intake alone', ()
 });
 
 describe('P1-06 — loading rate', () => {
-    const severe = textOf(REGIMEN_CONFIG.Diazepam.severe);
+    const severe = textOf(REGIMEN_CONFIG.Diazepam.loading);
 
     test('the default loading rate is the NSWCG 2-hourly rate', () => {
         assert.ok(/20mg <b>2-hourly<\/b>/.test(severe),
@@ -526,21 +540,21 @@ describe('P1-06 — loading rate', () => {
 
 describe('P1-07 — setting is decided before the drug chart', () => {
     test('the severe cell carries a setting block', () => {
-        const cell = REGIMEN_CONFIG.Diazepam.severe;
+        const cell = REGIMEN_CONFIG.Diazepam.loading;
         assert.ok(cell.setting, 'severe withdrawal has no setting guidance');
         const text = cell.setting.join('\n');
         assert.ok(/HDU/.test(text) && /ICU/.test(text), 'HDU and ICU are not both addressed');
     });
 
     test('HDU is no longer buried in the PRN list', () => {
-        const prn = (REGIMEN_CONFIG.Diazepam.severe.prn || [])
+        const prn = (REGIMEN_CONFIG.Diazepam.loading.prn || [])
             .filter((p) => typeof p === 'string').join('\n');
         assert.ok(!/Manage in HDU/.test(prn),
             'setting guidance is still filed under PRN dosing');
     });
 
     test('the NSWCG indications for specialist inpatient care are listed', () => {
-        const text = REGIMEN_CONFIG.Diazepam.severe.setting.join('\n');
+        const text = REGIMEN_CONFIG.Diazepam.loading.setting.join('\n');
         for (const indication of [
             /predicted moderate-severe withdrawal/i,
             /delirium or seizures/i,

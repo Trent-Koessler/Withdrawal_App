@@ -556,6 +556,88 @@ textarea {
     }
 }
 
+/* --- Two-axis regimen selector --- */
+/* The row used to mix regimen type with predicted severity, offering
+   "Symptom-Triggered" and "Severe" as if they were the same kind of answer.
+   Splitting them needs the two rows to read as two questions, so each carries
+   a small label rather than relying on the gap between them. */
+.axis-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin: 16px 0 6px;
+}
+
+.type-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (min-width: 700px) {
+    .type-group {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.regimen-type-btn {
+    flex: none;
+    min-width: 0;
+    overflow-wrap: break-word;
+    text-align: left;
+    padding: 10px 12px;
+    line-height: 1.35;
+}
+
+.regimen-type-btn small {
+    display: block;
+    margin-top: 3px;
+    opacity: 0.85;
+}
+
+.regimen-type-btn.active {
+    background-color: var(--primary-btn-bg);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.regimen-type-btn.active:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+/* Amber top edge on the one type AGTAP restricts. Per-button rather than a rule
+   spanning the group: the grid reflows at three breakpoints, and a group-spanning
+   bar would land mid-row at some of them. Amber because this app already uses it
+   for content the reader is meant to weigh rather than simply follow. */
+.regimen-type-btn.scale-driven {
+    box-shadow: inset 0 4px 0 0 var(--tag-local-border);
+}
+
+.regimen-type-btn.scale-driven.active {
+    box-shadow: inset 0 4px 0 0 var(--tag-local-border), inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.type-legend {
+    font-size: 13px;
+    opacity: 0.85;
+    margin: 8px 0 0;
+}
+
+.type-legend-swatch {
+    display: inline-block;
+    width: 22px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--tag-local-border);
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+#intensity-axis[hidden] {
+    display: none;
+}
+
 .regimen-severity-btn {
     flex: none;
     min-width: 0;

@@ -96,6 +96,25 @@ const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the tw
 // dose bands, so at AWS 8-14 it gives 10mg where AGTAP Table 8.4 gives 20mg -
 // should the local symptom-triggered doses be revisited against Table 8.4?
 
+// AGTAP Figure 8.2 asks "is a loading regimen required?" before anything else,
+// and answers it from three things, only one of which is a score: severe
+// withdrawal, a withdrawal complication, or a history of withdrawal seizures.
+// This app previously reached loading only through the Severe band, so a
+// patient scoring 12 with a past withdrawal seizure was offered a fixed taper -
+// even though the site's own Special Cases panel says to load them.
+const LOADING_INDICATION = `<b>When loading is indicated.</b> Severe withdrawal, <b>or</b> a withdrawal complication (delirium, seizure or hallucinations), <b>or</b> a <b>history of withdrawal seizures at any current score</b>. The last is the one most easily missed: a patient scoring in the mild-moderate band whose previous withdrawals have been complicated by seizures should be loaded, not started on a fixed taper, because a seizure can arrive before the score rises. <span class="src-tag src-nswcg">NSWCG §5.6.1</span> ${agtap('8.27 (B)')}`;
+
+// Severe stays on the intensity axis so it is not simply missing for anyone
+// looking for it, but it holds no schedule: for diazepam the severe regimen is
+// loading, which now lives on the type axis.
+const severeRoutesToLoading = () => ({
+    name: 'Severe',
+    band: band('&gt; 20', '&gt; 14'),
+    routing: [
+        `<b>Severe withdrawal is not managed on a fixed taper.</b> It is managed by <b>loading</b> - repeated 2-hourly doses titrated to light sedation - which is a regimen type rather than a rung on a taper. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span> ${agtap('8.27 (B)')}<br><button class="link-button" data-select-type="loading">Switch to the Loading regimen</button>`
+    ]
+});
+
 // The lowest band in this app starts at CIWA-Ar 10-15 / <=14 standard drinks a
 // day, so a genuinely mild withdrawal received 40mg of diazepam on Day 1 with
 // nothing gentler available. NSWCG Table 5.5 notes milder cases may respond to
@@ -104,15 +123,11 @@ const subMildCell = (drug, halved, extraCaveats = []) => ({
     name: 'Sub-Mild',
     band: band('&lt; 10', '&lt; 4'),
     monitoring: BAND_MONITORING.submild,
-    caveat: [...extraCaveats, `<b>Two options, and they are not equivalent.</b> A patient below the Mild-Moderate band does not automatically need a fixed schedule. Decide between supportive care with symptom-triggered dosing, and a halved fixed schedule, before prescribing. <span class="src-tag src-nswcg">NSWCG Table 5.5, §5.4.4</span>`],
+    caveat: [...extraCaveats, `<b>There is a gentler option than any fixed schedule.</b> A patient below the Mild-Moderate band does not automatically need a scheduled benzodiazepine at all. NSWCG prefers <b>supportive care with symptom-triggered dosing</b> for uncomplicated withdrawal under frequent review - that is the <b>Symptom-Triggered</b> regimen type, whose lowest band already covers this score. Choose this halved fixed schedule instead where symptom-triggered dosing is not appropriate or not deliverable. <span class="src-tag src-nswcg">NSWCG Table 5.5, §5.4.4</span>`],
     schedule: [
-        `<b>Option A - supportive care and symptom-triggered dosing only.</b> No scheduled benzodiazepine. Monitor 4-6 hourly, treat to the score using the Symptom-Triggered regimen, and reassess. This is the NSWCG-preferred approach for uncomplicated withdrawal with frequent review. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-        `<b>Option B - halved fixed schedule.</b> NSWCG Table 5.5 notes that milder cases may respond to <b>half</b> the ambulatory regimen doses. Applied to the schedule used here, that is: ${halved}. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.5 - rationale: NSWCG states milder cases may respond to half the ambulatory doses but publishes no sub-mild table, so the halved figures are derived from this site's own ambulatory regimen and inherit its local provenance.</span>`,
-        `<b>Either way:</b> escalate to the Mild-Moderate schedule if the score enters that band, and review daily. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+        `<b>Halved fixed schedule.</b> NSWCG Table 5.5 notes that milder cases may respond to <b>half</b> the ambulatory regimen doses. Applied to the schedule used here, that is: ${halved}. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.5 - rationale: NSWCG states milder cases may respond to half the ambulatory doses but publishes no sub-mild table, so the halved figures are derived from this site's own ambulatory regimen and inherit its local provenance.</span>`,
+        `<b>Escalate</b> to the Mild-Moderate schedule if the score enters that band, and review daily. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
     ]
-    // TODO(clinical): which of these two should be the default for CIWA-Ar < 10 —
-    // supportive care with symptom-triggered dosing only, or the halved fixed
-    // schedule? Both are presented until this is decided; only one should be.
 });
 
 // NSWCG Table 5.4 / 5.6. The dose is drug-specific; the score bands and the
@@ -225,10 +240,11 @@ export const REGIMEN_CONFIG = {
         // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
         // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
         // while local practice has used the latter; only one should be the default.
-        severe: {
-            name: 'Severe',
-            band: band('&gt; 20', '&gt; 14'),
+        severe: severeRoutesToLoading(),
+        loading: {
+            name: 'Loading',
             monitoring: BAND_MONITORING.severe,
+            caveat: [LOADING_INDICATION],
             // Setting is a first-order decision — it was previously buried under
             // PRN dosing, where it read as an afterthought to the drug chart.
             setting: [
@@ -275,12 +291,12 @@ export const REGIMEN_CONFIG = {
         // cerebral trauma — is precisely the population NSWCG §5.6.3 says must not
         // receive a loading regimen, so a severe-withdrawal oxazepam regimen is a
         // combination that should never render as a set of numbers to follow.
-        severe: {
-            name: 'Severe',
-            band: band('&gt; 20', '&gt; 14'),
+        severe: severeRoutesToLoading(),
+        loading: {
+            name: 'Loading',
             monitoring: BAND_MONITORING.severe,
             routing: [
-                `<b>There is no oxazepam regimen for severe withdrawal.</b> Loading is a diazepam concept: it works because of diazepam's long-acting active metabolites, which oxazepam does not have. Converting a diazepam loading dose would give roughly 240mg of oxazepam to the patients least able to tolerate it. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
+                `<b>There is no oxazepam loading regimen, at any severity.</b> Loading is a diazepam concept: it works because of diazepam's long-acting active metabolites, which oxazepam does not have. Converting a diazepam loading dose would give roughly 240mg of oxazepam to the patients least able to tolerate it. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>This is not specific to severe withdrawal.</b> The situations that favour oxazepam over diazepam - significant liver impairment, respiratory insufficiency, elderly or frail patients, cerebral trauma - are the same situations in which a loading regimen would not be appropriate. Loading regimens for oxazepam have therefore been omitted entirely, at every severity. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>Instead:</b> titrate oxazepam <b>15-30mg</b> carefully against response - do not follow a fixed schedule. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>Consider HDU.</b> Where escalation is needed, NSWCG options are an <b>IV midazolam infusion monitored in HDU</b>, or <b>IM lorazepam</b> where no HDU is available. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`,
