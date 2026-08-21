@@ -589,6 +589,88 @@ textarea {
     }
 }
 
+/* --- Two-axis regimen selector --- */
+/* The row used to mix regimen type with predicted severity, offering
+   "Symptom-Triggered" and "Severe" as if they were the same kind of answer.
+   Splitting them needs the two rows to read as two questions, so each carries
+   a small label rather than relying on the gap between them. */
+.axis-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin: 16px 0 6px;
+}
+
+.type-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (min-width: 700px) {
+    .type-group {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.regimen-type-btn {
+    flex: none;
+    min-width: 0;
+    overflow-wrap: break-word;
+    text-align: left;
+    padding: 10px 12px;
+    line-height: 1.35;
+}
+
+.regimen-type-btn small {
+    display: block;
+    margin-top: 3px;
+    opacity: 0.85;
+}
+
+.regimen-type-btn.active {
+    background-color: var(--primary-btn-bg);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.regimen-type-btn.active:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+/* Amber top edge on the one type AGTAP restricts. Per-button rather than a rule
+   spanning the group: the grid reflows at three breakpoints, and a group-spanning
+   bar would land mid-row at some of them. Amber because this app already uses it
+   for content the reader is meant to weigh rather than simply follow. */
+.regimen-type-btn.scale-driven {
+    box-shadow: inset 0 4px 0 0 var(--tag-local-border);
+}
+
+.regimen-type-btn.scale-driven.active {
+    box-shadow: inset 0 4px 0 0 var(--tag-local-border), inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.type-legend {
+    font-size: 13px;
+    opacity: 0.85;
+    margin: 8px 0 0;
+}
+
+.type-legend-swatch {
+    display: inline-block;
+    width: 22px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--tag-local-border);
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+#intensity-axis[hidden] {
+    display: none;
+}
+
 .regimen-severity-btn {
     flex: none;
     min-width: 0;
@@ -1295,6 +1377,14 @@ textarea {
                                  with the ambulatory pathway, which already uses it as an inclusion criterion? Using
                                  two different band-selection methods across the two pathways is the current state. -->
                         </div>
+                        <div class="clinical-block">
+                            <h4>When tolerance is genuinely unknown</h4>
+                            <p>Reported intake is sometimes unusable - an unreliable history, no collateral, or a
+                                first presentation. A single observed test dose answers the banding question this
+                                page is otherwise asking you to answer from the history. It is an assessment step,
+                                not a regimen: it ends by telling you which regimen to start.</p>
+                            <div id="test-dose-protocol"></div>
+                        </div>
                     </div>
                     <div id="regimens" class="tab-content">
                         <h3>3. Regimens</h3>
@@ -1319,39 +1409,65 @@ textarea {
                                     <span class="src-tag src-nswcg">NSWCG Table 5.6</span>
                                     <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span></small></p>
                         </div>
-                        <div class="button-group severity-group">
-                            <button class="regimen-severity-btn" data-severity="symptom">
+                        <p class="axis-label">1 &middot; Regimen type &mdash; determined by the overall clinical context, not just
+                            the withdrawal scores</p>
+                        <div class="button-group type-group" role="group" aria-label="Regimen type">
+                            <button class="regimen-type-btn active" data-regimen-type="fixed" aria-pressed="true">
+                                <strong>Fixed schedule</strong><br>
+                                <small>Ambulatory, other-drug withdrawal, medical or psychiatric comorbidity, or staff
+                                    not skilled in symptom-triggered dosing</small>
+                            </button>
+                            <button class="regimen-type-btn scale-driven" data-regimen-type="symptom"
+                                aria-pressed="false">
                                 <strong>Symptom-Triggered</strong><br>
                                 <small><span class="band-label" data-ciwa="Dose to the CIWA-Ar score"
-                                        data-aws="Dose to the AWS score">Dose to the CIWA-Ar score</span> |
-                                    uncomplicated withdrawal, frequent skilled review</small>
+                                        data-aws="Dose to the AWS score">Dose to the CIWA-Ar score</span> | only where
+                                    none of those apply</small>
                             </button>
-                            <button class="regimen-severity-btn" data-severity="submild">
-                                <strong>Sub-Mild</strong><br>
-                                <small><span class="band-label" data-ciwa="CIWA-Ar &lt; 10"
-                                        data-aws="AWS &lt; 4">CIWA-Ar &lt; 10</span> | supportive care or a halved
-                                    schedule</small>
+                            <button class="regimen-type-btn" data-regimen-type="loading" aria-pressed="false">
+                                <strong>Loading</strong><br>
+                                <small>Severe withdrawal, delirium, seizure or hallucinations, or a history of
+                                    withdrawal seizures at any score</small>
                             </button>
-                            <button class="regimen-severity-btn active" data-severity="mild">
-                                <strong>Mild-Mod</strong><br>
-                                <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 10-15"
-                                        data-aws="AWS 4-7">CIWA-Ar 10-15</span> | ≤ 14 standard drinks/day</small>
-                            </button>
-                            <button class="regimen-severity-btn" data-severity="moderate">
-                                <strong>Mod-Sev</strong><br>
-                                <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 15-20"
-                                        data-aws="AWS 8-14">CIWA-Ar 15-20</span> | ≥ 15 standard drinks/day</small>
-                            </button>
-                            <button class="regimen-severity-btn" data-severity="severe">
-                                <strong>Severe</strong><br>
-                                <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar &gt; 20"
-                                        data-aws="AWS &gt; 14">CIWA-Ar &gt; 20</span> | ≥ 15 drinks/day + complex
-                                    features</small>
-                            </button>
-                            <button class="regimen-severity-btn" data-severity="unknown">
-                                <strong>Unknown Tolerance</strong><br>
-                                <small>Local protocol | test dose, reassess at 1 and 2 hours</small>
-                            </button>
+                        </div>
+                        <p class="type-legend"><span class="type-legend-swatch"></span> Dosed to the score. AGTAP
+                            rules this out where there is a history of withdrawal seizures, concurrent withdrawal from
+                            other drugs, or significant medical or psychiatric comorbidity &mdash; use a fixed
+                            schedule in those patients.
+                            <span class="src-tag src-other">OTHER - AGTAP 8.10 (B), 8.26 (B), 8.28 (C)</span></p>
+                        <p class="type-legend"><b>Tolerance genuinely unknown?</b> The test-dose protocol is an
+                            assessment step rather than a regimen, and is on the
+                            <button class="link-button" data-tab-link="assessment-banding">Assessment &amp; Banding</button>
+                            tab. It ends by naming the regimen to start.</p>
+
+                        <div id="intensity-axis">
+                            <p class="axis-label">2 &middot; Physiological tolerance and expected withdrawal
+                                symptoms &mdash; decided by the reported intake and withdrawal scale scores</p>
+                            <div class="button-group severity-group" role="group" aria-label="Withdrawal intensity">
+                                <button class="regimen-severity-btn" data-severity="submild" aria-pressed="false">
+                                    <strong>Sub-Mild</strong><br>
+                                    <small><span class="band-label" data-ciwa="CIWA-Ar &lt; 10"
+                                            data-aws="AWS &lt; 4">CIWA-Ar &lt; 10</span> | a halved schedule</small>
+                                </button>
+                                <button class="regimen-severity-btn active" data-severity="mild" aria-pressed="true">
+                                    <strong>Mild-Mod</strong><br>
+                                    <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 10-15"
+                                            data-aws="AWS 4-7">CIWA-Ar 10-15</span> | &le; 14 standard
+                                        drinks/day</small>
+                                </button>
+                                <button class="regimen-severity-btn" data-severity="moderate" aria-pressed="false">
+                                    <strong>Mod-Sev</strong><br>
+                                    <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 15-20"
+                                            data-aws="AWS 8-14">CIWA-Ar 15-20</span> | &ge; 15 standard
+                                        drinks/day</small>
+                                </button>
+                                <button class="regimen-severity-btn" data-severity="severe" aria-pressed="false">
+                                    <strong>Severe</strong><br>
+                                    <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar &gt; 20"
+                                            data-aws="AWS &gt; 14">CIWA-Ar &gt; 20</span> | managed by
+                                        loading</small>
+                                </button>
+                            </div>
                         </div>
 
                         <div id="regimen-display"></div>

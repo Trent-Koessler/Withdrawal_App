@@ -29,8 +29,12 @@ const AGTAP_2021 = 'Haber PS, Riordan BC, et al., Guidelines for the Treatment o
 // pharmacotherapy pointer on Continuing Care.
 const AGTAP_CROSSCHECK = '2026-08-21';
 
+// The Regimens tab was restructured into a type axis and an intensity axis in
+// the same pass, which changed who is routed to a loading regimen.
+const SELECTOR_REVISED = '2026-08-21';
+
 export const CONTENT_META = {
-    'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: AGTAP_CROSSCHECK },
+    'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: SELECTOR_REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'alcohol-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'screening-page': { source: NSWCG_2022, lastReviewed: REVISED },

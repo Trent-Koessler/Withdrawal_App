@@ -4,7 +4,6 @@
 // Retained as the pointer shown under Mild-Moderate. The dosing table itself
 // now lives in one place — the Symptom-Triggered regimen — so the two cannot
 // drift apart.
-const symptomTriggeredNote = (drugName) => `For unclear alcohol intake, or anticipated mild alcohol withdrawal with unclear benzodiazepine requirements, symptom-triggered dosing is an alternative to this fixed schedule. Monitor the amount of ${drugName} used and reassess requirements regularly. <b>Select the Symptom-Triggered regimen above for the full dosing and monitoring table.</b>`;
 
 // Shown above any oxazepam schedule. The 1:3 ratio is a rough equivalence, and
 // the taper *shape* below it was designed around diazepam's self-tapering
@@ -96,6 +95,25 @@ const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the tw
 // dose bands, so at AWS 8-14 it gives 10mg where AGTAP Table 8.4 gives 20mg -
 // should the local symptom-triggered doses be revisited against Table 8.4?
 
+// AGTAP Figure 8.2 asks "is a loading regimen required?" before anything else,
+// and answers it from three things, only one of which is a score: severe
+// withdrawal, a withdrawal complication, or a history of withdrawal seizures.
+// This app previously reached loading only through the Severe band, so a
+// patient scoring 12 with a past withdrawal seizure was offered a fixed taper -
+// even though the site's own Special Cases panel says to load them.
+const LOADING_INDICATION = `<b>When loading is indicated.</b> Severe withdrawal, <b>or</b> a withdrawal complication (delirium, seizure or hallucinations), <b>or</b> a <b>history of withdrawal seizures at any current score</b>. The last is the one most easily missed: a patient scoring in the mild-moderate band whose previous withdrawals have been complicated by seizures should be loaded, not started on a fixed taper, because a seizure can arrive before the score rises. <span class="src-tag src-nswcg">NSWCG §5.6.1</span> ${agtap('8.27 (B)')}`;
+
+// Severe stays on the intensity axis so it is not simply missing for anyone
+// looking for it, but it holds no schedule: for diazepam the severe regimen is
+// loading, which now lives on the type axis.
+const severeRoutesToLoading = () => ({
+    name: 'Severe',
+    band: band('&gt; 20', '&gt; 14'),
+    routing: [
+        `<b>Severe withdrawal is not managed on a fixed taper.</b> It is managed by <b>loading</b> - repeated 2-hourly doses titrated to light sedation - which is a regimen type rather than a rung on a taper. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span> ${agtap('8.27 (B)')}<br><button class="link-button" data-select-type="loading">Switch to the Loading regimen</button>`
+    ]
+});
+
 // The lowest band in this app starts at CIWA-Ar 10-15 / <=14 standard drinks a
 // day, so a genuinely mild withdrawal received 40mg of diazepam on Day 1 with
 // nothing gentler available. NSWCG Table 5.5 notes milder cases may respond to
@@ -104,15 +122,11 @@ const subMildCell = (drug, halved, extraCaveats = []) => ({
     name: 'Sub-Mild',
     band: band('&lt; 10', '&lt; 4'),
     monitoring: BAND_MONITORING.submild,
-    caveat: [...extraCaveats, `<b>Two options, and they are not equivalent.</b> A patient below the Mild-Moderate band does not automatically need a fixed schedule. Decide between supportive care with symptom-triggered dosing, and a halved fixed schedule, before prescribing. <span class="src-tag src-nswcg">NSWCG Table 5.5, §5.4.4</span>`],
+    caveat: [...extraCaveats, `<b>There is a gentler option than any fixed schedule.</b> A patient below the Mild-Moderate band does not automatically need a scheduled benzodiazepine at all. NSWCG prefers <b>supportive care with symptom-triggered dosing</b> for uncomplicated withdrawal under frequent review - that is the <b>Symptom-Triggered</b> regimen type, whose lowest band already covers this score. Choose this halved fixed schedule instead where symptom-triggered dosing is not appropriate or not deliverable. <span class="src-tag src-nswcg">NSWCG Table 5.5, §5.4.4</span>`],
     schedule: [
-        `<b>Option A - supportive care and symptom-triggered dosing only.</b> No scheduled benzodiazepine. Monitor 4-6 hourly, treat to the score using the Symptom-Triggered regimen, and reassess. This is the NSWCG-preferred approach for uncomplicated withdrawal with frequent review. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-        `<b>Option B - halved fixed schedule.</b> NSWCG Table 5.5 notes that milder cases may respond to <b>half</b> the ambulatory regimen doses. Applied to the schedule used here, that is: ${halved}. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.5 - rationale: NSWCG states milder cases may respond to half the ambulatory doses but publishes no sub-mild table, so the halved figures are derived from this site's own ambulatory regimen and inherit its local provenance.</span>`,
-        `<b>Either way:</b> escalate to the Mild-Moderate schedule if the score enters that band, and review daily. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+        `<b>Halved fixed schedule.</b> NSWCG Table 5.5 notes that milder cases may respond to <b>half</b> the ambulatory regimen doses. Applied to the schedule used here, that is: ${halved}. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.5 - rationale: NSWCG states milder cases may respond to half the ambulatory doses but publishes no sub-mild table, so the halved figures are derived from this site's own ambulatory regimen and inherit its local provenance.</span>`,
+        `<b>Escalate</b> to the Mild-Moderate schedule if the score enters that band, and review daily. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
     ]
-    // TODO(clinical): which of these two should be the default for CIWA-Ar < 10 —
-    // supportive care with symptom-triggered dosing only, or the halved fixed
-    // schedule? Both are presented until this is decided; only one should be.
 });
 
 // NSWCG Table 5.4 / 5.6. The dose is drug-specific; the score bands and the
@@ -152,6 +166,7 @@ const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
 // test dose locally has to be stated rather than assumed.
 const testDoseCell = (drug, testDose, extraCaveats = []) => ({
     name: 'Unknown Tolerance (Test-Dose Protocol)',
+    scheduleHeading: 'The protocol',
     caveat: [...extraCaveats,
         `<b>This protocol is local, not guideline.</b> NSWCG does not describe a test-dose protocol. Its answer to uncertain tolerance is <b>symptom-triggered dosing</b>, which produces the same information about tolerance from a smaller first dose and is the safer default where frequent skilled review is available. <span class="src-tag src-local">LOCAL - rationale: a single observed test dose is preferred locally where review is not frequent enough to run a symptom-triggered regimen safely, because it establishes tolerance at a known time under direct observation rather than across a shift; where frequent review IS available, use symptom-triggered dosing instead. Reassessing at a fixed timeframe also gives the clinician a clear decision point for which subsequent regimen to commence, rather than an open-ended judgement call.</span>`],
     schedule: [
@@ -212,23 +227,16 @@ export const REGIMEN_CONFIG = {
             monitoring: BAND_MONITORING.mild,
             caveat: [AWS_BAND_CAVEAT],
             schedule: [{ dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }],
-            symptom_triggered: {
-                title: 'Alternative: Symptom-Triggered Regimen',
-                note: symptomTriggeredNote('diazepam')
-            }
+            prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }]
         },
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
         moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }] },
-        // TODO(clinical): confirm the preferred Day 2 default after a loading day —
-        // symptom-triggered dosing, or the Moderate-Severe fixed schedule from its
-        // Day 2 row? Both are offered below because NSWCG §5.4.4 prefers the former
-        // while local practice has used the latter; only one should be the default.
-        severe: {
-            name: 'Severe',
-            band: band('&gt; 20', '&gt; 14'),
+        severe: severeRoutesToLoading(),
+        loading: {
+            name: 'Loading',
             monitoring: BAND_MONITORING.severe,
+            caveat: [LOADING_INDICATION],
             // Setting is a first-order decision — it was previously buried under
             // PRN dosing, where it read as an afterthought to the drug chart.
             setting: [
@@ -239,8 +247,8 @@ export const REGIMEN_CONFIG = {
                 `<b>Day 1 - loading.</b> Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
                 `<b>Delirium tremens - hourly loading, monitored settings only.</b> For withdrawal delirium specifically, diazepam 20mg hourly to a total of 80mg/24h may be used in a monitored setting (HDU, or 1:1 nursing with continuous observation) - see Special Cases &rarr; Alcohol withdrawal delirium. Do not use hourly loading for severe withdrawal without delirium: oral diazepam peaks at around one hour, so hourly dosing outside DT stacks doses whose effect has not yet been observed. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`,
                 `<b>Day 2 onward - do not repeat a loading day.</b> Following loading, no further loading diazepam is generally needed once the patient is settled: diazepam's long-acting active metabolites are the reason loading works, and a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-                `<b>Preferred handover:</b> symptom-triggered dosing in a reducing regimen (see the Symptom-Triggered regimen). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-                `<b>Alternative handover:</b> if a fixed schedule is preferred, commence at the <b>Day 2 row</b> of the Moderate-Severe schedule - diazepam 15mg qid - and taper from there as written. Do not start that schedule at its Day 1 row. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+                `<b>Default handover - the Moderate-Severe schedule from its Day 2 row.</b> Commence diazepam <b>15mg qid</b> and taper from there as written. <b>Do not start that schedule at its Day 1 row</b>: the loading day was Day 1. <span class="src-tag src-local">LOCAL - rationale: NSWCG §5.4.4 names symptom-triggered dosing as its preferred post-loading handover, and this app makes the fixed Moderate-Severe schedule the default instead. A patient who has just required loading has usually declared a history, a complication or a comorbidity - which are the same features that make scale-driven dosing unreliable - so handing them to a schedule that depends on the score is inconsistent with the exclusions stated on the Symptom-Triggered regimen. AGTAP p122 offers a fixed reducing regimen and as-needed dosing as equally acceptable after loading.</span>`,
+                `<b>Alternative handover:</b> symptom-triggered dosing in a reducing regimen, where none of the exclusions on that regimen apply and frequent skilled review is available. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
             ],
             prn: [
                 `<b>80mg in 24 hours - medical officer review required.</b> This is a review threshold, not a ceiling. Assess for other pathology before giving more (see Special Cases &rarr; alcohol withdrawal delirium is a diagnosis of exclusion). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
@@ -261,11 +269,7 @@ export const REGIMEN_CONFIG = {
             monitoring: BAND_MONITORING.mild,
             caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT],
             schedule: [{ dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }],
-            symptom_triggered: {
-                title: 'Alternative: Symptom-Triggered Regimen',
-                note: symptomTriggeredNote('oxazepam')
-            }
+            prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }]
         },
         submild: subMildCell('oxazepam', 'oxazepam 15mg qid on Day 1, 15mg tds on Day 2, 15mg bd on Day 3, 7.5mg bd on Day 4, then 7.5mg nocte on Day 5', [OXAZEPAM_CONVERSION_CAVEAT]),
         symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),
@@ -275,12 +279,12 @@ export const REGIMEN_CONFIG = {
         // cerebral trauma — is precisely the population NSWCG §5.6.3 says must not
         // receive a loading regimen, so a severe-withdrawal oxazepam regimen is a
         // combination that should never render as a set of numbers to follow.
-        severe: {
-            name: 'Severe',
-            band: band('&gt; 20', '&gt; 14'),
+        severe: severeRoutesToLoading(),
+        loading: {
+            name: 'Loading',
             monitoring: BAND_MONITORING.severe,
             routing: [
-                `<b>There is no oxazepam regimen for severe withdrawal.</b> Loading is a diazepam concept: it works because of diazepam's long-acting active metabolites, which oxazepam does not have. Converting a diazepam loading dose would give roughly 240mg of oxazepam to the patients least able to tolerate it. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
+                `<b>There is no oxazepam loading regimen, at any severity.</b> Loading is a diazepam concept: it works because of diazepam's long-acting active metabolites, which oxazepam does not have. Converting a diazepam loading dose would give roughly 240mg of oxazepam to the patients least able to tolerate it. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>This is not specific to severe withdrawal.</b> The situations that favour oxazepam over diazepam - significant liver impairment, respiratory insufficiency, elderly or frail patients, cerebral trauma - are the same situations in which a loading regimen would not be appropriate. Loading regimens for oxazepam have therefore been omitted entirely, at every severity. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>Instead:</b> titrate oxazepam <b>15-30mg</b> carefully against response - do not follow a fixed schedule. <span class="src-tag src-nswcg">NSWCG §5.6.3</span>`,
                 `<b>Consider HDU.</b> Where escalation is needed, NSWCG options are an <b>IV midazolam infusion monitored in HDU</b>, or <b>IM lorazepam</b> where no HDU is available. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`,

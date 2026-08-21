@@ -157,7 +157,10 @@ describe('scale structure', () => {
 });
 
 describe('benzodiazepine regimens', () => {
-    const SEVERITIES = ['submild', 'mild', 'symptom', 'moderate', 'severe', 'unknown'];
+    // Every cell in the config, not only the ones on the intensity axis: `loading`
+    // and `unknown` are reached from the type axis and the Assessment tab, and
+    // are exactly as capable of rendering nothing.
+    const SEVERITIES = ['submild', 'mild', 'symptom', 'moderate', 'severe', 'loading', 'unknown'];
 
     // A cell renders either a schedule or a `routing` card. The routing shape
     // exists so a combination that must not produce doses (severe withdrawal on
@@ -206,17 +209,22 @@ describe('benzodiazepine regimens', () => {
         }
     });
 
-    // The dose table used to be duplicated: once under Mild-Moderate and
-    // nowhere else. It now lives only in the symptom-triggered severity, and
-    // the mild cell points at it — so assert the pointer, not a second copy.
-    test('mild regimens point at the symptom-triggered alternative', () => {
+    // The dose table used to be duplicated: once under Mild-Moderate and once in
+    // the symptom-triggered cell. The duplicate went, and Mild-Moderate carried a
+    // pointer to the survivor instead. That pointer went too once symptom-triggered
+    // became a button on the type axis directly above the panel — a paragraph
+    // telling the reader to press a button they can see is noise. What still has to
+    // hold is that exactly one copy of the table exists.
+    test('the symptom-triggered dose table exists in exactly one place', () => {
         for (const benzo of Object.keys(REGIMEN_CONFIG)) {
-            const st = REGIMEN_CONFIG[benzo].mild.symptom_triggered;
-            assert.ok(st, `${benzo} mild has no symptom_triggered pointer`);
-            assert.ok(/Symptom-Triggered regimen/i.test(st.note),
-                `${benzo} mild does not tell the user where the dosing table is`);
-            assert.ok(!st.doses,
-                `${benzo} mild carries its own copy of the dose table again — it will drift`);
+            const config = REGIMEN_CONFIG[benzo];
+            assert.ok(config.symptom.bands, `${benzo} has lost the symptom-triggered dose table`);
+            for (const key of ['mild', 'moderate', 'submild', 'loading']) {
+                assert.ok(!config[key]?.bands,
+                    `${benzo}.${key} carries its own copy of the dose table — it will drift`);
+                assert.ok(!config[key]?.symptom_triggered,
+                    `${benzo}.${key} still points at the symptom-triggered regimen, which is now a button above it`);
+            }
         }
     });
 });
