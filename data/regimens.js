@@ -60,7 +60,16 @@ export const INITIAL_SCORING_INTERVAL = '2-hourly at least initially';
 //   The symptom-triggered dose table. That is NSWCG Table 5.4's published
 //   dose-per-score table and keeps its own <4 / 4-14 / >14 bands; subdividing
 //   it would mean inventing doses rather than splitting a range.
-const AGTAP_CITE = `<span class="src-tag src-other">OTHER - Haber PS, Riordan BC, et al. Guidelines for the Treatment of Alcohol Problems, 4th ed (2021), Table 8.4 and p111 - Specialty of Addiction Medicine, University of Sydney, for the Australian Government Department of Health.</span>`;
+// Short-form chip for the same document, for the places where AGTAP is cited
+// alongside an NSWCG chip rather than instead of one. The full bibliographic
+// citation is on the Sources & Attribution page, so repeating it beside every
+// clinical sentence would cost more room than the cross-reference is worth.
+// The bracketed letter is AGTAP's own grade of recommendation: the reader is
+// being asked to weigh a second document against NSWCG, and cannot do that
+// without knowing whether they are looking at a Grade A finding or consensus.
+const agtap = (ref) => `<span class="src-tag src-other">OTHER - AGTAP ${ref}</span>`;
+
+const AGTAP_CITE = agtap('Table 8.4, p111');
 
 const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the two fixed schedules combine two published sources, because neither alone separates the schedules.
 <div class="clinical-table-wrap"><table class="clinical-table"><thead><tr><th scope="col">AWS</th><th scope="col">This app</th><th scope="col">AGTAP</th><th scope="col">NSWCG Table 5.6</th></tr></thead><tbody>
@@ -126,7 +135,8 @@ const symptomTriggeredBands = (doses) => [
 // and the EMR header cannot end up naming it twice or disagreeing about it.
 const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
     name: 'Symptom-Triggered',
-    caveat: [...extraCaveats, `<b>When this regimen is appropriate.</b> Symptom-triggered dosing suits <b>uncomplicated withdrawal</b> in patients without co-occurring conditions, in an inpatient setting with <b>frequent review by skilled clinicians</b>. Where those conditions do not hold - complex inpatients with co-occurring conditions - a <b>hybrid</b> regimen (a fixed schedule reviewed daily, plus PRN) is often the most appropriate choice. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`],
+    caveat: [...extraCaveats, `<b>When this regimen is appropriate.</b> Symptom-triggered dosing suits <b>uncomplicated withdrawal</b> in patients without co-occurring conditions, in an inpatient setting with <b>frequent review by skilled clinicians</b>. Where those conditions do not hold - complex inpatients with co-occurring conditions - a <b>hybrid</b> regimen (a fixed schedule reviewed daily, plus PRN) is often the most appropriate choice. <span class="src-tag src-nswcg">NSWCG §5.4.4</span><br>
+<b>AGTAP rules it out in three groups NSWCG only cautions about.</b> Do not dose to the score where there is a <b>history of withdrawal seizures</b> - a seizure can arrive before the score rises - nor in <b>concurrent withdrawal from other drugs</b>, nor in <b>significant medical or psychiatric comorbidity</b>, which AGTAP notes covers many general and psychiatric hospital inpatients. Use a fixed schedule in those patients, and seek addiction medicine advice on monitoring. ${agtap('8.10 (B), 8.26 (B), 8.28 (C)')}`],
     bands: symptomTriggeredBands(doses),
     schedule: [
         `Score the patient at the interval shown for their current band, and give the dose for that band. There is no fixed daily total to complete. <span class="src-tag src-nswcg">NSWCG Table 5.4, Table 5.6</span>`,

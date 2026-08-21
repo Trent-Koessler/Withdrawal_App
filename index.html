@@ -1195,11 +1195,14 @@ textarea {
                             crucial to rule out other medical conditions that can mimic withdrawal, such as sepsis,
                             metabolic disturbances, or intracranial events.</p>
                         <p><strong>BAL (Blood Alcohol Level):</strong> Not a contraindication to starting treatment.
-                            It is preferable to begin dosing when the BAL is low or falling (e.g., &lt; 0.1 g/dL),
-                            which helps differentiate intoxication from true withdrawal - but a rising score with a
-                            falling BAL is itself the signal to treat, and withdrawal may begin before the BAL reaches
-                            zero. There is no fixed number of hours since the last drink that must elapse first.
-                            <span class="src-tag src-nswcg">NSWCG §5.1, §5.3</span></p>
+                            It is preferable to begin dosing when the BAL is low or falling - the two source
+                            guidelines put that point at <strong>0.05% to 0.10%</strong> (0.05-0.10 g/dL), AGTAP at
+                            the lower end and this app's NSWCG-derived figure at the upper - which helps differentiate
+                            intoxication from true withdrawal. A rising score with a falling BAL is itself the signal
+                            to treat, and withdrawal may begin before the BAL reaches zero. There is no fixed number
+                            of hours since the last drink that must elapse first.
+                            <span class="src-tag src-nswcg">NSWCG §5.1, §5.3</span>
+                            <span class="src-tag src-other">OTHER - AGTAP p110</span></p>
                                 <p><strong>Liver Function:</strong> Assess liver function (LFTs, INR, Albumin) to guide
                                     benzodiazepine choice. Severe liver impairment may necessitate using a drug with no
                                     active metabolites, like Oxazepam.</p>
@@ -1314,8 +1317,7 @@ textarea {
                                     4-14 exactly. Full derivation, and where the two documents disagree, is in the
                                     AWS caveat on each schedule below.
                                     <span class="src-tag src-nswcg">NSWCG Table 5.6</span>
-                                    <span class="src-tag src-other">OTHER - Guidelines for the Treatment of Alcohol
-                                        Problems, 4th ed (2021), Table 8.4 and p111</span></small></p>
+                                    <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span></small></p>
                         </div>
                         <div class="button-group severity-group">
                             <button class="regimen-severity-btn" data-severity="symptom">
@@ -1456,10 +1458,16 @@ textarea {
                         <p>Early treatment with diazepam (loading) is indicated where there is a history of withdrawal
                             seizures. <span class="src-tag src-nswcg">NSWCG §5.6.1</span></p>
                         <div class="warning-box">
-                            <strong>⚠️ Prophylactic anticonvulsants have no benefit</strong> in preventing alcohol
-                            withdrawal seizures - this includes phenytoin, carbamazepine and sodium valproate. Assess
-                            any seizure for other causes rather than adding an anticonvulsant.
+                            <strong>⚠️ An anticonvulsant is not a reliable alternative to benzodiazepines</strong> in
+                            alcohol withdrawal: none has evidence for preventing a recurrent seizure within the same
+                            episode. Phenytoin and sodium valproate do not prevent withdrawal seizures at all.
+                            Carbamazepine does prevent a first withdrawal seizure - AGTAP grades it an effective
+                            alternative to benzodiazepines - but the evidence does not extend to a recurrent one, so
+                            it is not the answer once a seizure has happened, and adding it to a benzodiazepine has
+                            not been shown to help. Assess any seizure for other causes rather than adding an
+                            anticonvulsant.
                             <span class="src-tag src-nswcg">NSWCG §5.6.1</span>
+                            <span class="src-tag src-other">OTHER - AGTAP 8.29 (A), 8.30 (A), 8.32 (A)</span>
                         </div>
 
                         <h4>Alcohol withdrawal delirium (DT)</h4>
@@ -3221,11 +3229,19 @@ textarea {
 
                 <h4>Alcohol use disorder pharmacotherapy</h4>
                 <p>Relapse-prevention pharmacotherapy for alcohol use disorder - <strong>naltrexone, acamprosate and
-                        disulfiram</strong> - should be considered for every patient completing alcohol withdrawal.
-                    For dosing, contraindications and selection, see the
-                    <a href="https://alcoholtreatmentguidelines.com.au/" target="_blank" rel="noopener">Australian
-                        Guidelines for the Treatment of Alcohol Problems</a>.
-                    <span class="src-tag src-nswcg">NSWCG §5.5</span></p>
+                        disulfiram</strong> - should be considered for every patient completing alcohol withdrawal,
+                    alongside psychosocial support rather than instead of it.
+                    <span class="src-tag src-nswcg">NSWCG §5.5</span>
+                    <span class="src-tag src-other">OTHER - AGTAP 10.1 (GPP)</span></p>
+                <p>This site does not carry dosing or selection: that is
+                    <a href="https://alcoholtreatmentguidelines.com.au/pdf/guidelines-for-the-treatment-of-alcohol-problems.pdf#page=155"
+                        target="_blank" rel="noopener">AGTAP Chapter 10</a>, which gives indications, durations and
+                    contraindications for all three. Two of them are worth carrying across: the usual
+                    <strong>3 to 6 months</strong> is a <strong>starting course, not a stopping point</strong> - AGTAP
+                    frames it as "at least" that long, with continuation assessed for the individual patient
+                    thereafter; and <strong>naltrexone is unsuitable in opioid dependence, or where opioid analgesia
+                        is needed</strong>.
+                    <span class="src-tag src-other">OTHER - AGTAP 10.4, 10.6 (GPP), 10.8 (A), 10.9, 10.12 (C)</span></p>
 
                 <h4>Opioids</h4>
                 <ul>
@@ -3274,6 +3290,12 @@ textarea {
                             href="https://www.health.nsw.gov.au/aod/professionals/Publications/clinical-guidance-withdrawal-alcohol-and-other-drugs.pdf"
                             target="_blank" rel="noopener">Management of Withdrawal from Alcohol and Other Drugs:
                             Clinical Guidance</a></li>
+                    <li><strong>National (AGTAP):</strong> <a
+                            href="https://alcoholtreatmentguidelines.com.au/pdf/guidelines-for-the-treatment-of-alcohol-problems.pdf"
+                            target="_blank" rel="noopener">Guidelines for the Treatment of Alcohol Problems (4th ed,
+                            2021)</a> - Haber PS, Riordan BC, et al., for the Australian Government Department of
+                        Health. Alcohol treatment beyond withdrawal: screening, psychosocial interventions,
+                        pharmacotherapy, specific populations.</li>
                     <li><strong>Victoria (Turning Point):</strong> <a
                             href="https://www.turningpoint.org.au/treatment/clinicians/aod-withdrawal-guidelines"
                             target="_blank" rel="noopener">Alcohol and Other Drug Withdrawal Guidelines (3rd
@@ -3645,6 +3667,13 @@ textarea {
                 <ul class="contact-list">
                     <li><strong>NSW Health</strong> - <em>Management of Withdrawal from Alcohol and Other Drugs:
                             Clinical Guidance</em> (2022). The primary source for this site.</li>
+                    <li><strong>Haber PS, Riordan BC, et al.</strong> - <em>Guidelines for the Treatment of
+                            Alcohol Problems</em>, 4th edition (2021). Specialty of Addiction Medicine, University of
+                            Sydney, for the Australian Government Department of Health. The national alcohol
+                            treatment guideline, cited on this site as <strong>AGTAP</strong> with its section number
+                            and grade of recommendation. It covers the whole of alcohol treatment where this site
+                            covers withdrawal, so it is the document to read for screening, psychosocial treatment
+                            and relapse-prevention pharmacotherapy.</li>
                     <li><strong>Turning Point (Victoria)</strong> - <em>Alcohol and Other Drug Withdrawal Guidelines
                             (3rd Edition)</em>.</li>
                     <li><strong>Queensland Health / Adis</strong> - <em>Queensland Alcohol and Drug Withdrawal

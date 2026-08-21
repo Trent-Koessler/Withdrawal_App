@@ -581,10 +581,20 @@ describe('P1-08 — severe / delirium content', () => {
         assert.ok(/light sleep, readily rousable/i.test(special), 'the sedation target is missing');
     });
 
-    test('prophylactic anticonvulsants are explicitly stated to have no benefit', () => {
-        assert.ok(/no benefit/i.test(special) && /phenytoin/i.test(special)
-            && /carbamazepine/i.test(special) && /sodium valproate/i.test(special),
-            'the anticonvulsant non-recommendation is missing or incomplete');
+    // Deliberately not "anticonvulsants have no benefit": AGTAP 8.29 (Grade A)
+    // rates carbamazepine an effective alternative to benzodiazepines, and only
+    // 8.30 (phenytoin, valproate) and 8.32 (anticonvulsant added to a
+    // benzodiazepine) are flat non-recommendations. The distinction is the
+    // clinical content here, so the test asserts it rather than the older
+    // blanket claim that would also pass for a page that had lost it.
+    test('the anticonvulsant position separates carbamazepine from phenytoin and valproate', () => {
+        const flat = special.replace(/\s+/g, ' ');
+        assert.ok(/not a reliable alternative to benzodiazepines/i.test(flat),
+            'the "anticonvulsants are not a reliable alternative" position is missing');
+        assert.ok(/Phenytoin and sodium valproate do not prevent withdrawal seizures at all/i.test(flat),
+            'phenytoin and valproate are no longer stated to be ineffective');
+        assert.ok(/carbamazepine/i.test(flat) && /does not extend to a recurrent one/i.test(flat),
+            'carbamazepine is not distinguished from the agents that do not work at all');
     });
 
     test('severe chronic airflow limitation excludes loading', () => {

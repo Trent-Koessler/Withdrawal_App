@@ -301,8 +301,14 @@ describe('P2-05 — continuing care and relapse prevention', () => {
     test('AUD pharmacotherapy is named', () => {
         assert.ok(/naltrexone, acamprosate and\s*<\/strong>?\s*disulfiram|naltrexone, acamprosate and disulfiram/.test(flat),
             'the three AUD relapse-prevention agents are not named');
-        assert.ok(/Australian\s*Guidelines for the Treatment of Alcohol Problems/.test(flat),
-            'no pointer to the guideline that actually carries the dosing');
+        // The page names AGTAP in short form and links it; the full citation
+        // lives once on Sources & Attribution. What has to survive here is a
+        // working pointer to the document that carries the dosing, not the
+        // particular wording of the reference.
+        assert.ok(/alcoholtreatmentguidelines\.com\.au/.test(flat),
+            'no link to the guideline that actually carries the dosing');
+        assert.ok(/AGTAP Chapter 10|Guidelines for the Treatment of Alcohol Problems/.test(flat),
+            'the guideline carrying the dosing is not named');
     });
 
     test('the opioid non-recommendations are explicit', () => {
