@@ -431,6 +431,18 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => selectTab(button));
         });
 
+        // A cross-reference from one tab's body to another tab, so "the test-dose
+        // protocol is on the Assessment tab" can be followed rather than hunted for.
+        container.addEventListener('click', (event) => {
+            const link = event.target.closest('[data-tab-link]');
+            if (!link || !container.contains(link)) return;
+            const target = container.querySelector(
+                `:scope > .tab-buttons > .tab-button[data-tab="${link.dataset.tabLink}"]`);
+            if (!target) return;
+            selectTab(target);
+            target.scrollIntoView({ block: 'nearest' });
+        });
+
         // Sync panels to whichever button is marked active in the markup. Without
         // this the panel only gains .active on click, so a tab flagged active in
         // HTML but whose panel is not renders an empty container on first view.
@@ -442,12 +454,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
     const benzoChoiceBtns = document.querySelectorAll('.benzo-choice-btn');
     const regimenSeverityBtns = document.querySelectorAll('.regimen-severity-btn');
+    const regimenTypeBtns = document.querySelectorAll('.regimen-type-btn');
+    const intensityAxis = document.getElementById('intensity-axis');
+    const testDoseDisplay = document.getElementById('test-dose-protocol');
     const benzoSelectionDisplay = document.getElementById('benzo-selection-display');
     const regimenBenzoDisplay = document.getElementById('regimen-benzo-display');
     const regimenDisplayDiv = document.getElementById('regimen-display');
     const scaleChoiceBtns = document.querySelectorAll('.scale-choice-btn');
     let selectedBenzo = 'Diazepam';
     let selectedSeverity = 'mild';
+    // The selector asks two questions, because they have different answers.
+    // Regimen type is decided by the patient - seizure history, other-drug
+    // withdrawal, comorbidity, the setting - and intensity by the score. The
+    // row used to mix the two, offering "Symptom-Triggered" and "Severe" as
+    // though they were the same kind of choice. Only a fixed schedule needs an
+    // intensity: symptom-triggered dosing carries its own dose-per-score table,
+    // and loading and the test dose are single protocols.
+    let selectedType = 'fixed';
+    const TYPE_CELL = { symptom: 'symptom', loading: 'loading' };
+    const activeCellKey = () => (selectedType === 'fixed' ? selectedSeverity : TYPE_CELL[selectedType]);
     // Which withdrawal scale the ward charts. Scoped to the Regimens tab: it
     // decides how bands are labelled here and in the EMR paste. The Monitoring
     // tab deliberately keeps both scales, since its table is the mapping.
@@ -574,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // record, and a prescribing block is read at the drug chart, not audited.
     function buildRegimenSummary() {
         const config = REGIMEN_CONFIG[selectedBenzo];
-        const data = config[selectedSeverity];
+        const data = config[activeCellKey()];
         const drug = config.name;
         const scale = SCALE_LABEL[selectedScale];
         const out = [`ALCOHOL WITHDRAWAL - ${plainLine(regimenTitle(data))}`, ''];
@@ -702,13 +727,12 @@ document.addEventListener('DOMContentLoaded', () => {
             + `<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
     }
 
-    function updateRegimenDisplay() {
-        if (!regimenDisplayDiv) return;
-
-        const config = REGIMEN_CONFIG[selectedBenzo];
-        const data = config[selectedSeverity];
-        const b_name = config.name;
-
+    // One renderer, two callers: the Regimens panel and the test-dose protocol on
+    // the Assessment tab. They render the same shape of cell out of the same
+    // config, so a second copy of this markup would be a second thing to keep
+    // correct. `showBandEscalationNote` is the only caller-specific bit — it only
+    // makes sense for a banded fixed schedule.
+    function renderCell(data, b_name, { showBandEscalationNote = false } = {}) {
         // A `routing` cell is one where no regimen should be rendered at all —
         // severe withdrawal on oxazepam, for instance. Returning advice instead
         // of a dose list is the point, so bail out before the schedule loop
@@ -716,10 +740,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // on the way out: a routing card that left the previous regimen's doses
         // sitting in the textarea would be the worst possible stale paste.
         if (data.routing) {
-            regimenDisplayDiv.innerHTML = `<h3>${regimenTitle(data)}</h3>`
+            return `<h3>${regimenTitle(data)}</h3>`
                 + data.routing.map(item => `<div class="routing-card">${item}</div>`).join('');
-            refreshRegimenSummary();
-            return;
         }
 
         let displayHTML = `<h3>${regimenTitle(data)}</h3>`;
@@ -763,7 +785,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 + `</ul>`;
         }
 
-        displayHTML += `<b>${data.bands ? 'Notes' : 'Scheduled Dosing'}:</b><ul>`;
+        // "Scheduled Dosing" is wrong for a cell that is not a schedule - the
+        // test-dose protocol is one observed dose and a decision point - so a cell
+        // may name its own heading.
+        displayHTML += `<b>${data.scheduleHeading || (data.bands ? 'Notes' : 'Scheduled Dosing')}:</b><ul>`;
         data.schedule.forEach((s, index) => {
             if (typeof s === 'string') {
                 displayHTML += `<li>${s}</li>`;
@@ -779,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.prn && data.prn.length > 0) {
             displayHTML += `<b>${prnHeading(data.prn)}:</b>`;
-            if (selectedSeverity === 'mild' || selectedSeverity === 'moderate') {
+            if (showBandEscalationNote) {
                 displayHTML += `<div><i>Consider increasing the regular regimen by a band if PRN is being used `
                     + `frequently (e.g. more than two times daily).</i></div>`;
             }
@@ -794,16 +819,26 @@ document.addEventListener('DOMContentLoaded', () => {
             displayHTML += `</ul>`;
         }
 
-        // Points at the Symptom-Triggered regimen rather than restating its dose
-        // table, which used to be a second copy that could drift from the first.
-        if (selectedSeverity === 'mild' && data.symptom_triggered) {
-            const st = data.symptom_triggered;
-            displayHTML += `<hr style="margin: 20px 0;">`;
-            displayHTML += `<h3>${st.title}</h3>`;
-            displayHTML += `<p><i>${st.note}</i></p>`;
-        }
+        return displayHTML;
+    }
 
-        regimenDisplayDiv.innerHTML = displayHTML;
+    function updateRegimenDisplay() {
+        if (!regimenDisplayDiv) return;
+
+        const config = REGIMEN_CONFIG[selectedBenzo];
+        const data = config[activeCellKey()];
+
+        // Intensity is meaningless for the two single-protocol types, so the row
+        // is removed from the page rather than left visible and inert.
+        if (intensityAxis) intensityAxis.hidden = selectedType !== 'fixed';
+
+        // The EMR preview is refreshed even for a routing card: one that left the
+        // previous regimen's doses sitting in the textarea would be the worst
+        // possible stale paste.
+        regimenDisplayDiv.innerHTML = renderCell(data, config.name, {
+            showBandEscalationNote: selectedType === 'fixed'
+                && (selectedSeverity === 'mild' || selectedSeverity === 'moderate')
+        });
         updateBandLabels();
         refreshRegimenSummary();
     }
@@ -811,6 +846,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // The preview is rebuilt with the panel, not on click: a textarea still
     // showing the previous regimen's doses after switching severity, drug or
     // scale is a paste waiting to go into the wrong chart.
+    // The test-dose protocol is an assessment manoeuvre, not a regimen: it ends
+    // by telling you which regimen to start. It lives on the Assessment tab for
+    // that reason, but it still prescribes a drug, so it follows the benzo choice.
+    function updateTestDoseDisplay() {
+        if (!testDoseDisplay) return;
+        const config = REGIMEN_CONFIG[selectedBenzo];
+        testDoseDisplay.innerHTML = renderCell(config.unknown, config.name);
+    }
+
     function refreshRegimenSummary() {
         const preview = document.getElementById('plan-summary');
         if (preview) preview.value = buildRegimenSummary();
@@ -846,17 +890,54 @@ document.addEventListener('DOMContentLoaded', () => {
             if (benzoSelectionDisplay) benzoSelectionDisplay.textContent = selectedBenzo;
             if (regimenBenzoDisplay) regimenBenzoDisplay.textContent = selectedBenzo;
             updateRegimenDisplay();
+            updateTestDoseDisplay();
         });
+    });
+
+    // Pressed state is applied from the current selection rather than at the
+    // click site, so the routing card's "switch to Loading" button and a real
+    // click on the type row cannot disagree about what is selected.
+    function syncSelectorButtons() {
+        regimenTypeBtns.forEach(b => {
+            const on = b.dataset.regimenType === selectedType;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
+        regimenSeverityBtns.forEach(b => {
+            const on = selectedType === 'fixed' && b.dataset.severity === selectedSeverity;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
+    }
+
+    function selectRegimenType(type) {
+        selectedType = type;
+        syncSelectorButtons();
+        updateRegimenDisplay();
+    }
+
+    regimenTypeBtns.forEach(btn => {
+        btn.addEventListener('click', () => selectRegimenType(btn.dataset.regimenType));
     });
 
     regimenSeverityBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             selectedSeverity = btn.dataset.severity;
-            regimenSeverityBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            selectedType = 'fixed';
+            syncSelectorButtons();
             updateRegimenDisplay();
         });
     });
+
+    // The Severe intensity holds no schedule - it explains that severe
+    // withdrawal is loaded, and offers the switch. Delegated because the card
+    // is re-rendered on every change.
+    if (regimenDisplayDiv) {
+        regimenDisplayDiv.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-select-type]');
+            if (target) selectRegimenType(target.dataset.selectType);
+        });
+    }
 
     // Built from REGIMEN_CONFIG, so it is cheap enough to rebuild with the
     // panel; this handler only has to copy what is already shown.
@@ -926,6 +1007,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (document.getElementById('inpatient-guidelines-page')) {
         updateRegimenDisplay();
+        updateTestDoseDisplay();
     }
 
     // =================================================================
