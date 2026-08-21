@@ -583,6 +583,16 @@ textarea {
 }
 
 .regimen-type-btn {
+    /* Grid rows size to their tallest button, and a button centres its content
+       in the leftover height - so a one-line label floats halfway down a box
+       sized by a four-line neighbour. Column flex with a flex-start main axis
+       starts every label at the top instead, which is what makes the row
+       scannable. `display: block` does not do it: a stretched button centres its
+       content box regardless. */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
     flex: none;
     min-width: 0;
     overflow-wrap: break-word;
@@ -639,6 +649,16 @@ textarea {
 }
 
 .regimen-severity-btn {
+    /* Grid rows size to their tallest button, and a button centres its content
+       in the leftover height - so a one-line label floats halfway down a box
+       sized by a four-line neighbour. Column flex with a flex-start main axis
+       starts every label at the top instead, which is what makes the row
+       scannable. `display: block` does not do it: a stretched button centres its
+       content box regardless. */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
     flex: none;
     min-width: 0;
     /* A band label must never be cut mid-word, at any width. */

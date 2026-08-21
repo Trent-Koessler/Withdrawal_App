@@ -868,6 +868,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = el.dataset[selectedScale];
             if (text) el.textContent = text;
         });
+        // Where the AWS bands came from only matters to a ward that charts AWS.
+        // Shown to everyone it was three lines of derivation above the selector,
+        // duplicating the AWS note already collapsed on each schedule.
+        const awsNote = document.getElementById('aws-band-note');
+        if (awsNote) awsNote.hidden = selectedScale !== 'aws';
     }
 
     scaleChoiceBtns.forEach(btn => {
