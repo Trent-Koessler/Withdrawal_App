@@ -5,12 +5,14 @@ import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
+import { storedCohort, verifyCode, rememberCohort } from './access.js';
+import { startMetrics, record } from './metrics.js';
 
 // Published before anything else runs, and outside the DOMContentLoaded
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.4.6';
+const APP_VERSION = '0.4.7';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,10 +29,97 @@ document.addEventListener('DOMContentLoaded', () => {
     const disclaimerModal = document.getElementById('disclaimer-modal');
     const acceptDisclaimerBtn = document.getElementById('accept-disclaimer-btn');
 
+    // --- SITE ACCESS CODE --- //
+    // The inline script in index.html has already chosen which panel is
+    // showing; this only wires up the one that is. See access.js for why the
+    // code is remembered and the attestation is not.
+    const accessGate = document.getElementById('access-gate');
+    const disclaimerGate = document.getElementById('disclaimer-gate');
+    const accessInput = document.getElementById('access-code-input');
+    const accessBtn = document.getElementById('access-code-btn');
+    const accessError = document.getElementById('access-code-error');
+    const askingForCode = accessGate && !accessGate.hidden;
+
+    function showAccessError(message) {
+        accessError.textContent = message;
+        accessError.hidden = false;
+    }
+
+    // Hands over from the code panel to the disclaimer, which then runs exactly
+    // as it always has.
+    function passAccessGate(cohort, isNewUnlock) {
+        startMetrics(cohort.id, APP_VERSION);
+        record('unlock');
+
+        if (isNewUnlock) {
+            accessGate.hidden = true;
+            disclaimerGate.hidden = false;
+            disclaimerModal.setAttribute('aria-labelledby', 'disclaimer-modal-title');
+            acceptDisclaimerBtn.focus();
+        }
+    }
+
+    if (askingForCode) {
+        const submitCode = async () => {
+            accessError.hidden = true;
+            accessBtn.disabled = true;
+            try {
+                const cohort = await verifyCode(accessInput.value);
+                if (!cohort) {
+                    showAccessError('That code was not recognised. Check for a mistyped character, or ask '
+                        + 'whoever gave you the code — it may have been reissued.');
+                    accessInput.focus();
+                    accessInput.select();
+                    return;
+                }
+                if (!rememberCohort(cohort)) {
+                    // Storage is blocked, so the code cannot be remembered and
+                    // will be asked for again next launch. Annoying, but the
+                    // clinician gets in — which is the part that matters.
+                    showAccessError('');
+                    accessError.hidden = true;
+                }
+                passAccessGate(cohort, true);
+            } catch (err) {
+                // verifyCode only throws when SubtleCrypto is unavailable,
+                // which means the page is not on a secure origin.
+                showAccessError('This page cannot check the code because it was not opened over a secure '
+                    + 'connection. Open https://sudtoolkit.org directly.');
+            } finally {
+                accessBtn.disabled = false;
+            }
+        };
+
+        accessBtn.addEventListener('click', submitCode);
+        accessInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitCode();
+            }
+        });
+    } else {
+        const cohort = storedCohort();
+        if (cohort) {
+            passAccessGate(cohort, false);
+        } else if (accessGate) {
+            // Storage held an id that data/cohorts.js no longer lists — a site
+            // whose code was retired between releases. Ask again rather than
+            // recording events against a cohort that no longer exists.
+            accessGate.hidden = false;
+            disclaimerGate.hidden = true;
+            disclaimerModal.setAttribute('aria-labelledby', 'access-gate-title');
+        }
+    }
+
     // Deferred: focus set during DOMContentLoaded is discarded when the browser
     // finishes loading the document and resets focus to <body>.
     requestAnimationFrame(() => {
-        if (disclaimerModal.style.display !== 'none') {
+        if (disclaimerModal.style.display === 'none') {
+            return;
+        }
+        if (accessGate && !accessGate.hidden) {
+            accessInput.focus();
+        } else {
             acceptDisclaimerBtn.focus();
         }
     });
@@ -38,6 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
     acceptDisclaimerBtn.addEventListener('click', () => {
         disclaimerModal.style.display = 'none';
         document.body.classList.remove('modal-open');
+        // Counted here rather than at launch: this is the first moment a
+        // qualified person has actually reached the app, which is what a
+        // session is supposed to mean.
+        record('session');
     });
 
     // Answering "I am not a health professional" swaps the gate for the
@@ -185,6 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         pageTitle.textContent = title;
         document.title = title + ' - SUD Toolkit';
+
+        // The page id, never the title: titles are prose and get reworded
+        // between releases, which would split one page's data across two labels
+        // halfway through the study.
+        record('page_view', pageId);
 
         if (pageId === 'alcohol-withdrawal-page') {
             startFlowchart();
@@ -956,6 +1054,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const original = copyPlanBtn.textContent;
             copyPlanBtn.textContent = 'Copied!';
             setTimeout(() => { copyPlanBtn.textContent = original; }, 2000);
+            // The closest thing to evidence that the app reached a patient
+            // record, which is the outcome the study is really asking about.
+            record('emr_copy', 'regimen-plan');
         });
     }
 
@@ -969,6 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const original = copyOpioidQuickStartBtn.textContent;
             copyOpioidQuickStartBtn.textContent = 'Copied!';
             setTimeout(() => { copyOpioidQuickStartBtn.textContent = original; }, 2000);
+            record('emr_copy', 'opioid-quickstart');
         });
     }
 
@@ -1007,6 +1109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const original = btn.textContent;
             btn.textContent = 'Copied!';
             setTimeout(() => { btn.textContent = original; }, 2000);
+            record('emr_copy', 'quickstart');
         });
     });
 
@@ -1175,11 +1278,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 6. Add event listeners
-        itemsContainer.addEventListener('change', updateCalculatorState);
+        //
+        // `scale_complete` fires on the first scoring interaction with this
+        // calculator, once per launch — not on every radio change, which would
+        // bury the signal, and not on "all items answered", which is not
+        // detectable here because every fieldset starts with its zero option
+        // selected. Read it as "this clinician scored this patient on this
+        // scale". Abandonment is then derivable in analysis: a page_view for a
+        // scales page with no scale_complete behind it.
+        let scoredOnce = false;
+        itemsContainer.addEventListener('change', () => {
+            updateCalculatorState();
+            if (!scoredOnce) {
+                scoredOnce = true;
+                record('scale_complete', config.id);
+            }
+        });
 
         copyBtn.addEventListener('click', (e) => {
             emrSummaryEl.select();
             navigator.clipboard.writeText(emrSummaryEl.value);
+            record('emr_copy', config.id);
             const btn = e.target;
             const originalText = btn.textContent;
             btn.textContent = 'Copied!';

@@ -1,0 +1,22 @@
+name = "sudtoolkit-metrics"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Cohort ids the endpoint will accept. This must match the ids in
+# ../data/cohorts.js — that file is the source of truth; this is the guard that
+# keeps unknown ids out of the dataset. Set it with:
+#   npx wrangler deploy --var COHORTS:"dubbo-ed,dubbo-ward,bathurst-ed"
+# or edit here and redeploy. An empty list makes /e return 503 by design.
+[vars]
+COHORTS = ""
+
+# Created by: npx wrangler d1 create sudtoolkit-metrics
+# Paste the database_id it prints into the line below.
+[[d1_databases]]
+binding = "DB"
+database_name = "sudtoolkit-metrics"
+database_id = "PASTE_DATABASE_ID_HERE"
+
+# EXPORT_TOKEN is a secret, never a var — a var is readable in the dashboard
+# and committed here. Set it with:
+#   npx wrangler secret put EXPORT_TOKEN

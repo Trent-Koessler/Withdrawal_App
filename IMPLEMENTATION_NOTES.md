@@ -444,3 +444,107 @@ every load was a single consistent release. And by serving 0.4.2's HTML with
 
 Four tests now pin this: the four version strings agree, the build is published
 before startup, and the fetch path contains no `cache.put`.
+
+## 8. 0.4.7 — the access gate and the usage log
+
+The trial needs two things the app did not have: a way to say which service a
+device belongs to, and a record of how the app is actually used. Both were
+built as one release because they share a decision.
+
+### 8.1 Why the gate is inside the app, not in front of it
+
+The obvious answer was Cloudflare Access, and it was wrong twice over.
+
+Its free tier is 50 seats, and a seat is consumed on any authentication and
+held until manually removed — so the meter counts everyone who has *ever*
+logged in. Past 50 the choice is blocking the 51st clinician or $7 per user per
+month with no cap. For an audience that is meant to grow across an LHD, both
+are the wrong failure.
+
+The second reason survives any pricing change. `sw.js` is cache-first and
+answers every navigation from the cached shell (§1.7). After the first install
+the app never asks the network for permission again, so **any gate at the edge
+runs exactly once per device and then goes quiet** — and reports no logins at
+all, which defeats the other half of the purpose. Netlify, Vercel and a Worker
+sitting in front of the site all have this same shape.
+
+So the gate is in the app: it re-checks on launch, works with no signal, and is
+the only place that can emit a countable event.
+
+### 8.2 The split between the code and the attestation
+
+These look like one question and are not:
+
+| | Asks about | Remembered? |
+| --- | --- | --- |
+| Access code | the **device** — is it one we handed the app to | once, in `localStorage` |
+| Disclaimer | the **person** holding it — are they qualified | never, every launch |
+
+The disclaimer's per-launch behaviour predates this release and the comment
+above `#disclaimer-modal` explains why: a ward terminal has more than one user,
+and a stored attestation would speak for people who never gave it. Merging the
+two into one remembered "yes" would have quietly undone that, so `access.test.js`
+asserts the acceptance handler still touches no storage.
+
+The panel to show is chosen by an inline script before first paint, next to the
+theme script. Deciding it in `script.js` would flash the code prompt on every
+launch for a device that is already set up, which reads as "it forgot me".
+
+### 8.3 What the codes are, and what they are not
+
+`data/cohorts.js` holds a SHA-256 of each code, never the code.
+`tools/make-cohort-codes.py` mints them, prints the plaintext once, and is the
+only place it exists; `.gitignore` keeps a real site list out of the repo.
+
+That raises the barrier without pretending to be a secret. The codes are short,
+so someone with the hash list could grind the suffix space. They are a cohort
+label and a statement of intended purpose, not protection — **nothing in this
+app is patient data**, and the content is guideline-derived reference material.
+Anyone describing this as securing anything has misread it.
+
+Normalisation (fold case, drop spaces and hyphens) exists in two languages, so
+a test runs the Python and the JavaScript over the same inputs and compares.
+Divergence there would break every code at once with no symptom beyond "it says
+my code is wrong".
+
+### 8.4 Why events are queued rather than sent
+
+A real share of ward use happens with no signal. Sending directly would produce
+a dataset showing only the clinicians who happened to be near an access point —
+the opposite of the finding the project exists to test. So `metrics.js` writes
+to a bounded `localStorage` queue and drains it on reconnect, and the `queued`
+flag survives to the database because the online/offline split is itself a
+result.
+
+Two consequences worth keeping in mind:
+
+1. **Resends are normal, not exceptional.** A flush that succeeded on the server
+   but died before the response arrived is the ordinary case on hospital wifi.
+   Every event carries a `crypto.randomUUID()` and the worker uses
+   `INSERT OR IGNORE` against a `UNIQUE` column, so a resend lands as zero rows
+   rather than a second copy. Without that the denominator is a guess.
+2. **Nothing is recorded until `ENDPOINT` is set.** Not sent, *recorded* — an
+   empty endpoint makes `record()` return immediately rather than queue. If it
+   queued, the day collection was switched on would upload a backlog from
+   before anyone was told the app was being monitored.
+
+`scale_complete` fires on the first scoring interaction per calculator per
+launch. "All items answered" is not detectable — every fieldset starts with its
+zero option selected — so the operational definition is "this clinician scored
+this patient on this scale". Abandonment is derived in analysis (a scales
+`page_view` with no `scale_complete`) rather than instrumented.
+
+### 8.5 What is deliberately not collected
+
+No IP addresses, no user agents, no names, no emails, no scores, nothing typed
+into a calculator. `detail` is a fixed vocabulary of page and scale ids, and the
+worker drops anything not matching it — enforcement in two places, so widening
+what is collected takes a deliberate change in both. `device_id` is a random
+per-install identifier: pseudonymous, not anonymous, and the ethics application
+should say so rather than calling it anonymous.
+
+Verified end to end rather than by reasoning: the app served locally against the
+real worker code, driven through first unlock, a wrong code, a correct code
+typed in lower case with spaces, a relaunch, going offline mid-session, and
+reconnecting — checking at each step what reached the database and what the
+queue still held.

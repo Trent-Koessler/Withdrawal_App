@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.6" />
+    <meta name="app-build" content="0.4.7" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -1002,6 +1002,60 @@ textarea {
 
 #disclaimer-modal button.secondary-btn:hover {
     background-color: var(--secondary-btn-hover-bg);
+}
+
+/* --- Site access code gate -------------------------------------------------
+   Sits in front of the disclaimer for a device that has not been unlocked yet.
+   Deliberately plainer than the disclaimer panel: the disclaimer is asking the
+   reader to weigh something, this is asking them to copy four characters off a
+   sheet taped to the wall. */
+.access-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 18px;
+}
+
+.access-field label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Monospace and wide letter-spacing so a transposed character is visible while
+   typing rather than after the code is rejected. 16px is a floor, not a
+   preference: anything smaller makes iOS zoom the viewport on focus, and the
+   modal then opens scrolled sideways. */
+#access-code-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 16px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    width: 100%;
+}
+
+#access-code-input:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 1px;
+}
+
+#access-code-error {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-left: 3px solid var(--danger-border);
+    padding: 10px 12px;
+    margin-top: 14px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.access-help {
+    font-size: 14px;
+    margin-top: 18px;
 }
 
 /* Link-style button */
@@ -3604,6 +3658,20 @@ textarea {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
+                <h4>0.4.7 - August 2026</h4>
+                <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
+                <ul>
+                    <li><strong>The app now asks for a site access code the first time it is opened on a
+                            device.</strong> Your ward or department has one. You will only be asked once - after
+                        that the app opens as it always has, and the "I am a qualified health professional" question
+                        is unchanged and still asked every time.</li>
+                    <li><strong>The app records which parts of it get used, so the trial can tell whether it is
+                            actually helping.</strong> What is recorded: the site code, which page or calculator was
+                        opened, and when. What is never recorded: any score, any patient detail, and anything you
+                        type into a calculator. Nothing is sent while you are offline - it waits and goes when you
+                        are back on a connection.</li>
+                </ul>
+
                 <h4>0.4.6 - August 2026</h4>
                 <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
                 <ul>
@@ -4093,6 +4161,37 @@ textarea {
     <div id="disclaimer-modal" class="modal" style="display: block;" role="dialog" aria-modal="true"
         aria-labelledby="disclaimer-modal-title">
         <div class="modal-content">
+            <!-- Shown only on a device that has not been unlocked yet, and then
+                 never again: the code establishes that this device belongs to a
+                 site the app was given to, which does not change between
+                 launches. The disclaimer below it does get asked every launch,
+                 for the reason set out above — the two are answering different
+                 questions and must not be collapsed into one. -->
+            <div id="access-gate" hidden>
+                <h3 id="access-gate-title">Site access code</h3>
+
+                <p>This app is being trialled at specific services. Enter the code issued to your ward or
+                    department to set this device up. You will only be asked once.</p>
+
+                <div class="access-field">
+                    <label for="access-code-input">Access code</label>
+                    <input id="access-code-input" type="text" autocomplete="off" autocapitalize="characters"
+                        autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="WNSW-XXXX-XXXX"
+                        aria-describedby="access-code-help">
+                </div>
+
+                <p id="access-code-error" role="alert" hidden></p>
+
+                <div class="button-group gate-buttons">
+                    <button id="access-code-btn">Continue</button>
+                </div>
+
+                <p class="access-help" id="access-code-help">The code is not a password on patient information
+                    &mdash; nothing here is patient data. It records which service is using the app, so the trial can
+                    report where it is being used. If you do not have one, ask your NUM or the person who introduced
+                    the app to your team.</p>
+            </div>
+
             <div id="disclaimer-gate">
                 <h3 id="disclaimer-modal-title">Intended use and terms</h3>
 
@@ -4142,6 +4241,34 @@ textarea {
             </div>
         </div>
     </div>
+
+    <script>
+        // Decide which gate panel is visible before the first paint. Doing this
+        // in script.js instead would show one panel and then swap it: an
+        // already-unlocked device (the common case after week one) would flash
+        // the code prompt on every launch, which reads as "it forgot me".
+        //
+        // Same try/catch discipline as the theme script above — a managed
+        // device that blocks storage falls through to asking for the code,
+        // which is wrong but harmless. Failing the other way would let anyone
+        // past the gate whenever storage happened to be unavailable.
+        (function () {
+            var unlocked = false;
+            try { unlocked = !!localStorage.getItem('sud.cohort'); } catch (e) { }
+            if (unlocked) { return; }
+
+            var access = document.getElementById('access-gate');
+            var disclaimer = document.getElementById('disclaimer-gate');
+            var modal = document.getElementById('disclaimer-modal');
+            if (!access || !disclaimer || !modal) { return; }
+
+            access.hidden = false;
+            disclaimer.hidden = true;
+            // The label has to follow the visible panel or the dialog announces
+            // a heading the user cannot see.
+            modal.setAttribute('aria-labelledby', 'access-gate-title');
+        })();
+    </script>
 
     <script type="module" src="script.js"></script>
 

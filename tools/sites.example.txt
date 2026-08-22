@@ -1,0 +1,12 @@
+# Sites for tools/make-cohort-codes.py — copy this, edit it, keep your copy
+# out of the repo. One line per site:
+#
+#   id | Site name | Setting
+#
+# `id` is recorded against every event and must stay stable after rollout.
+
+pilot        | Pilot / testing        | Not a clinical site
+dubbo-ed     | Dubbo Health Service   | Emergency Department
+dubbo-ward   | Dubbo Health Service   | Inpatient ward
+bathurst-ed  | Bathurst Health Service| Emergency Department
+orange-dapl  | Orange Health Service  | Drug and Alcohol consult

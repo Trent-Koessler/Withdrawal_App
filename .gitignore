@@ -10,3 +10,19 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Site access codes. tools/make-cohort-codes.py reads a list of sites and
+# prints the plaintext codes once; only the hashes in data/cohorts.js belong in
+# the repo. tools/sites.example.txt is the committed template — a real list
+# names actual services and is kept out.
+tools/sites.txt
+tools/sites.*.txt
+!tools/sites.example.txt
+
+# Wrangler state from deploying worker/
+worker/.wrangler/
+worker/node_modules/
+
+# Python bytecode from tools/
+__pycache__/
+*.pyc

@@ -5,6 +5,42 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.7 - August 2026
+
+### Housekeeping
+
+- **A site access code now sits in front of the disclaimer, and the app records
+  how it is used.** Both exist for the trial: the code establishes which service
+  a device belongs to, and the usage log is what lets the project report whether
+  the app is any use in practice rather than asserting it.
+
+  The code is asked once per device and then remembered, because it is a fact
+  about the device. The professional-use attestation is unchanged and still asked
+  every launch, because it is a fact about the person holding the phone, and a
+  ward terminal has more than one of those. Collapsing the two into a single
+  remembered "yes" would have made the attestation speak for people who never
+  gave it.
+
+  `data/cohorts.js` carries a SHA-256 of each code, not the code, so the bundle
+  cannot be read to recover a working one. That raises the barrier without
+  pretending to be a secret: the codes are short and a determined person with the
+  hash list could grind the suffix space. They are a cohort label and a statement
+  of intended use, not protection for anything - nothing in this app is patient
+  data.
+
+- **Usage events are queued on the device and sent when a connection appears.**
+  The app is offline-first and a real share of ward use happens with no signal.
+  Sending directly would have produced a dataset showing only the clinicians who
+  happened to be standing near an access point, which is the opposite of the
+  finding the project is trying to test. Events carry a random per-install
+  identifier, the site code, and which feature was used - never a score, a
+  patient detail, or anything typed into a calculator. `worker/` holds the
+  Cloudflare endpoint that receives them and enforces the same list again on
+  arrival.
+
+  Collection is off until the endpoint is deployed and `ENDPOINT` in `metrics.js`
+  is set. Until then the access gate works and nothing is transmitted.
+
 ## 0.4.6 - August 2026
 
 ### Housekeeping
