@@ -1270,6 +1270,67 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SETUP ALL CALCULATORS ---
     SCALES.forEach(setupCalculator);
 
+    // --- LONG PROVENANCE RATIONALES --- //
+    // The Sources page promises that a LOCAL or NSWCG-adapted chip carries a
+    // one-line rationale. A handful run to sixty or ninety words — each of them
+    // worth keeping, none of them worth putting between the clinician and the
+    // dose, and several render in the schedule and PRN lists, which are not
+    // collapsed the way caveats are.
+    //
+    // So the collapse happens here rather than in the content: the source files
+    // keep the full sentence, test/provenance.test.js keeps reading it, and the
+    // chip renders as its citation with the rationale one tap away. Nothing is
+    // rewritten and nothing is dropped — which is the whole point of doing it at
+    // render time rather than by editing the text down.
+    const RATIONALE_CLAMP_WORDS = 25;
+
+    const collapseLongRationales = () => {
+        document.querySelectorAll('.src-tag:not([data-rationale-collapsed])').forEach(tag => {
+            const text = tag.textContent.replace(/\s+/g, ' ').trim();
+            if (text.split(' ').length <= RATIONALE_CLAMP_WORDS) return;
+
+            // No "rationale:" means there is no second half to hide — a long
+            // bibliographic citation is left exactly as it is.
+            const split = text.search(/\brationale:/i);
+            if (split === -1) return;
+
+            const citation = text.slice(0, split).replace(/[\s-]+$/, '');
+            // The button says "why", so the word "rationale:" would only be
+            // said twice once it opens.
+            const rationale = text.slice(split).replace(/^rationale:\s*/i, '');
+
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'src-why';
+            toggle.setAttribute('aria-expanded', 'false');
+
+            const body = document.createElement('span');
+            body.className = 'src-rationale';
+            body.hidden = true;
+            body.textContent = ' ' + rationale;
+
+            // The label does not change when it opens: it stays the control
+            // you press to close it again.
+            toggle.textContent = `${citation} - why`;
+            toggle.addEventListener('click', () => {
+                body.hidden = !body.hidden;
+                toggle.setAttribute('aria-expanded', String(!body.hidden));
+            });
+
+            tag.dataset.rationaleCollapsed = 'true';
+            tag.textContent = '';
+            tag.append(toggle, body);
+        });
+    };
+
+    collapseLongRationales();
+    // Regimens, symptomatic tables and harm-reduction blocks are rebuilt on
+    // selection, so the pass has to run again on whatever those renders inject.
+    // Re-entry is bounded by the data-rationale-collapsed marker: the second
+    // pass finds nothing left to change.
+    new MutationObserver(collapseLongRationales)
+        .observe(mainContent, { childList: true, subtree: true });
+
     // --- INITIAL ROUTE --- //
     // Runs last so a deep link like #scales-page/cows lands on a fully built
     // calculator. Also seeds a history entry, so the first Back press has

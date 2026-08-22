@@ -1075,6 +1075,49 @@ textarea {
     max-width: max-content;
 }
 
+/* A rationale too long to sit inline collapses to its citation, with the full
+   sentence one tap away (see collapseLongRationales in script.js). The toggle
+   has to inherit the chip's colour rather than the browser's button chrome —
+   the amber of a LOCAL chip is what marks the content as weighable, and a
+   grey button in the middle of one loses that. */
+.src-why {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+}
+
+.src-why:hover,
+.src-why:focus-visible {
+    text-decoration: underline solid;
+}
+
+.src-why::after {
+    content: " \25B8";               /* right-pointing triangle: closed */
+    text-decoration: none;
+}
+
+.src-why[aria-expanded="true"]::after {
+    content: " \25BE";               /* down-pointing triangle: open */
+}
+
+/* Print carries no toggles, so the rationale is always shown on paper. */
+@media print {
+    .src-rationale[hidden] {
+        display: inline !important;
+    }
+
+    .src-why::after {
+        content: "";
+    }
+}
+
 /* Chips are distinguished by colour on screen. Print is often greyscale and
    the site's authority depends on the tags being legible there too, so force a
    visible outline and defeat background-graphics suppression. */
@@ -2365,10 +2408,8 @@ textarea {
 
                 <div class="clinical-block">
                 <h4>Quick-start reference</h4>
-                <p>A condensed, citation-free version of the Day 1-3 steps above for buprenorphine and methadone -
-                    for pasting into a treatment plan or handover note. It does not replace the full sections
-                    above, which carry the precipitated-withdrawal warnings, the source for every figure, and
-                    when to escalate.</p>
+                <p>For pasting into a treatment plan or handover note. The sections above carry the
+                    precipitated-withdrawal warnings, when to escalate, and the sourcing.</p>
                 <textarea id="opioid-quickstart-summary" readonly
                     aria-label="Buprenorphine and methadone quick-start summary for the EMR"></textarea>
                 <div class="button-group">
@@ -2586,9 +2627,8 @@ textarea {
 
                 <div class="clinical-block">
                 <h4>Quick-start reference</h4>
-                <p>A condensed, citation-free version of the ODDE decision, the conversion table, and the taper
-                    schedule above - for pasting into a treatment plan or handover note. See the full sections
-                    above for setting, urine screen and bridging-script guidance, and for sourcing.</p>
+                <p>For pasting into a treatment plan or handover note. Setting, urine screen, bridging scripts
+                    and sourcing are in the sections above.</p>
                 <textarea id="benzo-quickstart-summary" readonly
                     aria-label="Benzodiazepine taper quick-start summary for the EMR"></textarea>
                 <div class="button-group">
@@ -2672,9 +2712,8 @@ textarea {
 
                 <div class="clinical-block">
                 <h4>Quick-start reference</h4>
-                <p>A condensed, citation-free version of the cessation-approach decision and the symptomatic
-                    medications above - for pasting into a treatment plan or handover note. See the full sections
-                    above for sourcing.</p>
+                <p>For pasting into a treatment plan or handover note. Sourcing is on the page
+                    above.</p>
                 <textarea id="cannabis-quickstart-summary" readonly
                     aria-label="Cannabis withdrawal quick-start summary for the EMR"></textarea>
                 <div class="button-group">
@@ -2801,8 +2840,8 @@ textarea {
 
                 <div class="clinical-block">
                 <h4>Quick-start reference</h4>
-                <p>A condensed, citation-free version of the symptomatic medications above - for pasting into a
-                    treatment plan or handover note. See the full sections above for sourcing.</p>
+                <p>For pasting into a treatment plan or handover note. Sourcing is on the page
+                    above.</p>
                 <textarea id="stimulant-quickstart-summary" readonly
                     aria-label="Psychostimulant withdrawal quick-start summary for the EMR"></textarea>
                 <div class="button-group">
@@ -2880,8 +2919,8 @@ textarea {
 
                 <div class="clinical-block">
                 <h4>Quick-start reference</h4>
-                <p>A condensed, citation-free version of the taper protocol above - for pasting into a treatment
-                    plan or handover note. See the full section above for sourcing.</p>
+                <p>For pasting into a treatment plan or handover note. Sourcing is on the page
+                    above.</p>
                 <textarea id="gabapentinoid-quickstart-summary" readonly
                     aria-label="Gabapentinoid taper quick-start summary for the EMR"></textarea>
                 <div class="button-group">
@@ -2973,8 +3012,8 @@ textarea {
 
                 <div class="clinical-block">
                 <h4>Quick-start reference</h4>
-                <p>A condensed, citation-free version of the management section above - for pasting into a
-                    treatment plan or handover note. See the full section above for sourcing.</p>
+                <p>For pasting into a treatment plan or handover note. Sourcing is on the page
+                    above.</p>
                 <textarea id="ghb-quickstart-summary" readonly
                     aria-label="GHB withdrawal quick-start summary for the EMR"></textarea>
                 <div class="button-group">
@@ -3059,8 +3098,8 @@ textarea {
 
                 <div class="clinical-block">
                 <h4>Quick-start reference</h4>
-                <p>A condensed, citation-free version of the NRT product-selection table above - for pasting into
-                    a treatment plan or handover note. See the section above for sourcing.</p>
+                <p>For pasting into a treatment plan or handover note. Sourcing is on the page
+                    above.</p>
                 <textarea id="nicotine-quickstart-summary" readonly
                     aria-label="Nicotine withdrawal quick-start summary for the EMR"></textarea>
                 <div class="button-group">
