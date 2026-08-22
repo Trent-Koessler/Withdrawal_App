@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.5" />
+    <meta name="app-build" content="0.4.6" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -3603,6 +3603,19 @@ textarea {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.6 - August 2026</h4>
+                <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
+                <ul>
+                    <li><strong>Long "why we differ from the guideline" notes are now one tap away instead of
+                            sitting in the middle of the dosing.</strong> A source tag that ran to a paragraph -
+                        the longest was 89 words, between the loading handover and the PRN doses - now shows as
+                        its citation with a <strong>why</strong> control. Nothing was shortened or removed: opening
+                        it gives the same sentence as before, and it always prints in full.</li>
+                    <li><strong>The quick-start boxes on the other-substance pages lost their preamble.</strong>
+                        Seven pages each explained at length that the box below was a condensed, citation-free
+                        version for pasting - which the heading and the box already said.</li>
+                </ul>
 
                 <h4>0.4.5 - August 2026</h4>
                 <p><em>The alcohol pages were checked against the national guideline, and the regimen selector was
