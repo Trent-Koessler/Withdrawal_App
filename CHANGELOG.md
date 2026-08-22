@@ -5,6 +5,27 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.6 - August 2026
+
+### Housekeeping
+
+- **Provenance rationales longer than 25 words collapse to their citation**, with
+  a `why` toggle that opens the full sentence. The Sources page promises a
+  one-line rationale; fourteen chips ran between 26 and 91 words, and nine of
+  them rendered expanded, because the collapsed `<details>` treatment only ever
+  applied to caveats and not to the schedule and PRN lists. On the Loading
+  regimen an 89-word paragraph sat between the handover instruction and the PRN
+  doses. The collapse happens at render time rather than by editing the text, so
+  the source files and `test/provenance.test.js` still hold the same sentences,
+  the EMR export is unaffected (it strips `.src-tag` entirely), and print shows
+  every rationale in full. 606 words move out of the default view.
+- **The quick-start preamble on the seven other-substance pages is one line.**
+  Each page introduced its quick-start textarea with a 25-to-47-word paragraph
+  saying the contents were condensed and citation-free - which the heading and
+  the textarea already convey. Opioid and benzodiazepine keep a second clause,
+  because theirs names the guidance the condensed version leaves behind. 221
+  words to 118.
+
 ## 0.4.5 - August 2026
 
 ### Housekeeping

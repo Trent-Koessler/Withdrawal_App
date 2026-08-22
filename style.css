@@ -1042,6 +1042,49 @@ textarea {
     max-width: max-content;
 }
 
+/* A rationale too long to sit inline collapses to its citation, with the full
+   sentence one tap away (see collapseLongRationales in script.js). The toggle
+   has to inherit the chip's colour rather than the browser's button chrome —
+   the amber of a LOCAL chip is what marks the content as weighable, and a
+   grey button in the middle of one loses that. */
+.src-why {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+}
+
+.src-why:hover,
+.src-why:focus-visible {
+    text-decoration: underline solid;
+}
+
+.src-why::after {
+    content: " \25B8";               /* right-pointing triangle: closed */
+    text-decoration: none;
+}
+
+.src-why[aria-expanded="true"]::after {
+    content: " \25BE";               /* down-pointing triangle: open */
+}
+
+/* Print carries no toggles, so the rationale is always shown on paper. */
+@media print {
+    .src-rationale[hidden] {
+        display: inline !important;
+    }
+
+    .src-why::after {
+        content: "";
+    }
+}
+
 /* Chips are distinguished by colour on screen. Print is often greyscale and
    the site's authority depends on the tags being legible there too, so force a
    visible outline and defeat background-graphics suppression. */
