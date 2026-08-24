@@ -423,7 +423,7 @@ describe('child protection contacts survive the removal of Before You Prescribe'
 describe('P2-09 — opioid pathway depth', () => {
     const html = read('index.html');
     const page = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
-        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+        html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'));
     const flat = page.replace(/\s+/g, ' ');
 
     test('methadone is offered as an option', () => {
@@ -946,5 +946,49 @@ describe('AUTH-03 — contributors and clinical review', () => {
     test('reviewers are still to be identified', () => {
         const comments = [...page.matchAll(/<!--[\s\S]*?-->/g)].map((m) => m[0]).join('\n');
         assert.ok(/TODO\(review\):/.test(comments), 'no record of the reviewers still to be approached');
+    });
+});
+
+describe('the OTP page', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    // The page is only reachable from the opioid page. A page with no route to
+    // it is a page nobody reads, and the missed-dose bands are the part of this
+    // app most likely to be opened under time pressure.
+    test('the opioid page links to it', () => {
+        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'));
+        assert.ok(/data-page="otp-page"/.test(opioid),
+            'nothing on the opioid page navigates to the OTP page');
+    });
+
+    test('it links back to the opioid page', () => {
+        assert.ok(/data-page="opioid-withdrawal-page"/.test(flat),
+            'the OTP page is a dead end - nothing navigates back');
+    });
+
+    // The bands and the Buvidal windows render from the data module, so the
+    // markup carries only the host. If the host is renamed or dropped the page
+    // renders as a heading with nothing under it, which no test would otherwise
+    // notice.
+    test('the missed-dose host is present for the renderer', () => {
+        assert.ok(/data-otp-missed-doses/.test(flat), 'the missed-doses block has no host element');
+    });
+
+    test('the calculator controls are all present', () => {
+        for (const id of ['otp-agent', 'otp-usual-dose', 'otp-missed-count',
+            'otp-missed-result', 'reset-otp-missed-btn']) {
+            assert.ok(new RegExp(`id="${id}"`).test(flat), `calculator element "${id}" is missing`);
+        }
+    });
+
+    test('the withdrawal page no longer carries a copy of the missed-dose content', () => {
+        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'));
+        assert.ok(!/data-otp-missed-doses|id="otp-agent"/.test(opioid),
+            'the missed-dose block has been left on, or inlined back into, the opioid page');
     });
 });

@@ -1286,24 +1286,32 @@ textarea {
     margin-top: 4px;
 }
 
-/* --- Substance page sectioning ---
+/* --- Sectioned page headings ---
    The "Other Substances" pages (opioid, benzo, cannabis, psychostimulant,
    gabapentinoid, GHB, nicotine, volatile) had no heading treatment beyond
    the browser default, so an <h4> section break read the same as a bolded
-   word in a paragraph. Scoped to .substance-page rather than applied
-   globally, so it doesn't reflow the tab-based alcohol pages, which already
-   have their own visual language. */
-.substance-page h4 {
+   word in a paragraph. Scoped rather than applied globally, so it doesn't
+   reflow the tab-based alcohol pages, which already have their own visual
+   language.
+
+   .sectioned-page is the same treatment for a page built the same way -
+   numbered <h4> sections with <h5> subheadings - that is not a substance.
+   The OTP page is the first. The substance pages keep the class they already
+   carry rather than being renamed for it. */
+.substance-page h4,
+.sectioned-page h4 {
     margin-top: 32px;
     padding-bottom: 6px;
     border-bottom: 2px solid var(--border-color);
 }
 
-.substance-page h4:first-of-type {
+.substance-page h4:first-of-type,
+.sectioned-page h4:first-of-type {
     margin-top: 20px;
 }
 
-.substance-page h5 {
+.substance-page h5,
+.sectioned-page h5 {
     margin-top: 18px;
     margin-bottom: 6px;
     color: var(--link-color);
@@ -2261,6 +2269,7 @@ textarea {
                 </div>
 
                 <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-page="otp-page">Opioid Treatment Program (OTP)</button>
                     <button class="big-button" data-link-to-scale="cows">Go to COWS Scale</button>
                 </div>
 
@@ -2506,14 +2515,107 @@ textarea {
                 </div>
 
                 <div class="clinical-block">
-                <h4>5. Missed doses on OTP</h4>
-                <p>For a patient already on an opioid treatment program who has not attended for dosing.
-                    This is the dispensing decision - what may be given today, and who has to authorise it -
-                    and it applies at the dosing point and on the ward alike. An admitted patient whose
-                    dosing has lapsed is counted the same way.</p>
+                <h4>Quick-start reference</h4>
+                <p>For pasting into a treatment plan or handover note. The sections above carry the
+                    precipitated-withdrawal warnings, when to escalate, and the sourcing.</p>
+                <textarea id="opioid-quickstart-summary" readonly
+                    aria-label="Buprenorphine and methadone quick-start summary for the EMR"></textarea>
+                <div class="button-group">
+                    <button id="copy-opioid-quickstart-btn">Copy quick-start guide</button>
+                </div>
+                </div>
+
+                <div class="clinical-block" data-symptomatic="opioid"></div>
+
+                <div class="clinical-block">
+                <h4>5. Estimating level of use</h4>
+                <p><strong>Frequency is a better indicator than grams</strong>, given how variable purity is.
+                    <span class="src-tag src-nswcg">NSWCG §8.2</span></p>
+                <ul>
+                    <li><strong>Low end:</strong> 1-2 injections per day, or ≤ 0.5g.</li>
+                    <li><strong>High end:</strong> ≥ 4 injections per day, or 1-2g.</li>
+                </ul>
+                <p>For prescribed opioids, see the
+                    <a href="https://www.anzca.edu.au/safety-advocacy/advocacy/opioid-dose-equivalence"
+                        target="_blank" rel="noopener">ANZCA Faculty of Pain Medicine opioid dose equivalence
+                        table</a>. <span class="src-tag src-other">OTHER - ANZCA Faculty of Pain Medicine</span></p>
+
+                </div>
+                <div class="clinical-block">
+                <h4>6. Unplanned withdrawal in hospital or prison</h4>
+                <div class="warning-box">
+                    <strong>⚠️ Consider opioid dependence</strong> where there are withdrawal signs, injection sites,
+                    or <strong>difficult pain control and unexpectedly high analgesic requirements</strong> - the last
+                    of these is frequently read as drug-seeking rather than as tolerance.
+                    <span class="src-tag src-nswcg">NSWCG §8.2</span>
+                </div>
+
+                </div>
+                <div class="clinical-block">
+                <h4>7. Pain in a patient on buprenorphine</h4>
+                <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
+                    Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
+                    <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
+                    <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or consult the ANZCA
+                    Faculty of Pain Medicine acute pain guidance.
+                    <span class="src-tag src-nswcg">NSWCG §8.3.5, §2.6</span></p>
+
+                </div>
+                <div class="clinical-block">
+                <h4>8. NSW regulatory requirements</h4>
+                <ul>
+                    <li><strong>In hospital</strong>, doctors may use methadone or buprenorphine without an authority
+                        for opioid-dependent inpatients - <strong>limited to 14 days by policy directive</strong>.
+                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
+                    <li><strong>Community prescribing requires authorisation.</strong>
+                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
+                    <li><strong>Confirm current opioid agonist treatment</strong> through the Ministry of Health -
+                        <a href="tel:0294245921">(02) 9424 5921</a> or <a href="tel:0293919944">(02) 9391 9944</a> -
+                        and contact the dosing point for a dosing history <strong>before prescribing</strong>.
+                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
+                    <li>For prescription opioids, check <strong>SafeScript NSW / RTPM</strong> and
+                        <strong>My Health Record</strong>. <span class="src-tag src-nswcg">NSWCG §8.2</span></li>
+                </ul>
+
+                </div>
+                <div class="clinical-block">
+                <h4>9. Complications of chronic use</h4>
+                <ul>
+                    <li><strong>Endocrine:</strong> reduced testosterone, raised prolactin, reduced FSH/LH,
+                        oligomenorrhoea or amenorrhoea, infertility.</li>
+                    <li><strong>Dental disease.</strong></li>
+                    <li><strong>Constipation.</strong></li>
+                    <li><strong>Injecting-related infections:</strong> endocarditis, cellulitis, epidural abscess,
+                        septicaemia.</li>
+                </ul>
+                <p><span class="src-tag src-nswcg">NSWCG §8.2</span></p>
+
+                </div>
+                <div class="clinical-block" data-harm-reduction="opioid"></div>
+
+            </div>
+
+            <!-- Opioid Treatment Program (OTP) Page -->
+            <div id="otp-page" class="page sectioned-page" data-title="Opioid Treatment Program (OTP)">
+                <button data-page="opioid-withdrawal-page" class="back-to-selection-btn">Opioid Withdrawal</button>
+                <h3>Opioid Treatment Program (OTP)</h3>
+                <p>For patients <strong>already established on methadone, sublingual buprenorphine or
+                    Buvidal</strong>. Starting someone on treatment is on the
+                    <button class="link-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
+                    page; this page covers what happens when established dosing is interrupted.</p>
+
+                <div class="clinical-block">
+                <h4>1. Missed doses</h4>
+                <p>For a patient already on a program who has not attended for dosing. This is the dispensing
+                    decision - what may be given today, and who has to authorise it - and it applies at the
+                    dosing point and on the ward alike. An admitted patient whose dosing has lapsed is counted
+                    the same way.</p>
                 <div data-otp-missed-doses></div>
 
-                <h5>Work out today's dose</h5>
+                </div>
+
+                <div class="clinical-block">
+                <h4>2. Work out today's dose</h4>
                 <p>Enter the usual daily dose and how many consecutive doses have been missed. The result is
                     the starting point for the conversation with the prescriber, not a substitute for it.</p>
                 <div class="form-grid otp-missed-grid">
@@ -2534,85 +2636,6 @@ textarea {
                     <button id="reset-otp-missed-btn" type="button">Reset</button>
                 </div>
                 </div>
-
-                <div class="clinical-block">
-                <h4>Quick-start reference</h4>
-                <p>For pasting into a treatment plan or handover note. The sections above carry the
-                    precipitated-withdrawal warnings, when to escalate, and the sourcing.</p>
-                <textarea id="opioid-quickstart-summary" readonly
-                    aria-label="Buprenorphine and methadone quick-start summary for the EMR"></textarea>
-                <div class="button-group">
-                    <button id="copy-opioid-quickstart-btn">Copy quick-start guide</button>
-                </div>
-                </div>
-
-                <div class="clinical-block" data-symptomatic="opioid"></div>
-
-                <div class="clinical-block">
-                <h4>6. Estimating level of use</h4>
-                <p><strong>Frequency is a better indicator than grams</strong>, given how variable purity is.
-                    <span class="src-tag src-nswcg">NSWCG §8.2</span></p>
-                <ul>
-                    <li><strong>Low end:</strong> 1-2 injections per day, or ≤ 0.5g.</li>
-                    <li><strong>High end:</strong> ≥ 4 injections per day, or 1-2g.</li>
-                </ul>
-                <p>For prescribed opioids, see the
-                    <a href="https://www.anzca.edu.au/safety-advocacy/advocacy/opioid-dose-equivalence"
-                        target="_blank" rel="noopener">ANZCA Faculty of Pain Medicine opioid dose equivalence
-                        table</a>. <span class="src-tag src-other">OTHER - ANZCA Faculty of Pain Medicine</span></p>
-
-                </div>
-                <div class="clinical-block">
-                <h4>7. Unplanned withdrawal in hospital or prison</h4>
-                <div class="warning-box">
-                    <strong>⚠️ Consider opioid dependence</strong> where there are withdrawal signs, injection sites,
-                    or <strong>difficult pain control and unexpectedly high analgesic requirements</strong> - the last
-                    of these is frequently read as drug-seeking rather than as tolerance.
-                    <span class="src-tag src-nswcg">NSWCG §8.2</span>
-                </div>
-
-                </div>
-                <div class="clinical-block">
-                <h4>8. Pain in a patient on buprenorphine</h4>
-                <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
-                    Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
-                    <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
-                    <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or consult the ANZCA
-                    Faculty of Pain Medicine acute pain guidance.
-                    <span class="src-tag src-nswcg">NSWCG §8.3.5, §2.6</span></p>
-
-                </div>
-                <div class="clinical-block">
-                <h4>9. NSW regulatory requirements</h4>
-                <ul>
-                    <li><strong>In hospital</strong>, doctors may use methadone or buprenorphine without an authority
-                        for opioid-dependent inpatients - <strong>limited to 14 days by policy directive</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
-                    <li><strong>Community prescribing requires authorisation.</strong>
-                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
-                    <li><strong>Confirm current opioid agonist treatment</strong> through the Ministry of Health -
-                        <a href="tel:0294245921">(02) 9424 5921</a> or <a href="tel:0293919944">(02) 9391 9944</a> -
-                        and contact the dosing point for a dosing history <strong>before prescribing</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
-                    <li>For prescription opioids, check <strong>SafeScript NSW / RTPM</strong> and
-                        <strong>My Health Record</strong>. <span class="src-tag src-nswcg">NSWCG §8.2</span></li>
-                </ul>
-
-                </div>
-                <div class="clinical-block">
-                <h4>10. Complications of chronic use</h4>
-                <ul>
-                    <li><strong>Endocrine:</strong> reduced testosterone, raised prolactin, reduced FSH/LH,
-                        oligomenorrhoea or amenorrhoea, infertility.</li>
-                    <li><strong>Dental disease.</strong></li>
-                    <li><strong>Constipation.</strong></li>
-                    <li><strong>Injecting-related infections:</strong> endocarditis, cellulitis, epidural abscess,
-                        septicaemia.</li>
-                </ul>
-                <p><span class="src-tag src-nswcg">NSWCG §8.2</span></p>
-
-                </div>
-                <div class="clinical-block" data-harm-reduction="opioid"></div>
 
             </div>
 
@@ -3735,8 +3758,12 @@ textarea {
 
                 <h4>0.4.8 - August 2026</h4>
                 <p><em>Missed doses on opioid treatment programs - what may be dispensed today, and who has to
-                        authorise it. New section on the Opioid Withdrawal page.</em></p>
+                        authorise it. New page, linked from the top of Opioid Withdrawal.</em></p>
                 <ul>
+                    <li><strong>There is now an Opioid Treatment Program page</strong>, for patients already
+                        established on methadone, sublingual buprenorphine or Buvidal. Reach it from the button
+                        at the top of Opioid Withdrawal. The withdrawal page is still where starting someone on
+                        treatment lives; this one is for when established dosing is interrupted.</li>
                     <li><strong>The three bands are stated as a table.</strong> One to three consecutive doses
                         missed is a review then the normal dose; four to five is a reduced dose that cannot be
                         given without contacting the prescriber and getting a legal script to the dosing site;

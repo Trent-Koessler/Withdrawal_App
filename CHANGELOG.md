@@ -9,11 +9,14 @@ The user-facing version of this lives at `#changelog-page` in the app.
 
 ### Clinical
 
-- **Missed doses on OTP are covered, as section 5 of the Opioid Withdrawal
-  page.** The app already carried induction and taper protocols for both agents
-  and said nothing about the far commoner question: a patient already on a
-  program turns up having missed doses, and someone at the dosing point has to
-  decide what may be given today. The bands are 1-3 (review, then the normal
+- **Missed doses on OTP are covered, on a new Opioid Treatment Program page**
+  linked from the top of Opioid Withdrawal. The app already carried induction
+  and taper protocols for both agents and said nothing about the far commoner
+  question: a patient already on a program turns up having missed doses, and
+  someone at the dosing point has to decide what may be given today. It is a
+  page rather than a section because the reader is different - someone holding
+  an established patient's dose, not someone starting a new one - and because
+  none of it comes from the guidance the withdrawal page is built on. The bands are 1-3 (review, then the normal
   dose if there is no intoxication, no significant withdrawal and no other
   concern), 4-5 (reduced dose, prescriber contacted, legal prescription to the
   dosing site) and more than 5 (prescriber must review before treatment
@@ -47,12 +50,13 @@ The user-facing version of this lives at `#changelog-page` in the app.
 ### Housekeeping
 
 - `data/otp-missed-doses.js` is added to the service worker precache list and to
-  the provenance test's source list, so the section works offline and its chips
-  are checked like every other page's.
-- The Opioid Withdrawal page now names three sources in its review footer: the
-  2022 clinical guidance, the 2018 opioid dependence guidelines the bands come
-  from, and the LAIB guidance the Buvidal windows come from.
-- Sections 5 to 9 on that page are renumbered 6 to 10.
+  the provenance test's source list, so the page works offline and its chips are
+  checked like every other page's.
+- The OTP page carries its own review footer naming its two sources - the 2018
+  opioid dependence guidelines and the LAIB guidance - rather than borrowing the
+  withdrawal page's. The Opioid Withdrawal page's own metadata is unchanged.
+- The opioid pathway's section numbering is unchanged: the new content is a
+  page, not an insertion.
 
 ## 0.4.7 - August 2026
 

@@ -1253,24 +1253,32 @@ textarea {
     margin-top: 4px;
 }
 
-/* --- Substance page sectioning ---
+/* --- Sectioned page headings ---
    The "Other Substances" pages (opioid, benzo, cannabis, psychostimulant,
    gabapentinoid, GHB, nicotine, volatile) had no heading treatment beyond
    the browser default, so an <h4> section break read the same as a bolded
-   word in a paragraph. Scoped to .substance-page rather than applied
-   globally, so it doesn't reflow the tab-based alcohol pages, which already
-   have their own visual language. */
-.substance-page h4 {
+   word in a paragraph. Scoped rather than applied globally, so it doesn't
+   reflow the tab-based alcohol pages, which already have their own visual
+   language.
+
+   .sectioned-page is the same treatment for a page built the same way -
+   numbered <h4> sections with <h5> subheadings - that is not a substance.
+   The OTP page is the first. The substance pages keep the class they already
+   carry rather than being renamed for it. */
+.substance-page h4,
+.sectioned-page h4 {
     margin-top: 32px;
     padding-bottom: 6px;
     border-bottom: 2px solid var(--border-color);
 }
 
-.substance-page h4:first-of-type {
+.substance-page h4:first-of-type,
+.sectioned-page h4:first-of-type {
     margin-top: 20px;
 }
 
-.substance-page h5 {
+.substance-page h5,
+.sectioned-page h5 {
     margin-top: 18px;
     margin-bottom: 6px;
     color: var(--link-color);
