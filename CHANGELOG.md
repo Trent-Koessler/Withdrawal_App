@@ -5,6 +5,63 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.7 - August 2026
+
+### Safety
+
+- **Seven `data-sd` constants disagreed with the standard-drink formula and are
+  corrected.** The wine casks did not scale against each other - 2L of red was
+  21.0 and 4L was 43.0 - and the beer slabs were built by multiplying the
+  *rounded* per-can figure rather than the formula, so a full-strength carton
+  read 33.6 (24 x 1.4) where it is 34.1 (24 x 1.4202), and a mid-strength carton
+  read 24.0 where it is 24.9. A 150mL glass of white was 1.4 while an identical
+  pour of champagne was 1.5. None of these crosses a banding threshold on its
+  own, but they are the rows a heavy drinker's total is built from, and they all
+  understated it. Corrected: `b10` 33.6 to 34.1, `b11` 24 to 24.9, `w4` 1.4 to
+  1.5, `w6` 7.5 to 7.4, `c1` 21.0 to 21.3, `c2` 43.0 to 42.6, `c3` 19.5 to 19.7,
+  `c4` 39.0 to 39.5.
+- **`test/clinical.test.js` now checks every row, not only the single serves.**
+  The old parser required a `(NNNml)` volume in the label, so casks, cartons and
+  the unparenthesised spirit serves were skipped silently - which is exactly
+  where the drift above was sitting, because nothing else recomputes those large
+  numbers. `volumeMl()` now reads multipack counts, litres and bare mL, the
+  tolerance scales with the size of the value so a 43-drink cask cannot absorb a
+  whole drink of error, and a second test fails if any row's label is
+  unparseable rather than letting it fall out of the check.
+- **Non-beverage alcohol is prompted for before the count.** Mouthwash (~21%),
+  hand sanitiser (~70%) and methylated spirits (~95%) are not beverages and are
+  not on the list, so they are easy to omit from a history - but they count
+  towards the intake that drives severity banding. The prompt directs the entry
+  to the Custom Volume & ABV tab rather than listing them as drink options.
+
+### Clinical
+
+- **Twenty drink options were added to the by-type calculator**, all computed
+  from volume(L) x ABV x 0.789. The gaps were the containers people actually
+  report: beer had no pint (570mL, 2.2), jug (1140mL, 4.3), longneck (750mL,
+  2.8), six-pack (8.5) or craft-strength tier (5.5%); cider was absent entirely;
+  wine had a 100mL and 150mL serve but not the 250mL kitchen tumbler its own
+  caveat describes; fortified wine had a 60mL port serve but no bottle (10.4) or
+  2L flagon (27.6), and no sherry; spirits had 700mL and 1L bottles but not
+  375mL (11.8) or the 1.125L that sits on the shelf beside them (35.5), and no
+  overproof rum (57%); pre-mixes stopped at 7% where 10% cans are sold.
+- **The beer cartons are relabelled "Carton / Slab", and the spirits fieldset
+  names its spirits.** In both cases the row existed and its arithmetic was
+  right; the word most likely to be used to find it was not on it. Gin, vodka,
+  whisky and rum are all 40% and so were all already counted by the generic
+  "Spirit Nip" and "Spirit Bottle" rows - but nobody scanning for gin found
+  them. The legend now reads "Spirits (Gin, Vodka, Whisky, Rum)", and navy
+  strength gin shares the 57% overproof rows, where it genuinely differs. No
+  `data-sd` changed. A test now fails if a spirit stops being named.
+
+### Housekeeping
+
+- **"Before you count" is 67 words, down from 157.** The three questions are
+  unchanged and so is where they route the user; each was carrying two or three
+  sentences of justification that a clinician reading a prompt above a form does
+  not need. The heading no longer counts its own bullets, which is what let it
+  say "two questions" above three of them.
+
 ## 0.4.6 - August 2026
 
 ### Housekeeping

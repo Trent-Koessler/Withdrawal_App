@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.6" />
+    <meta name="app-build" content="0.4.7" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -771,6 +771,10 @@ textarea {
 .std-drinks-grid {
     grid-template-columns: 1fr; /* Stack categories on small screens */
     gap: 20px;
+    /* .form-grid centres its rows, which is right for a two-column label/input
+       pair and wrong here: these are columns of differing length, and centring
+       floats the short ones halfway down the page against the long beer list. */
+    align-items: start;
 }
 .std-drinks-grid fieldset {
     border: 1px solid var(--border-color);
@@ -1944,44 +1948,67 @@ textarea {
                             </div>
                             <div id="std-by-type" class="tab-content active">
                                 <div class="clinical-block">
-                                    <h4>Before you count - two questions that change the answer</h4>
+                                    <h4>Before you count</h4>
                                     <ul>
-                                        <li><strong>Is this amount for the patient, or shared?</strong> A reported
-                                            quantity may describe what a couple or a group consumed.</li>
-                                        <li><strong>What is the actual container?</strong> A "glass" of wine or
-                                            spirits may be a 250mL kitchen tumbler filled near the top, or a
-                                            repurposed 600mL water bottle - not a standard serve. Use the Custom
-                                            Volume &amp; ABV tab where the container is not a standard one.</li>
+                                        <li><strong>Is this for the patient, or shared?</strong> A reported quantity
+                                            may be a couple's or a group's.</li>
+                                        <li><strong>What was the actual container?</strong> A "glass" is often a
+                                            250mL kitchen tumbler or a 600mL water bottle. Non-standard containers
+                                            go on the Custom Volume &amp; ABV tab.</li>
+                                        <li><strong>Any non-beverage alcohol?</strong> Ask directly - mouthwash
+                                            ~21%, hand sanitiser ~70%, methylated spirits ~95%.</li>
                                     </ul>
                                     <span class="src-tag src-nswcg">NSWCG App 4</span>
+                                    <span class="src-tag src-local">LOCAL - rationale: NSWCG App 4 lists beverage
+                                        serves only; the non-beverage prompt is added because omitting these
+                                        sources understates the intake that drives severity banding.</span>
                                 </div>
                                 <div class="form-grid std-drinks-grid">
                                     <fieldset>
-                                        <legend>Beer</legend>
+                                        <legend>Beer &amp; Cider</legend>
                                         <label for="b1">Full Strength (4.8%) - Middy / Pot (285ml)</label><input
                                             type="number" id="b1" data-sd="1.1" placeholder="Qty">
                                         <label for="b2">Full Strength (4.8%) - Schooner (425ml)</label><input
                                             type="number" id="b2" data-sd="1.6" placeholder="Qty">
+                                        <label for="b13">Full Strength (4.8%) - Pint (570ml)</label><input
+                                            type="number" id="b13" data-sd="2.2" placeholder="Qty">
                                         <label for="b3">Full Strength (4.8%) - Can/Stubby (375ml)</label><input
                                             type="number" id="b3" data-sd="1.4" placeholder="Qty">
-                                        <label for="b10">Full Strength (4.8%) - Carton (24 cans/stubbies)</label><input
-                                            type="number" id="b10" data-sd="33.6" placeholder="Qty">
+                                        <label for="b14">Full Strength (4.8%) - Longneck / Tallie (750ml)</label><input
+                                            type="number" id="b14" data-sd="2.8" placeholder="Qty">
+                                        <label for="b15">Full Strength (4.8%) - Jug (1140ml)</label><input
+                                            type="number" id="b15" data-sd="4.3" placeholder="Qty">
+                                        <label for="b16">Full Strength (4.8%) - Six-pack (6 cans/stubbies)</label><input
+                                            type="number" id="b16" data-sd="8.5" placeholder="Qty">
+                                        <label for="b10">Full Strength (4.8%) - Carton / Slab (24
+                                            cans/stubbies)</label><input type="number" id="b10" data-sd="34.1"
+                                            placeholder="Qty">
                                         <label for="b4">Mid Strength (3.5%) - Middy / Pot (285ml)</label><input
                                             type="number" id="b4" data-sd="0.8" placeholder="Qty">
                                         <label for="b5">Mid Strength (3.5%) - Schooner (425ml)</label><input
                                             type="number" id="b5" data-sd="1.2" placeholder="Qty">
                                         <label for="b6">Mid Strength (3.5%) - Can/Stubby (375ml)</label><input
                                             type="number" id="b6" data-sd="1.0" placeholder="Qty">
-                                        <label for="b11">Mid Strength (3.5%) - Carton (24 cans/stubbies)</label><input
-                                            type="number" id="b11" data-sd="24" placeholder="Qty">
+                                        <label for="b11">Mid Strength (3.5%) - Carton / Slab (24 cans/stubbies)</label><input
+                                            type="number" id="b11" data-sd="24.9" placeholder="Qty">
                                         <label for="b7">Low Strength (2.7%) - Middy / Pot (285ml)</label><input
                                             type="number" id="b7" data-sd="0.6" placeholder="Qty">
                                         <label for="b8">Low Strength (2.7%) - Schooner (425ml)</label><input
                                             type="number" id="b8" data-sd="0.9" placeholder="Qty">
                                         <label for="b9">Low Strength (2.7%) - Can/Stubby (375ml)</label><input
                                             type="number" id="b9" data-sd="0.8" placeholder="Qty">
-                                        <label for="b12">Low Strength (2.7%) - Carton (24 cans/stubbies)</label><input
+                                        <label for="b12">Low Strength (2.7%) - Carton / Slab (24 cans/stubbies)</label><input
                                             type="number" id="b12" data-sd="19.2" placeholder="Qty">
+                                        <label for="b17">Craft / Premium (5.5%) - Can/Stubby (375ml)</label><input
+                                            type="number" id="b17" data-sd="1.6" placeholder="Qty">
+                                        <label for="b18">Craft / Premium (5.5%) - Pint (570ml)</label><input
+                                            type="number" id="b18" data-sd="2.5" placeholder="Qty">
+                                        <label for="b19">Cider (4.5%) - Can/Bottle (330ml)</label><input type="number"
+                                            id="b19" data-sd="1.2" placeholder="Qty">
+                                        <label for="b20">Cider (4.5%) - Bottle (500ml)</label><input type="number"
+                                            id="b20" data-sd="1.8" placeholder="Qty">
+                                        <label for="b21">Cider (8%) - Can/Bottle (330ml)</label><input type="number"
+                                            id="b21" data-sd="2.1" placeholder="Qty">
                                     </fieldset>
                                     <fieldset>
                                         <legend>Wine & Champagne</legend>
@@ -1989,44 +2016,72 @@ textarea {
                                             type="number" id="w1" data-sd="1.6" placeholder="Qty">
                                         <label for="w2">Red Wine (13.5%) - Standard Serve (100ml)</label><input
                                             type="number" id="w2" data-sd="1.0" placeholder="Qty">
+                                        <label for="w8">Red Wine (13.5%) - Large Glass / Home Pour (250ml)</label><input type="number"
+                                            id="w8" data-sd="2.7" placeholder="Qty">
                                         <label for="w3">Red Wine (13.5%) - Bottle (750ml)</label><input type="number"
                                             id="w3" data-sd="8.0" placeholder="Qty">
                                         <label for="w4">White Wine (12.5%) - Restaurant Serve (150ml)</label><input
-                                            type="number" id="w4" data-sd="1.4" placeholder="Qty">
+                                            type="number" id="w4" data-sd="1.5" placeholder="Qty">
                                         <label for="w5">White Wine (12.5%) - Standard Serve (100ml)</label><input
                                             type="number" id="w5" data-sd="1.0" placeholder="Qty">
+                                        <label for="w9">White Wine (12.5%) - Large Glass / Home Pour (250ml)</label><input
+                                            type="number" id="w9" data-sd="2.5" placeholder="Qty">
                                         <label for="w6">White Wine (12.5%) - Bottle (750ml)</label><input type="number"
-                                            id="w6" data-sd="7.5" placeholder="Qty">
+                                            id="w6" data-sd="7.4" placeholder="Qty">
                                         <label for="w7">Champagne (12.5%) - Flute (150ml)</label><input type="number"
                                             id="w7" data-sd="1.5" placeholder="Qty">
                                     </fieldset>
                                     <fieldset>
                                         <legend>Casks & Fortified Wine</legend>
                                         <label for="c1">Red Wine Cask (13.5%) - 2L</label><input type="number" id="c1"
-                                            data-sd="21.0" placeholder="Qty">
+                                            data-sd="21.3" placeholder="Qty">
                                         <label for="c2">Red Wine Cask (13.5%) - 4L</label><input type="number" id="c2"
-                                            data-sd="43.0" placeholder="Qty">
+                                            data-sd="42.6" placeholder="Qty">
                                         <label for="c3">White Wine Cask (12.5%) - 2L</label><input type="number" id="c3"
-                                            data-sd="19.5" placeholder="Qty">
+                                            data-sd="19.7" placeholder="Qty">
                                         <label for="c4">White Wine Cask (12.5%) - 4L</label><input type="number" id="c4"
-                                            data-sd="39.0" placeholder="Qty">
+                                            data-sd="39.5" placeholder="Qty">
                                         <label for="c5">Port (17.5%) - Serve (60ml)</label><input type="number" id="c5"
                                             data-sd="0.8" placeholder="Qty">
+                                        <label for="c6">Port (17.5%) - Bottle (750ml)</label><input type="number"
+                                            id="c6" data-sd="10.4" placeholder="Qty">
+                                        <label for="c7">Port / Fortified Cask or Flagon (17.5%) - 2L</label><input
+                                            type="number" id="c7" data-sd="27.6" placeholder="Qty">
+                                        <label for="c8">Sherry (18%) - Serve (60ml)</label><input type="number" id="c8"
+                                            data-sd="0.9" placeholder="Qty">
+                                        <label for="c9">Sherry (18%) - Bottle (750ml)</label><input type="number"
+                                            id="c9" data-sd="10.7" placeholder="Qty">
                                     </fieldset>
                                     <fieldset>
-                                        <legend>Spirits & Pre-mix (RTDs)</legend>
+                                        <legend>Spirits (Gin, Vodka, Whisky, Rum) & Pre-mix (RTDs)</legend>
                                         <label for="s1">Spirit Nip (40%) - 30ml</label><input type="number" id="s1"
                                             data-sd="1.0" placeholder="Qty">
+                                        <label for="s7">Spirit Free Pour / Double (40%) - 60ml</label><input type="number"
+                                            id="s7" data-sd="1.9" placeholder="Qty">
+                                        <label for="s8">Spirit Bottle (40%) - 375ml</label><input type="number" id="s8"
+                                            data-sd="11.8" placeholder="Qty">
                                         <label for="s2">Spirit Bottle (40%) - 700ml</label><input type="number" id="s2"
                                             data-sd="22.0" placeholder="Qty">
                                         <label for="s3">Spirit Bottle (40%) - 1L</label><input type="number" id="s3"
                                             data-sd="31.6" placeholder="Qty">
+                                        <label for="s9">Spirit Bottle (40%) - 1.125L</label><input type="number"
+                                            id="s9" data-sd="35.5" placeholder="Qty">
+                                        <label for="s10">Overproof Rum / Navy Strength Gin (57%) - Nip (30ml)</label><input type="number"
+                                            id="s10" data-sd="1.3" placeholder="Qty">
+                                        <label for="s11">Overproof Rum / Navy Strength Gin (57%) - Bottle (700ml)</label><input
+                                            type="number" id="s11" data-sd="31.5" placeholder="Qty">
                                         <label for="s4">RTD Full Strength (5%) - 275ml</label><input type="number"
                                             id="s4" data-sd="1.1" placeholder="Qty">
                                         <label for="s5">RTD Full Strength (5%) - 375ml</label><input type="number"
                                             id="s5" data-sd="1.5" placeholder="Qty">
+                                        <label for="s12">RTD Full Strength (5%) - Four-pack (4 x 375ml cans)</label><input
+                                            type="number" id="s12" data-sd="5.9" placeholder="Qty">
                                         <label for="s6">RTD High Strength (7%) - 375ml</label><input type="number"
                                             id="s6" data-sd="2.1" placeholder="Qty">
+                                        <label for="s13">RTD Extra Strength (10%) - 330ml</label><input type="number"
+                                            id="s13" data-sd="2.6" placeholder="Qty">
+                                        <label for="s14">RTD Extra Strength (10%) - 375ml</label><input type="number"
+                                            id="s14" data-sd="3.0" placeholder="Qty">
                                     </fieldset>
                                 </div>
                                 <div class="button-group">
@@ -3603,6 +3658,31 @@ textarea {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.7 - August 2026</h4>
+                <p><em>The standard drinks calculator covers the containers people actually report. No dose, band or
+                        threshold changed.</em></p>
+                <ul>
+                    <li><strong>Twenty drink options were added</strong>, covering the serves that were previously
+                        missing: pint, jug, longneck and six-pack; craft-strength beer at 5.5%; cider; a 250mL home
+                        pour of wine; sherry; overproof rum; 375mL and 1.125L spirit bottles; and a 10% pre-mix.
+                        A carton is now labelled <strong>Carton / Slab</strong>, and a <strong>bottle</strong> and
+                        <strong>2L flagon</strong> of port sit beside the 60mL serve - a bottle a day is 10.4
+                        standard drinks, not 0.8.</li>
+                    <li><strong>Seven listed totals were slightly wrong and are corrected.</strong> The largest was
+                        a full-strength slab, listed at 33.6 and actually 34.1. The wine casks did not scale - 2L of
+                        red was listed at 21.0 and 4L at 43.0 - and a 150mL glass of white was listed at 1.4 while
+                        the same pour of champagne was 1.5. All are now computed from the standard formula, and a
+                        test checks every row against it rather than only the single serves.</li>
+                    <li><strong>Non-beverage alcohol is now prompted for.</strong> Mouthwash, hand sanitiser and
+                        methylated spirits carry a real ethanol load and are easily left out of a history. The
+                        calculator now asks, and gives indicative strengths for the Custom Volume &amp; ABV tab.</li>
+                    <li><strong>The spirits list names its spirits.</strong> Gin, vodka, whisky and rum are all 40%
+                        and were always counted by the generic "Spirit Nip" and "Spirit Bottle" rows, but you had to
+                        know that to use them. Navy strength gin sits with overproof rum at 57%.</li>
+                    <li><strong>The prompt above the calculator is a third of its previous length</strong>, with the
+                        same three questions and the same routing.</li>
+                </ul>
 
                 <h4>0.4.6 - August 2026</h4>
                 <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
