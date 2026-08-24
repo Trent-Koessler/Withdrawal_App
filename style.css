@@ -738,6 +738,10 @@ textarea {
 .std-drinks-grid {
     grid-template-columns: 1fr; /* Stack categories on small screens */
     gap: 20px;
+    /* .form-grid centres its rows, which is right for a two-column label/input
+       pair and wrong here: these are columns of differing length, and centring
+       floats the short ones halfway down the page against the long beer list. */
+    align-items: start;
 }
 .std-drinks-grid fieldset {
     border: 1px solid var(--border-color);
