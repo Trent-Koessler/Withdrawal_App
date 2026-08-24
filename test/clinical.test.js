@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { SCALES } from '../data/scales.js';
 import { REGIMEN_CONFIG } from '../data/regimens.js';
 import { FLOWCHART_LOGIC } from '../data/flowchart.js';
+import { bandFor, restartDose, ORAL_OTP_AGENTS, MISSED_DOSE_BANDS } from '../data/otp-missed-doses.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -466,5 +467,75 @@ describe('deployment invariants', () => {
         for (const icon of manifest.icons) {
             assert.ok(fs.existsSync(path.join(ROOT, icon.src)), `manifest icon missing: ${icon.src}`);
         }
+    });
+});
+
+describe('OTP missed doses', () => {
+    // The band boundaries are the whole point of the section: 3 and 4 are one
+    // dose apart and mean "normal dose" versus "reduced dose plus a phone call
+    // to the prescriber", and 5 and 6 separate a reduced dose from no dose at
+    // all. A change that shifts either of these is not a refactor.
+    test('the bands break at 3/4 and 5/6', () => {
+        assert.equal(bandFor(1).key, 'resume');
+        assert.equal(bandFor(3).key, 'resume');
+        assert.equal(bandFor(4).key, 'reduced');
+        assert.equal(bandFor(5).key, 'reduced');
+        assert.equal(bandFor(6).key, 'review');
+        assert.equal(bandFor(30).key, 'review');
+    });
+
+    test('a count below one is not a band', () => {
+        for (const n of [0, -1, NaN, undefined]) {
+            assert.equal(bandFor(n), null, `${n} produced a band`);
+        }
+    });
+
+    test('every band is reachable, and no band is unreachable', () => {
+        const reached = new Set([...Array(20).keys()].map((i) => bandFor(i + 1).key));
+        assert.equal(reached.size, MISSED_DOSE_BANDS.length,
+            'a band in the table can never be selected by a dose count');
+    });
+
+    // "Half the usual dose, or the floor, whichever is higher" is the rule most
+    // easily got backwards, and getting it backwards after a tolerance-losing
+    // gap is an overdose. Asserted on both sides of each agent's floor.
+    test('the restart dose is the higher of half-dose and floor', () => {
+        assert.equal(restartDose('methadone', 100).doseMg, 50);
+        assert.equal(restartDose('methadone', 80).doseMg, 40);
+        assert.equal(restartDose('methadone', 60).doseMg, 40, 'half of 60 is below the 40mg floor');
+        assert.equal(restartDose('buprenorphine', 24).doseMg, 12);
+        assert.equal(restartDose('buprenorphine', 16).doseMg, 8);
+        assert.equal(restartDose('buprenorphine', 12).doseMg, 8, 'half of 12 is below the 8mg floor');
+    });
+
+    // The documented departure from the source. Read literally, the floor hands
+    // a patient on 30mg of methadone 40mg — more than they normally take — on
+    // the day they return from a gap. The cap is what stops that, and the flag
+    // is what makes the app say so rather than quietly disagree.
+    test('the restart dose never exceeds the usual dose, and says when it capped', () => {
+        const low = restartDose('methadone', 30);
+        assert.equal(low.doseMg, 30);
+        assert.equal(low.cappedAtUsual, true);
+
+        const lowBupe = restartDose('buprenorphine', 6);
+        assert.equal(lowBupe.doseMg, 6);
+        assert.equal(lowBupe.cappedAtUsual, true);
+
+        const normal = restartDose('methadone', 100);
+        assert.equal(normal.cappedAtUsual, false);
+    });
+
+    test('a missing or nonsensical dose returns nothing rather than a number', () => {
+        for (const dose of [0, -10, NaN, undefined]) {
+            assert.equal(restartDose('methadone', dose), null, `${dose} produced a dose`);
+        }
+        assert.equal(restartDose('oxycodone', 80), null, 'an agent with no missed-dose rule produced one');
+    });
+
+    test('both agents carry the figures the section quotes', () => {
+        assert.equal(ORAL_OTP_AGENTS.methadone.floorMg, 40);
+        assert.equal(ORAL_OTP_AGENTS.methadone.stepMg, 20);
+        assert.equal(ORAL_OTP_AGENTS.buprenorphine.floorMg, 8);
+        assert.equal(ORAL_OTP_AGENTS.buprenorphine.stepMg, 8);
     });
 });

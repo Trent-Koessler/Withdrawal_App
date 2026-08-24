@@ -326,7 +326,7 @@ button:hover {
     outline-offset: 2px;
 }
 
-textarea, input[type="number"] {
+textarea, input[type="number"], select {
     width: 100%;
     background-color: var(--card-bg);
     color: var(--text-color);
@@ -1125,6 +1125,50 @@ textarea {
 .escalation-box ul {
     margin: 6px 0;
     padding-left: 22px;
+}
+
+/* --- Missed-dose calculator (opioid page) --- */
+/* The result card's colour is the answer's severity, not decoration: a resumed
+   normal dose, a reduced dose that still needs a prescription, and no dose at
+   all without a prescriber review must not look alike at a dosing window. */
+.otp-result-card {
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--border-color);
+}
+
+.otp-result-card.resume {
+    border-color: var(--border-color);
+    border-left-color: var(--link-color);
+}
+
+.otp-result-card.reduced {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-border);
+}
+
+.otp-result-card.review {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-color: var(--danger-border);
+}
+
+.otp-result-card a {
+    color: inherit;
+    font-weight: 600;
+}
+
+.otp-result-card > strong:first-child {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.otp-result-card p:last-child {
+    margin-bottom: 0;
 }
 
 /* --- Routing card: a cell that must not render a dose regimen (P0-05) --- */

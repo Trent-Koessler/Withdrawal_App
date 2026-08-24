@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.7" />
+    <meta name="app-build" content="0.4.8" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -359,7 +359,7 @@ button:hover {
     outline-offset: 2px;
 }
 
-textarea, input[type="number"] {
+textarea, input[type="number"], select {
     width: 100%;
     background-color: var(--card-bg);
     color: var(--text-color);
@@ -1158,6 +1158,50 @@ textarea {
 .escalation-box ul {
     margin: 6px 0;
     padding-left: 22px;
+}
+
+/* --- Missed-dose calculator (opioid page) --- */
+/* The result card's colour is the answer's severity, not decoration: a resumed
+   normal dose, a reduced dose that still needs a prescription, and no dose at
+   all without a prescriber review must not look alike at a dosing window. */
+.otp-result-card {
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--border-color);
+}
+
+.otp-result-card.resume {
+    border-color: var(--border-color);
+    border-left-color: var(--link-color);
+}
+
+.otp-result-card.reduced {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-border);
+}
+
+.otp-result-card.review {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-color: var(--danger-border);
+}
+
+.otp-result-card a {
+    color: inherit;
+    font-weight: 600;
+}
+
+.otp-result-card > strong:first-child {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.otp-result-card p:last-child {
+    margin-bottom: 0;
 }
 
 /* --- Routing card: a cell that must not render a dose regimen (P0-05) --- */
@@ -2462,6 +2506,36 @@ textarea {
                 </div>
 
                 <div class="clinical-block">
+                <h4>5. Missed doses on OTP</h4>
+                <p>For a patient already on an opioid treatment program who has not attended for dosing.
+                    This is the dispensing decision - what may be given today, and who has to authorise it -
+                    and it applies at the dosing point and on the ward alike. An admitted patient whose
+                    dosing has lapsed is counted the same way.</p>
+                <div data-otp-missed-doses></div>
+
+                <h5>Work out today's dose</h5>
+                <p>Enter the usual daily dose and how many consecutive doses have been missed. The result is
+                    the starting point for the conversation with the prescriber, not a substitute for it.</p>
+                <div class="form-grid otp-missed-grid">
+                    <label for="otp-agent">Agent</label>
+                    <select id="otp-agent">
+                        <option value="methadone">Methadone</option>
+                        <option value="buprenorphine">Buprenorphine (sublingual)</option>
+                    </select>
+                    <label for="otp-usual-dose">Usual daily dose (mg)</label>
+                    <input type="number" id="otp-usual-dose" min="0" step="0.5" inputmode="decimal"
+                        placeholder="e.g. 90">
+                    <label for="otp-missed-count">Consecutive doses missed</label>
+                    <input type="number" id="otp-missed-count" min="0" step="1" inputmode="numeric"
+                        placeholder="e.g. 4">
+                </div>
+                <div id="otp-missed-result" role="status" aria-live="polite"></div>
+                <div class="button-group">
+                    <button id="reset-otp-missed-btn" type="button">Reset</button>
+                </div>
+                </div>
+
+                <div class="clinical-block">
                 <h4>Quick-start reference</h4>
                 <p>For pasting into a treatment plan or handover note. The sections above carry the
                     precipitated-withdrawal warnings, when to escalate, and the sourcing.</p>
@@ -2475,7 +2549,7 @@ textarea {
                 <div class="clinical-block" data-symptomatic="opioid"></div>
 
                 <div class="clinical-block">
-                <h4>5. Estimating level of use</h4>
+                <h4>6. Estimating level of use</h4>
                 <p><strong>Frequency is a better indicator than grams</strong>, given how variable purity is.
                     <span class="src-tag src-nswcg">NSWCG §8.2</span></p>
                 <ul>
@@ -2489,7 +2563,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>6. Unplanned withdrawal in hospital or prison</h4>
+                <h4>7. Unplanned withdrawal in hospital or prison</h4>
                 <div class="warning-box">
                     <strong>⚠️ Consider opioid dependence</strong> where there are withdrawal signs, injection sites,
                     or <strong>difficult pain control and unexpectedly high analgesic requirements</strong> - the last
@@ -2499,7 +2573,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>7. Pain in a patient on buprenorphine</h4>
+                <h4>8. Pain in a patient on buprenorphine</h4>
                 <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
                     Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
                     <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
@@ -2509,7 +2583,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>8. NSW regulatory requirements</h4>
+                <h4>9. NSW regulatory requirements</h4>
                 <ul>
                     <li><strong>In hospital</strong>, doctors may use methadone or buprenorphine without an authority
                         for opioid-dependent inpatients - <strong>limited to 14 days by policy directive</strong>.
@@ -2526,7 +2600,7 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>9. Complications of chronic use</h4>
+                <h4>10. Complications of chronic use</h4>
                 <ul>
                     <li><strong>Endocrine:</strong> reduced testosterone, raised prolactin, reduced FSH/LH,
                         oligomenorrhoea or amenorrhoea, infertility.</li>
@@ -3658,6 +3732,33 @@ textarea {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.8 - August 2026</h4>
+                <p><em>Missed doses on opioid treatment programs - what may be dispensed today, and who has to
+                        authorise it. New section on the Opioid Withdrawal page.</em></p>
+                <ul>
+                    <li><strong>The three bands are stated as a table.</strong> One to three consecutive doses
+                        missed is a review then the normal dose; four to five is a reduced dose that cannot be
+                        given without contacting the prescriber and getting a legal script to the dosing site;
+                        more than five means the prescriber must review the patient before treatment
+                        recommences.</li>
+                    <li><strong>A calculator works out today's dose.</strong> Enter the agent, the usual daily
+                        dose and the number of consecutive doses missed. In the four-to-five band it applies the
+                        rule - half the usual dose, or 40mg methadone / 8mg buprenorphine, whichever is higher -
+                        and states the climb back to the usual dose. In the other two bands it deliberately gives
+                        no number, because the dose is not the decision there.</li>
+                    <li><strong>The "whichever is higher" floor is capped at the usual dose.</strong> Read
+                        literally, the rule gives a patient maintained on 30mg of methadone <em>40mg</em> on the
+                        day they return from a gap that has cost them tolerance. The app caps the restart dose at
+                        the usual dose and says on screen that it has done so. This is a departure from the source
+                        and is tagged as one.</li>
+                    <li><strong>Two absolutes are stated before the bands:</strong> an intoxicated patient is not
+                        dosed with either drug, and no contactable prescriber and no valid prescription means no
+                        dose - refer back for review.</li>
+                    <li><strong>Buvidal is handled separately</strong>, because it is counted in days overdue
+                        rather than missed doses. Weekly may be given days five to nine, monthly weeks three to
+                        five; re-induction may be needed beyond 10-14 days (weekly) or eight weeks (monthly).</li>
+                </ul>
 
                 <h4>0.4.7 - August 2026</h4>
                 <p><em>The standard drinks calculator covers the containers people actually report. No dose, band or

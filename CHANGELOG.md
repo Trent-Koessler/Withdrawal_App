@@ -5,6 +5,55 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.8 - August 2026
+
+### Clinical
+
+- **Missed doses on OTP are covered, as section 5 of the Opioid Withdrawal
+  page.** The app already carried induction and taper protocols for both agents
+  and said nothing about the far commoner question: a patient already on a
+  program turns up having missed doses, and someone at the dosing point has to
+  decide what may be given today. The bands are 1-3 (review, then the normal
+  dose if there is no intoxication, no significant withdrawal and no other
+  concern), 4-5 (reduced dose, prescriber contacted, legal prescription to the
+  dosing site) and more than 5 (prescriber must review before treatment
+  recommences). Two absolutes render above them rather than as a footnote: an
+  intoxicated patient is not dosed with either drug, and no prescriber and no
+  valid script means no dose.
+- **The restart dose is calculated rather than described.** `restartDose()` in
+  `data/otp-missed-doses.js` applies half the usual dose or the agent's floor -
+  40mg methadone, 8mg buprenorphine - whichever is higher, and the section
+  renders the climb back afterwards: 5-7 days in steps of up to 20mg for
+  methadone, 2-3 days in steps of up to 8mg for buprenorphine. The bands and the
+  arithmetic come out of one module so the table and the calculator cannot
+  disagree.
+- **The dose is capped at the patient's usual dose, which the source does not
+  say.** "Half the regular dose or 40mg, whichever is higher" is written for the
+  doses the guideline assumes. Below the floor it inverts: a patient maintained
+  on 30mg of methadone would be given 40mg on the day they return from a gap
+  that has cost them tolerance. The cap fires, the calculator says on screen
+  that it fired and why, and the departure carries a LOCAL provenance chip.
+- **Buvidal is a separate table**, because nothing about it is a count of missed
+  daily doses. Weekly may be given on days five to nine, monthly in weeks three
+  to five, a missed dose is given as soon as practicable, and re-induction may
+  be required beyond 10-14 days between weekly doses or eight weeks between
+  monthly ones.
+- **The calculator gives no number in the bands where the number is not the
+  decision.** At 1-3 it names the usual dose and points at the review; above 5
+  it says there is no dose today and states the re-induction position for that
+  agent. Only the 4-5 band produces a milligram figure, and it says in the same
+  card that the figure cannot be dispensed without the prescriber.
+
+### Housekeeping
+
+- `data/otp-missed-doses.js` is added to the service worker precache list and to
+  the provenance test's source list, so the section works offline and its chips
+  are checked like every other page's.
+- The Opioid Withdrawal page now names three sources in its review footer: the
+  2022 clinical guidance, the 2018 opioid dependence guidelines the bands come
+  from, and the LAIB guidance the Buvidal windows come from.
+- Sections 5 to 9 on that page are renumbered 6 to 10.
+
 ## 0.4.7 - August 2026
 
 ### Safety

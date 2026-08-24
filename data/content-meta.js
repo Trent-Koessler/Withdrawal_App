@@ -33,6 +33,14 @@ const AGTAP_CROSSCHECK = '2026-08-21';
 // the same pass, which changed who is routed to a loading regimen.
 const SELECTOR_REVISED = '2026-08-21';
 
+// The missed-doses section on the opioid page is not NSWCG material: the bands
+// come from the opioid dependence guidelines, and the Buvidal windows from the
+// LAIB guidance, so the page now names three sources rather than one.
+const OPIOID_DEPENDENCE_2018 = 'NSW Health, NSW Clinical Guidelines: Treatment of Opioid Dependence (2018)';
+const LAIB_GUIDANCE = 'NSW Health, Long-acting injectable buprenorphine (LAIB) for opioid dependence '
+    + 'treatment - Guidance document';
+const MISSED_DOSES_ADDED = '2026-08-24';
+
 export const CONTENT_META = {
     'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: SELECTOR_REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
@@ -41,7 +49,10 @@ export const CONTENT_META = {
     'populations-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'continuing-care-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: AGTAP_CROSSCHECK },
     'bbv-sti-page': { source: NSWCG_2022, lastReviewed: REVISED },
-    'opioid-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
+    'opioid-withdrawal-page': {
+        source: `${NSWCG_2022}; ${OPIOID_DEPENDENCE_2018}; ${LAIB_GUIDANCE}`,
+        lastReviewed: MISSED_DOSES_ADDED
+    },
     'benzo-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'cannabis-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'stimulant-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
