@@ -45,8 +45,22 @@ The user-facing version of this lives at `#changelog-page` in the app.
   2L flagon (27.6), and no sherry; spirits had 700mL and 1L bottles but not
   375mL (11.8) or the 1.125L that sits on the shelf beside them (35.5), and no
   overproof rum (57%); pre-mixes stopped at 7% where 10% cans are sold.
-- **The beer cartons are relabelled "Carton / Slab".** The row existed and was
-  correct; the word most likely to be used to find it was not on it.
+- **The beer cartons are relabelled "Carton / Slab", and the spirits fieldset
+  names its spirits.** In both cases the row existed and its arithmetic was
+  right; the word most likely to be used to find it was not on it. Gin, vodka,
+  whisky and rum are all 40% and so were all already counted by the generic
+  "Spirit Nip" and "Spirit Bottle" rows - but nobody scanning for gin found
+  them. The legend now reads "Spirits (Gin, Vodka, Whisky, Rum)", and navy
+  strength gin shares the 57% overproof rows, where it genuinely differs. No
+  `data-sd` changed. A test now fails if a spirit stops being named.
+
+### Housekeeping
+
+- **"Before you count" is 67 words, down from 157.** The three questions are
+  unchanged and so is where they route the user; each was carrying two or three
+  sentences of justification that a clinician reading a prompt above a form does
+  not need. The heading no longer counts its own bullets, which is what let it
+  say "two questions" above three of them.
 
 ## 0.4.6 - August 2026
 

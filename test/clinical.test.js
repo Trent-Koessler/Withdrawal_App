@@ -341,11 +341,17 @@ describe('standard drinks', () => {
         assert.deepEqual(skipped, [], `\n  unparseable labels:\n  ${skipped.join('\n  ')}`);
     });
 
-    test('the Australian names for a bulk beer purchase are both present', () => {
-        // "Slab" is what gets said; "carton" is what the old label said only.
+    // A row nobody can find is a row nobody uses. These are the cases where the
+    // arithmetic was already right and only the word was missing: "carton" is
+    // not what gets said, and a generic "Spirit" row does not answer someone
+    // scanning the list for what the patient actually named.
+    test('drinks are findable by the word people use for them', () => {
         const html = read('index.html');
         assert.ok(/Carton \/ Slab/.test(html), 'no row labelled as a slab');
         assert.ok(/Six-pack/.test(html), 'no six-pack row');
+        for (const spirit of ['Gin', 'Vodka', 'Whisky', 'Rum']) {
+            assert.ok(new RegExp(spirit).test(html), `the spirits rows never name ${spirit}`);
+        }
     });
 
     test('all quantity inputs declare a positive data-sd', () => {

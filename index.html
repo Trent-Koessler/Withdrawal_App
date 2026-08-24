@@ -1948,27 +1948,20 @@ textarea {
                             </div>
                             <div id="std-by-type" class="tab-content active">
                                 <div class="clinical-block">
-                                    <h4>Before you count - three questions that change the answer</h4>
+                                    <h4>Before you count</h4>
                                     <ul>
-                                        <li><strong>Is this amount for the patient, or shared?</strong> A reported
-                                            quantity may describe what a couple or a group consumed.</li>
-                                        <li><strong>What is the actual container?</strong> A "glass" of wine or
-                                            spirits may be a 250mL kitchen tumbler filled near the top, or a
-                                            repurposed 600mL water bottle - not a standard serve. Use the Custom
-                                            Volume &amp; ABV tab where the container is not a standard one.</li>
-                                        <li><strong>Is any of it non-beverage alcohol?</strong> Mouthwash, hand
-                                            sanitiser and methylated spirits are not on this list and are easy to
-                                            leave out of a history, but they carry a real ethanol load and count
-                                            towards the intake that determines withdrawal risk. Ask directly, then
-                                            enter the volume and ABV on the Custom Volume &amp; ABV tab - typically
-                                            mouthwash ~21%, hand sanitiser ~70%, methylated spirits ~95%. Check the
-                                            product where you can, as formulations vary widely.</li>
+                                        <li><strong>Is this for the patient, or shared?</strong> A reported quantity
+                                            may be a couple's or a group's.</li>
+                                        <li><strong>What was the actual container?</strong> A "glass" is often a
+                                            250mL kitchen tumbler or a 600mL water bottle. Non-standard containers
+                                            go on the Custom Volume &amp; ABV tab.</li>
+                                        <li><strong>Any non-beverage alcohol?</strong> Ask directly - mouthwash
+                                            ~21%, hand sanitiser ~70%, methylated spirits ~95%. It counts.</li>
                                     </ul>
                                     <span class="src-tag src-nswcg">NSWCG App 4</span>
-                                    <span class="src-tag src-local">LOCAL - rationale: the non-beverage alcohol
-                                        prompt and its indicative ABV ranges are not in NSWCG App 4, which lists
-                                        beverage serves only; added because omitting these sources understates the
-                                        daily intake that drives withdrawal severity banding.</span>
+                                    <span class="src-tag src-local">LOCAL - rationale: NSWCG App 4 lists beverage
+                                        serves only; the non-beverage prompt is added because omitting these
+                                        sources understates the intake that drives severity banding.</span>
                                 </div>
                                 <div class="form-grid std-drinks-grid">
                                     <fieldset>
@@ -2060,7 +2053,7 @@ textarea {
                                             id="c9" data-sd="10.7" placeholder="Qty">
                                     </fieldset>
                                     <fieldset>
-                                        <legend>Spirits & Pre-mix (RTDs)</legend>
+                                        <legend>Spirits (Gin, Vodka, Whisky, Rum) & Pre-mix (RTDs)</legend>
                                         <label for="s1">Spirit Nip (40%) - 30ml</label><input type="number" id="s1"
                                             data-sd="1.0" placeholder="Qty">
                                         <label for="s7">Spirit Free Pour / Double (40%) - 60ml</label><input type="number"
@@ -2073,9 +2066,9 @@ textarea {
                                             data-sd="31.6" placeholder="Qty">
                                         <label for="s9">Spirit Bottle (40%) - 1.125L</label><input type="number"
                                             id="s9" data-sd="35.5" placeholder="Qty">
-                                        <label for="s10">Overproof Rum (57%) - Nip (30ml)</label><input type="number"
+                                        <label for="s10">Overproof Rum / Navy Strength Gin (57%) - Nip (30ml)</label><input type="number"
                                             id="s10" data-sd="1.3" placeholder="Qty">
-                                        <label for="s11">Overproof Rum (57%) - Bottle (700ml)</label><input
+                                        <label for="s11">Overproof Rum / Navy Strength Gin (57%) - Bottle (700ml)</label><input
                                             type="number" id="s11" data-sd="31.5" placeholder="Qty">
                                         <label for="s4">RTD Full Strength (5%) - 275ml</label><input type="number"
                                             id="s4" data-sd="1.1" placeholder="Qty">
@@ -3684,6 +3677,11 @@ textarea {
                     <li><strong>Non-beverage alcohol is now prompted for.</strong> Mouthwash, hand sanitiser and
                         methylated spirits carry a real ethanol load and are easily left out of a history. The
                         calculator now asks, and gives indicative strengths for the Custom Volume &amp; ABV tab.</li>
+                    <li><strong>The spirits list names its spirits.</strong> Gin, vodka, whisky and rum are all 40%
+                        and were always counted by the generic "Spirit Nip" and "Spirit Bottle" rows, but you had to
+                        know that to use them. Navy strength gin sits with overproof rum at 57%.</li>
+                    <li><strong>The prompt above the calculator is a third of its previous length</strong>, with the
+                        same three questions and the same routing.</li>
                 </ul>
 
                 <h4>0.4.6 - August 2026</h4>
