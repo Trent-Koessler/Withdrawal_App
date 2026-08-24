@@ -123,7 +123,9 @@ def walk(node, out, box=None, skip_marked=False):
         if c & SKIP_CLASS: continue
         if ch.tag=='button': continue
         if ch.tag in INLINE_TAGS:
-            if ch.tag=='#text' and not ch.text.strip(): continue
+            # Whitespace between two inline elements ("</b> <b>") is a real space
+            # in the rendered page; only leading whitespace is discardable.
+            if ch.tag=='#text' and not ch.text.strip() and not pending: continue
             pending.append(ch); continue
         flush()
         if ch.tag in HEADINGS:

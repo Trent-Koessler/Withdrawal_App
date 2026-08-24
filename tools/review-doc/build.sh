@@ -5,7 +5,11 @@
 # time, so re-running this after a content change produces a document that
 # matches the site rather than one that has quietly gone stale.
 #
-#   ./tools/review-doc/build.sh [output.docx]
+#   ./tools/review-doc/build.sh
+#
+# Produces two documents from the same extraction:
+#   docs/website-text-for-clinical-review.docx  numbered statements, tick boxes
+#   docs/website-text.docx                      the same text as continuous prose
 #
 # Requires: node, python3, and the `docx` npm package (npm install docx).
 
@@ -13,7 +17,8 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-OUT="${1:-$ROOT/docs/website-text-for-clinical-review.docx}"
+OUT_REVIEW="${1:-$ROOT/docs/website-text-for-clinical-review.docx}"
+OUT_PLAIN="${2:-$ROOT/docs/website-text.docx}"
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -43,5 +48,8 @@ json.dump({
 }, open(f'{work}/info.json','w'))
 PY
 
-echo "→ building $OUT"
-(cd "$HERE" && node build_docx.cjs "$OUT")
+echo "→ building $OUT_REVIEW"
+(cd "$HERE" && node build_docx.cjs "$OUT_REVIEW")
+
+echo "→ building $OUT_PLAIN"
+(cd "$HERE" && node build_plain.cjs "$OUT_PLAIN")

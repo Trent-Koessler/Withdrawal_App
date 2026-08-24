@@ -1,8 +1,16 @@
-# Reviewer document generator
+# Website text document generator
 
-Builds `docs/website-text-for-clinical-review.docx`: every word of clinical text
-on the site, laid out so a reviewing clinician can read it away from the app and
-mark each statement accurate or not.
+Builds two documents from one extraction of the site's clinical text:
+
+| Document | Shape |
+|---|---|
+| `docs/website-text.docx` | the text as continuous prose, for reading |
+| `docs/website-text-for-clinical-review.docx` | the same text as numbered statements with tick boxes, for marking up |
+
+The reading copy keeps the site's own tables, callouts and bold; the review copy
+adds a reference number, the cited source and accurate / needs change / unsure
+against every statement. Both come from the same extraction, so they cannot
+disagree about what the site says.
 
 ```bash
 npm install docx        # not a runtime dependency; only this tool needs it
@@ -25,7 +33,8 @@ So the document is rebuilt from the same sources the app renders from:
 | `dump.mjs` | `data/*.js` | the clinical data modules as JSON |
 | `severity.mjs` | `data/scales.js` | severity bands, by evaluating `severityLogic` across every attainable score |
 | `flatten_data.py` | the two above | the generated content, expanded to plain text |
-| `build_docx.cjs` | all of the above | the Word document |
+| `build_docx.cjs` | all of the above | the review document |
+| `build_plain.cjs` | all of the above | the reading document |
 
 `severity.mjs` exists because the band shown next to a calculator total is
 produced by a function, not stored as data. Exporting the module drops it, and
@@ -43,7 +52,7 @@ intended-use gate are appendices, because both make clinical claims.
 Navigation and interface wording is left out — button labels, menu items, and
 the About, Sources, Contributors and Changelog pages.
 
-## Reference numbers
+## Reference numbers (review copy only)
 
 Each item carries a stable reference (`INP-014`, `SCALE-032`) that reviewers
 quote back. Numbering follows document order per page, so **inserting content
@@ -53,7 +62,7 @@ at the wrong statements.
 
 ## Checking a rebuild
 
-`build_docx.cjs` prints the item count per page prefix. The extractors print
-their block counts. If a content change lands and a page's count moves in a way
+`build_docx.cjs` prints the item count per page prefix, `build_plain.cjs` the
+block and table counts. The extractors print their own block counts. If a content change lands and a page's count moves in a way
 the change does not explain, something was dropped — the likeliest cause is a
 new field in `data/*.js` that `flatten_data.py` does not know to render.
