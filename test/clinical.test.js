@@ -284,29 +284,68 @@ describe('standard drinks', () => {
         assert.ok(Math.abs(stdDrinks(700, 40) - 22.09) < 0.01);
     });
 
-    // Each single-serve input in index.html declares its own volume and ABV in
-    // the label, so the data-sd constant can be checked against the formula.
+    // Every input in index.html declares enough in its own label to be checked:
+    // a single serve states its volume in mL, a cask or flagon states it in
+    // litres, and a multipack states a count of a serve size named elsewhere in
+    // the same fieldset. Casks and cartons are where drift hides - they are the
+    // large numbers, and nothing else recomputes them - so they are checked too.
+    const parseRows = (html) => [...html.matchAll(
+        /<label for="(\w+)">([^<]*?)<\/label><input\s+type="number"\s+id="\1"\s+data-sd="([\d.]+)"/g)]
+        .map(([, id, label, sd]) => ({ id, label: label.replace(/\s+/g, ' ').trim(), sd: Number(sd) }));
+
+    // A multipack states a count, a cask states litres, and a single serve states
+    // mL. Multipacks are tested first: "4 x 375ml" contains a serve volume that
+    // would otherwise be read as the volume of the whole pack.
+    const CAN_ML = 375;   // the can/stubby every multipack row is counted in
+    function volumeMl(label) {
+        const perPack = label.match(/\((\d+)\s*(?:x|\u00d7)\s*(\d+)\s*ml/i);
+        if (perPack) return Number(perPack[1]) * Number(perPack[2]);
+        const cans = label.match(/\((\d+)\s*(?:cans?|stubbies)/i);
+        if (cans) return Number(cans[1]) * CAN_ML;
+        const litres = label.match(/(?:\(|-\s*)([\d.]+)\s*L\b/);
+        if (litres) return Number(litres[1]) * 1000;
+        const ml = label.match(/(\d+)\s*ml\b/i);
+        return ml ? Number(ml[1]) : null;
+    }
+
     test('per-drink data-sd constants agree with the formula', () => {
-        const html = read('index.html');
-        const rows = [...html.matchAll(
-            /<label for="(\w+)">([^<]*?)<\/label><input\s+type="number"\s+id="\1"\s+data-sd="([\d.]+)"/g)];
+        const rows = parseRows(read('index.html'));
         assert.ok(rows.length > 10, `only parsed ${rows.length} drink rows`);
 
         let checked = 0;
         const problems = [];
-        for (const [, id, label, sd] of rows) {
+        for (const { id, label, sd } of rows) {
             const abv = label.match(/\(([\d.]+)%\)/);
-            const ml = label.match(/\((\d+)ml\)/i);
-            if (!abv || !ml) continue; // cartons/casks state no single-serve volume
+            const ml = volumeMl(label);
+            if (!abv || !ml) continue;
             checked++;
-            const expected = stdDrinks(Number(ml[1]), Number(abv[1]));
-            const actual = Number(sd);
-            if (Math.abs(expected - actual) > 0.15) {
-                problems.push(`${id} "${label.trim()}": listed ${actual}, formula ${expected.toFixed(2)}`);
+            const expected = stdDrinks(ml, Number(abv[1]));
+            // Serves round to 0.1 SD; casks and cartons are large enough that a
+            // flat tolerance would let a whole drink of drift through.
+            const tolerance = Math.max(0.15, expected * 0.02);
+            if (Math.abs(expected - sd) > tolerance) {
+                problems.push(`${id} "${label}": listed ${sd}, formula ${expected.toFixed(2)}`);
             }
         }
-        assert.ok(checked >= 15, `only checked ${checked} parseable rows`);
+        assert.ok(checked >= 40, `only checked ${checked} parseable rows`);
         assert.deepEqual(problems, [], `\n  ${problems.join('\n  ')}`);
+    });
+
+    // Every row has to be reachable by the label a patient or clinician would
+    // use, and every row has to be checkable - an unparseable label is a row the
+    // test above silently skips.
+    test('no drink row escapes the formula check', () => {
+        const skipped = parseRows(read('index.html'))
+            .filter((r) => !(/\(([\d.]+)%\)/.test(r.label) && volumeMl(r.label)))
+            .map((r) => `${r.id} "${r.label}"`);
+        assert.deepEqual(skipped, [], `\n  unparseable labels:\n  ${skipped.join('\n  ')}`);
+    });
+
+    test('the Australian names for a bulk beer purchase are both present', () => {
+        // "Slab" is what gets said; "carton" is what the old label said only.
+        const html = read('index.html');
+        assert.ok(/Carton \/ Slab/.test(html), 'no row labelled as a slab');
+        assert.ok(/Six-pack/.test(html), 'no six-pack row');
     });
 
     test('all quantity inputs declare a positive data-sd', () => {
