@@ -61,6 +61,41 @@ The user-facing version of this lives at `#changelog-page` in the app.
   stopped - which is guidance about a patient already in treatment, and was
   sitting on a page about starting or ending it. The text and its sourcing are
   unchanged.
+- **The OTP page gains the program framework: pharmacotherapy, assessment and
+  prescribing.** Three medicines in one table - oral methadone, sublingual
+  buprenorphine (BNX preferred), and Buvidal Weekly/Monthly - with formulation,
+  initiation and target maintenance dose for each. Methadone maintenance is
+  60-100mg/day, with specialist review above 150mg and Pharmaceutical Services
+  Unit approval above 200mg; Buvidal is 16-32mg Weekly or 64-160mg Monthly, and
+  can be started directly from short-acting opioids without a withdrawal run-in
+  at 16mg or 24mg Weekly. That last figure carries a warning of its own, because
+  it is the one cell of the table a reader can carry to the wrong drug: it does
+  not relax the precipitated-withdrawal precautions for sublingual buprenorphine
+  and does not apply to someone coming off a long-acting agonist.
+- **The buprenorphine row does not state a Day 1 dose, deliberately.** The app
+  would otherwise carry three: the induction steps say defer until COWS >= 8 and
+  give 8-12mg outpatient or 8-16mg inpatient; the Option A table says COWS 4-8
+  gets 4mg + 4mg and most patients 8mg; the 2018 OTP guidelines table gives
+  COWS >= 4-8 and Day 1 4-8mg. Until that is reconciled the row points at the
+  induction protocol and publishes only the Day 2 and Day 3 ceilings, which all
+  three agree on. A TODO(clinical) marker records the question and a test fails
+  if a figure is added here while the protocols still disagree.
+- **Case flagging sets review frequency and setting**, from monthly clinical and
+  2-monthly medical review in a specialist clinic for high need, down to
+  3-monthly and 6-monthly in primary care for low need. The guideline lists each
+  tier's features across three unrelated axes without saying how to combine
+  them, which leaves a housed, stable patient with mild polydrug use classifiable
+  two ways; the app states that any single feature flags a patient up, and tags
+  that as the local decision it is.
+- **Assessment and prescribing framework.** The biopsychosocial assessment and
+  what it must document; urine drug screening as corroboration, with treatment
+  never delayed for laboratory results. Authority to prescribe in the community
+  is applied for through SafeScript NSW, with the Pharmaceutical Services Unit as
+  the alternative channel - and the inpatient exception is stated as an
+  exception: no authority is needed for an opioid-dependent inpatient, for 14
+  days, and it is not a route into ongoing community treatment. Caseload limits
+  per prescriber render collapsed, because they bind the prescriber setting up a
+  practice rather than the clinician holding a dose.
 - **The opioid harm-reduction block now renders on the OTP page too.** It opens
   on reduced tolerance and carries the naloxone brands, which is exactly what
   the missed-dose bands above it are warning about. It is the existing shared

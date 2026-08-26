@@ -9,6 +9,10 @@ import {
     BUVIDAL_WINDOWS, BUVIDAL_NOTES, MISSED_DOSE_SOURCE, BUVIDAL_SOURCE, RESTART_CAP_SOURCE,
     CONFIRM_CURRENT_TREATMENT, CONFIRM_CURRENT_TREATMENT_SOURCE, bandFor, restartDose
 } from './data/otp-missed-doses.js';
+import {
+    PRESCRIBER_FRAMEWORK, PRESCRIBER_CAPS, OTP_ASSESSMENT, CASE_FLAGGING, CASE_FLAGGING_RULE,
+    CASE_FLAGGING_SOURCE, PHARMACOTHERAPY, PHARMACOTHERAPY_WARNING
+} from './data/otp-treatment.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
 // Published before anything else runs, and outside the DOMContentLoaded
@@ -1252,6 +1256,52 @@ document.addEventListener('DOMContentLoaded', () => {
             rows: BENZO_EQUIVALENCE.map(e => [e.drug, `${e.mg}mg`])
         }) + `<ul>` + EQUIVALENCE_CAVEATS.map(c => `<li>${c}</li>`).join('') + `</ul>`
             + `<p><span class="src-tag src-other">OTHER - eTG, via NSWCG Table 11.2</span></p>`;
+    });
+
+    // --- OTP PHARMACOTHERAPY --- //
+    // Three medicines, four columns. The warning below it is rendered from the
+    // same module because it exists only to stop one cell of the table being
+    // carried across to the wrong drug.
+    document.querySelectorAll('[data-otp-pharmacotherapy]').forEach(host => {
+        host.innerHTML = renderClinicalTable({
+            headers: ['Medication', 'Formulation and route', 'Initiation and titration',
+                'Target maintenance dose'],
+            rows: PHARMACOTHERAPY.map(m => [
+                `<strong>${m.medication}</strong><br>${m.source}`,
+                m.formulation, m.initiation, m.maintenance
+            ])
+        }) + `<div class="warning-box">${PHARMACOTHERAPY_WARNING}</div>`;
+    });
+
+    // --- OTP ASSESSMENT AND CASE FLAGGING --- //
+    document.querySelectorAll('[data-otp-assessment]').forEach(host => {
+        host.innerHTML = OTP_ASSESSMENT.map(item =>
+            `<h5>${item.heading}</h5><ul>`
+            + item.points.map(p => `<li>${p}</li>`).join('')
+            + `</ul><p>${item.source}</p>`).join('')
+            + `<h5>Case flagging - review frequency and setting</h5>`
+            + `<p>${CASE_FLAGGING_RULE}</p>`
+            + renderClinicalTable({
+                headers: ['Tier', 'Features', 'Setting', 'Clinical review', 'Medical review'],
+                rows: CASE_FLAGGING.map(t => [
+                    `<strong>${t.tier}</strong>`, t.features, t.setting, t.clinical, t.medical
+                ])
+            })
+            + `<p>${CASE_FLAGGING_SOURCE}</p>`;
+    });
+
+    // --- OTP PRESCRIBING AND REGULATORY FRAMEWORK --- //
+    // The caseload limits render inside a <details> because they bind the
+    // prescriber setting up a practice, not the clinician holding a dose.
+    document.querySelectorAll('[data-otp-framework]').forEach(host => {
+        host.innerHTML = PRESCRIBER_FRAMEWORK.map(item =>
+            `<h5>${item.heading}</h5><p>${item.body}</p><p>${item.source}</p>`).join('')
+            + `<details class="warning-box"><summary><strong>${PRESCRIBER_CAPS.summary}</strong></summary>`
+            + renderClinicalTable({
+                headers: ['Prescriber', 'Limit'],
+                rows: PRESCRIBER_CAPS.rows
+            })
+            + `<p>${PRESCRIBER_CAPS.source}</p></details>`;
     });
 
     // --- CONFIRMING CURRENT OPIOID TREATMENT --- //

@@ -23,7 +23,7 @@ const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 const SOURCES = ['index.html', 'data/regimens.js', 'data/scales.js',
     'data/symptomatic.js', 'data/harm-reduction.js', 'data/content-meta.js',
-    'data/otp-missed-doses.js'];
+    'data/otp-missed-doses.js', 'data/otp-treatment.js'];
 
 const KINDS = ['src-nswcg-adapted', 'src-nswcg', 'src-local', 'src-other'];
 

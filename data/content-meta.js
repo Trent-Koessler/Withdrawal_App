@@ -39,8 +39,8 @@ const SELECTOR_REVISED = '2026-08-21';
 // page - the sources differ, and so does the reader.
 const OPIOID_DEPENDENCE_2018 = 'NSW Health, NSW Clinical Guidelines: Treatment of Opioid Dependence (2018)';
 const LAIB_GUIDANCE = 'NSW Health, Long-acting injectable buprenorphine (LAIB) for opioid dependence '
-    + 'treatment - Guidance document';
-const MISSED_DOSES_ADDED = '2026-08-24';
+    + 'treatment - Guidance document (2024)';
+const MISSED_DOSES_ADDED = '2026-08-26';
 
 export const CONTENT_META = {
     'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: SELECTOR_REVISED },

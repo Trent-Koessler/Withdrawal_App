@@ -25,6 +25,7 @@ const urlsToCache = [
     'data/benzo-equivalence.js',
     'data/content-meta.js',
     'data/otp-missed-doses.js',
+    'data/otp-treatment.js',
     'manifest.json',
     'favicon.ico',
     'icons/icon.svg',

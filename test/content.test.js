@@ -17,6 +17,7 @@ import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 import { CONTENT_META, formatReviewMonth } from '../data/content-meta.js';
+import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS } from '../data/otp-treatment.js';
 import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1015,5 +1016,92 @@ describe('the OTP page', () => {
         assert.ok(/data-confirm-otp/.test(flat), 'the confirm-current-treatment block is missing');
         assert.ok(flat.indexOf('data-confirm-otp') < flat.indexOf('data-otp-missed-doses'),
             'the missed-dose bands come before the step that produces the numbers they need');
+    });
+});
+
+describe('OTP framework, assessment and pharmacotherapy', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+    const cell = (med, key) => PHARMACOTHERAPY.find((m) => m.medication.includes(med))[key];
+
+    test('all three hosts are on the page', () => {
+        for (const host of ['data-otp-pharmacotherapy', 'data-otp-assessment', 'data-otp-framework']) {
+            assert.ok(new RegExp(host).test(flat), `${host} is missing from the OTP page`);
+        }
+    });
+
+    // The figures the table exists for. Asserted against the module rather than
+    // the markup because the markup is only a host.
+    test('the methadone figures match the guideline table', () => {
+        assert.ok(/20-30mg daily/.test(cell('methadone', 'initiation')), 'methadone starting dose');
+        assert.ok(/5-10mg every 3-5 days/.test(cell('methadone', 'initiation')), 'methadone titration');
+        assert.ok(/60-100mg\/day/.test(cell('methadone', 'maintenance')), 'methadone maintenance range');
+        assert.ok(/150mg/.test(cell('methadone', 'maintenance'))
+            && /200mg/.test(cell('methadone', 'maintenance')), 'the two methadone approval ceilings');
+    });
+
+    test('the Buvidal figures match the LAIB guidance', () => {
+        const init = cell('Buvidal', 'initiation');
+        assert.ok(/16mg or 24mg Weekly/.test(init), 'Buvidal direct-initiation doses');
+        assert.ok(/32mg in week 1/.test(init), 'the week-1 supplemental ceiling');
+        assert.ok(/Weekly: 16-32mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Weekly maintenance');
+        assert.ok(/Monthly: 64-160mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Monthly maintenance');
+    });
+
+    // The whole point of holding this cell back. Three different Day 1 doses in
+    // one app is the failure this guards; if someone reconciles the protocols
+    // and puts a figure here, this test should be updated deliberately, not
+    // tripped over.
+    test('the buprenorphine row does not publish a third Day 1 dose', () => {
+        const init = cell('Sublingual buprenorphine', 'initiation');
+        assert.ok(!/Day 1/.test(init) || /own protocol/.test(init),
+            'a Day 1 buprenorphine dose has been added here while the induction steps state a different one');
+        assert.ok(!/COWS/.test(init),
+            'a COWS threshold has been added here while the induction steps state a different one');
+        assert.ok(/16mg on Day 2/.test(init) && /24mg on Day 3/.test(init),
+            'the Day 2 and Day 3 ceilings, which do agree with the induction protocol, are missing');
+    });
+
+    test('the induction protocol still states one threshold, and the app has not gained a second', () => {
+        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->')).replace(/\s+/g, ' ');
+        assert.ok(/COWS &ge; 8/.test(opioid), 'the induction threshold has been lost');
+        assert.ok(!/COWS &ge; 4/.test(opioid + flat),
+            'a second buprenorphine induction threshold has been published');
+    });
+
+    // Direct initiation is the one cell a reader can carry to the wrong drug.
+    test('the LAIB direct-initiation caveat is present', () => {
+        assert.ok(/does not relax the precipitated-withdrawal precautions/
+            .test(read('data/otp-treatment.js')),
+            'nothing stops direct initiation being read as applying to sublingual buprenorphine');
+    });
+
+    test('the case-flagging tiers are decidable and ordered', () => {
+        assert.equal(CASE_FLAGGING.length, 3);
+        assert.deepEqual(CASE_FLAGGING.map((t) => t.tier),
+            ['High need', 'Moderate need', 'Low need'], 'the tiers are not in descending order of need');
+        // Clinical review is more frequent than medical review in every tier.
+        const months = (s) => (s === 'Monthly' ? 1 : parseInt(s, 10));
+        for (const t of CASE_FLAGGING) {
+            assert.ok(months(t.clinical) <= months(t.medical),
+                `${t.tier}: medical review is more frequent than clinical review`);
+        }
+    });
+
+    test('the any-one-flags-up rule is stated, and tagged as the local decision it is', () => {
+        const module = read('data/otp-treatment.js');
+        assert.ok(/[Aa]ny single feature is enough to flag a patient up/.test(module),
+            'the combination rule is missing, leaving the tiers undecidable');
+        assert.ok(/src-local[^]*?Any-one-flags-up is a local decision/.test(module),
+            'the combination rule is presented as guideline text rather than a local decision');
+    });
+
+    test('the caseload limits are collapsed, not deleted', () => {
+        assert.equal(PRESCRIBER_CAPS.rows.length, 2);
+        assert.ok(/<details class="warning-box"><summary>/.test(read('script.js')),
+            'the caseload limits no longer render inside a collapsed block');
     });
 });
