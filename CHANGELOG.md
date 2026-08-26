@@ -72,14 +72,20 @@ The user-facing version of this lives at `#changelog-page` in the app.
   it is the one cell of the table a reader can carry to the wrong drug: it does
   not relax the precipitated-withdrawal precautions for sublingual buprenorphine
   and does not apply to someone coming off a long-acting agonist.
-- **The buprenorphine row does not state a Day 1 dose, deliberately.** The app
-  would otherwise carry three: the induction steps say defer until COWS >= 8 and
-  give 8-12mg outpatient or 8-16mg inpatient; the Option A table says COWS 4-8
-  gets 4mg + 4mg and most patients 8mg; the 2018 OTP guidelines table gives
-  COWS >= 4-8 and Day 1 4-8mg. Until that is reconciled the row points at the
-  induction protocol and publishes only the Day 2 and Day 3 ceilings, which all
-  three agree on. A TODO(clinical) marker records the question and a test fails
-  if a figure is added here while the protocols still disagree.
+- **The buprenorphine induction steps no longer state a flat COWS >= 8
+  threshold, which was the app's own error.** COWS >= 8 is the threshold for
+  giving 8mg as a single first dose, not the threshold for starting at all. The
+  steps now read as the one scheme they are: begin at **COWS >= 4**; at **COWS
+  4-8** give 4mg then a further 4mg after 1-2 hours, because splitting the dose
+  is what reduces the precipitated-withdrawal risk at that end of the range; at
+  **COWS >= 8** a single 8mg dose is appropriate; and a **2mg test dose with
+  review at 1 hour, then a further 2-6mg**, is an acceptable and more cautious
+  alternative to either. The wider second increment is tagged as adapted - NSWCG
+  publishes the single figure 6mg, not a range.
+- **8-12mg outpatient and 8-16mg inpatient are now labelled as Day 1 totals.**
+  Unlabelled, they read as first doses and appeared to contradict the 4-8mg
+  first-dose figures elsewhere on the page. That conflation is what made three
+  compatible protocols look like three rival ones.
 - **Case flagging sets review frequency and setting**, from monthly clinical and
   2-monthly medical review in a specialist clinic for high need, down to
   3-monthly and 6-monthly in primary care for low need. The guideline lists each

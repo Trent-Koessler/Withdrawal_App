@@ -437,7 +437,7 @@ describe('P2-09 — opioid pathway depth', () => {
     test('the buprenorphine test-dose protocol is complete', () => {
         assert.ok(/2mg SL test dose/.test(flat), 'test dose missing');
         assert.ok(/[Rr]eview at 1 hour/.test(flat), 'the 1-hour review is missing');
-        assert.ok(/further <strong>6mg<\/strong>/.test(flat), 'the second increment is missing');
+        assert.ok(/further <strong>2-6mg<\/strong>/.test(flat), 'the second increment is missing');
         assert.ok(/8-12mg outpatient/.test(flat) && /8-16mg inpatient/.test(flat), 'Day 1 totals missing');
     });
 
@@ -1050,26 +1050,41 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
         assert.ok(/Monthly: 64-160mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Monthly maintenance');
     });
 
-    // The whole point of holding this cell back. Three different Day 1 doses in
-    // one app is the failure this guards; if someone reconciles the protocols
-    // and puts a figure here, this test should be updated deliberately, not
-    // tripped over.
-    test('the buprenorphine row does not publish a third Day 1 dose', () => {
+    // The two pages state the same first-dose rule. They are written
+    // independently, so a change to one that is not made to the other puts two
+    // buprenorphine protocols back into the app - which is what this guards.
+    test('the buprenorphine row states the same first-dose rule as the induction protocol', () => {
         const init = cell('Sublingual buprenorphine', 'initiation');
-        assert.ok(!/Day 1/.test(init) || /own protocol/.test(init),
-            'a Day 1 buprenorphine dose has been added here while the induction steps state a different one');
-        assert.ok(!/COWS/.test(init),
-            'a COWS threshold has been added here while the induction steps state a different one');
+        assert.ok(/COWS &ge; 4/.test(init), 'the threshold to begin is missing');
+        assert.ok(/COWS 4-8/.test(init) && /4mg after 1-2 hours/.test(init),
+            'the split first dose for mild withdrawal is missing');
+        assert.ok(/COWS &ge; 8/.test(init) && /8mg as a single dose/.test(init),
+            'the single 8mg dose for moderate-severe withdrawal is missing');
         assert.ok(/16mg on Day 2/.test(init) && /24mg on Day 3/.test(init),
-            'the Day 2 and Day 3 ceilings, which do agree with the induction protocol, are missing');
+            'the Day 2 and Day 3 ceilings are missing');
     });
 
-    test('the induction protocol still states one threshold, and the app has not gained a second', () => {
+    test('the induction protocol carries every limb of that rule', () => {
         const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
             html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->')).replace(/\s+/g, ' ');
-        assert.ok(/COWS &ge; 8/.test(opioid), 'the induction threshold has been lost');
-        assert.ok(!/COWS &ge; 4/.test(opioid + flat),
-            'a second buprenorphine induction threshold has been published');
+        assert.ok(/COWS &ge; 4<\/strong> is enough to begin/.test(opioid),
+            'the threshold to begin is missing or has reverted to a flat COWS >= 8');
+        assert.ok(/COWS 4-8/.test(opioid), 'the mild-withdrawal split dose is missing');
+        assert.ok(/COWS &ge; 8/.test(opioid), 'the moderate-severe single dose is missing');
+        assert.ok(/2mg SL test dose/.test(opioid), 'the test-dose alternative is missing');
+        // The conflation that caused the apparent disagreement in the first
+        // place: 8-12mg is what the day adds up to, not what is given first.
+        assert.ok(/8-12mg outpatient, 8-16mg inpatient<\/strong> This is the total/.test(opioid)
+            || /Day 1 total: 8-12mg outpatient, 8-16mg inpatient/.test(opioid),
+            'the Day 1 figures no longer say they are totals rather than first doses');
+    });
+
+    test('no page states a flat COWS >= 8 threshold for starting buprenorphine', () => {
+        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->')).replace(/\s+/g, ' ');
+        assert.ok(!/until <strong>objective withdrawal \(COWS &ge; 8\)/.test(opioid),
+            'the flat COWS >= 8 threshold is back - it is the threshold for a single 8mg dose, '
+            + 'not for starting at all');
     });
 
     // Direct initiation is the one cell a reader can carry to the wrong drug.

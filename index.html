@@ -2339,14 +2339,33 @@ textarea {
                     time-limited taper - what differs is what happens from Day 2. Decide the goal with the patient
                     before Day 1 if possible.</p>
                 <ol>
-                    <li>Defer the first dose until <strong>objective withdrawal (COWS &ge; 8)</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
-                    <li>Give a <strong>2mg SL test dose</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
-                    <li><strong>Review at 1 hour.</strong> If there is no increase in severity and the patient is still
-                        in withdrawal, give a further <strong>6mg</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
-                    <li>Day 1 total: <strong>8-12mg outpatient</strong>, <strong>8-16mg inpatient</strong>.
+                    <li>Defer the first dose until there is <strong>objective withdrawal</strong>.
+                        <strong>COWS &ge; 4</strong> is enough to begin; what the score changes is the size of
+                        the first dose, not whether to start.
+                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span>
+                        <span class="src-tag src-other">OTHER - NSW Health, NSW Clinical Guidelines: Treatment
+                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span></li>
+                    <li><strong>COWS 4-8</strong> (mild withdrawal): give <strong>4mg</strong>, then a further
+                        <strong>4mg after 1-2 hours</strong>. Splitting the dose is what reduces the risk of
+                        precipitated withdrawal at this end of the range - do not give 8mg at once.
+                        <span class="src-tag src-other">OTHER - NSW Health, NSW Clinical Guidelines: Treatment
+                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span></li>
+                    <li><strong>COWS &ge; 8</strong> (moderate-severe withdrawal): <strong>8mg</strong> may be
+                        given as a single first dose.
+                        <span class="src-tag src-other">OTHER - NSW Health, NSW Clinical Guidelines: Treatment
+                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span></li>
+                    <li><strong>Either way, a test-dose approach is an acceptable and more cautious
+                            alternative:</strong> a <strong>2mg SL test dose</strong>, <strong>review at 1
+                            hour</strong>, and - if there is no increase in severity and the patient is still in
+                        withdrawal - a further <strong>2-6mg</strong>, occasionally up to 12mg.
+                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span>
+                        <span class="src-tag src-nswcg-adapted">NSWCG-adapted §8.3.6 - rationale: NSWCG gives
+                            one test-dose sequence, 2mg followed by a further 6mg. The wider 2-6mg second
+                            increment, and the occasional 12mg, are what the range is used as in practice when
+                            the test dose is chosen over the severity-based first dose above; the figures are
+                            not published as a range in either source.</span></li>
+                    <li><strong>Day 1 total: 8-12mg outpatient, 8-16mg inpatient.</strong> This is the total
+                        reached across the day by any of the routes above, not a first dose.
                         <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
                 </ol>
 
@@ -2381,7 +2400,7 @@ textarea {
                             </tr>
                             <tr>
                                 <td>Starting dose of buprenorphine</td>
-                                <td>Most patients should have a Day 1 dose of <b>8mg</b>: for <b>COWS &gt; 8</b>
+                                <td>Most patients should have a Day 1 dose of <b>8mg</b>: for <b>COWS &ge; 8</b>
                                     (moderate-severe withdrawal), an initial 8mg dose is appropriate; for
                                     <b>COWS 4-8</b> (mild withdrawal), give 4mg with a further 4mg after 1-2
                                     hours - split dosing reduces the risk of precipitated withdrawal.
@@ -3824,11 +3843,16 @@ textarea {
                         that set review frequency and setting; the assessment requirements; and the
                         prescribing rules, including that the inpatient exception is 14 days and is not a
                         route into ongoing community treatment.</li>
-                    <li><strong>The buprenorphine row states no Day 1 dose on purpose.</strong> The app's
-                        induction steps, its Option A table and the 2018 OTP guidelines give three different
-                        Day 1 protocols. Rather than print a third figure beside the other two, the row points
-                        at the induction protocol and gives only the Day 2 and Day 3 ceilings, which all three
-                        agree on. This is flagged for clinical review.</li>
+                    <li><strong>Buprenorphine induction is corrected: COWS &ge; 4 is enough to start.</strong>
+                        The page previously said to defer the first dose until COWS &ge; 8. That is the
+                        threshold for giving <b>8mg as a single dose</b>, not for starting at all - at
+                        <b>COWS 4-8</b> you give 4mg and a further 4mg after 1-2 hours, because splitting the
+                        dose is what reduces the precipitated-withdrawal risk there. A 2mg test dose with
+                        review at 1 hour, then a further 2-6mg, remains the more cautious alternative to
+                        either.</li>
+                    <li><strong>8-12mg and 8-16mg are now labelled Day 1 <em>totals</em></strong>, not first
+                        doses. Unlabelled they looked like they contradicted the 4-8mg first-dose figures
+                        further down the same page.</li>
                     <li><strong>Buvidal is handled separately</strong>, because it is counted in days overdue
                         rather than missed doses. Weekly may be given days five to nine, monthly weeks three to
                         five; re-induction may be needed beyond 10-14 days (weekly) or eight weeks (monthly).</li>
