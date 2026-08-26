@@ -128,6 +128,11 @@ The user-facing version of this lives at `#changelog-page` in the app.
 
 ### Housekeeping
 
+- **The OTP page carries an under-construction banner.** It ships with known
+  holes - takeaway doses and transfer, travel and interstate dosing are not
+  covered at all - and the banner says so at the top rather than leaving a
+  reader to discover the gap by not finding what they came for.
+
 - `data/otp-missed-doses.js` is added to the service worker precache list and to
   the provenance test's source list, so the page works offline and its chips are
   checked like every other page's.

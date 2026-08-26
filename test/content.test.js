@@ -1013,6 +1013,15 @@ describe('the OTP page', () => {
             'naloxone and overdose prevention are not on the page that warns about lost tolerance');
     });
 
+    // The page ships with known holes in it. The banner is what makes that the
+    // reader's information rather than only the author's, so it is asserted to
+    // be above the first clinical statement on the page.
+    test('the under-construction banner is the first thing on the page', () => {
+        assert.ok(/[Uu]nder construction/.test(flat), 'the under-construction banner is missing');
+        assert.ok(flat.indexOf('Under construction') < flat.indexOf('data-confirm-otp'),
+            'the banner sits below clinical content instead of above it');
+    });
+
     test('confirming current treatment leads the page', () => {
         assert.ok(/data-confirm-otp/.test(flat), 'the confirm-current-treatment block is missing');
         assert.ok(flat.indexOf('data-confirm-otp') < flat.indexOf('data-otp-missed-doses'),
