@@ -2339,25 +2339,24 @@ textarea {
                     time-limited taper - what differs is what happens from Day 2. Decide the goal with the patient
                     before Day 1 if possible.</p>
                 <ol>
-                    <li>Defer the first dose until there is <strong>objective withdrawal</strong>.
-                        <strong>COWS &ge; 4</strong> is enough to begin; what the score changes is the size of
-                        the first dose, not whether to start.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span>
+                    <li>Defer the first dose until <strong>objective withdrawal (COWS &ge; 8)</strong>.
+                        Below that, do not dose - reassess later.
+                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
+                    <li>The first dose is <strong>8mg</strong>. It may be given as a <strong>single 8mg
+                            dose</strong>, or <strong>split as 4mg with a further 4mg after 1-2 hours</strong>
+                        - splitting is the more cautious of the two, and reduces the risk of precipitated
+                        withdrawal.
                         <span class="src-tag src-other">OTHER - NSW Health, NSW Clinical Guidelines: Treatment
-                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span></li>
-                    <li><strong>COWS 4-8</strong> (mild withdrawal): give <strong>4mg</strong>, then a further
-                        <strong>4mg after 1-2 hours</strong>. Splitting the dose is what reduces the risk of
-                        precipitated withdrawal at this end of the range - do not give 8mg at once.
-                        <span class="src-tag src-other">OTHER - NSW Health, NSW Clinical Guidelines: Treatment
-                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span></li>
-                    <li><strong>COWS &ge; 8</strong> (moderate-severe withdrawal): <strong>8mg</strong> may be
-                        given as a single first dose.
-                        <span class="src-tag src-other">OTHER - NSW Health, NSW Clinical Guidelines: Treatment
-                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span></li>
-                    <li><strong>Either way, a test-dose approach is an acceptable and more cautious
-                            alternative:</strong> a <strong>2mg SL test dose</strong>, <strong>review at 1
-                            hour</strong>, and - if there is no increase in severity and the patient is still in
-                        withdrawal - a further <strong>2-6mg</strong>, occasionally up to 12mg.
+                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span>
+                        <span class="src-tag src-local">LOCAL - rationale: the 2018 guidelines present the
+                            4mg + 4mg split as what to do in the COWS 4-8 band. Since this app does not
+                            initiate below COWS 8, the split is carried across as a way of giving the 8mg
+                            first dose rather than as a lower dosing band, so that the more cautious technique
+                            remains available without implying a lower threshold to start.</span></li>
+                    <li><strong>A test-dose approach is a further alternative:</strong> a <strong>2mg SL test
+                            dose</strong>, <strong>review at 1 hour</strong>, and - if there is no increase in
+                        severity and the patient is still in withdrawal - a further <strong>2-6mg</strong>,
+                        occasionally up to 12mg.
                         <span class="src-tag src-nswcg">NSWCG §8.3.6</span>
                         <span class="src-tag src-nswcg-adapted">NSWCG-adapted §8.3.6 - rationale: NSWCG gives
                             one test-dose sequence, 2mg followed by a further 6mg. The wider 2-6mg second
@@ -2400,10 +2399,10 @@ textarea {
                             </tr>
                             <tr>
                                 <td>Starting dose of buprenorphine</td>
-                                <td>Most patients should have a Day 1 dose of <b>8mg</b>: for <b>COWS &ge; 8</b>
-                                    (moderate-severe withdrawal), an initial 8mg dose is appropriate; for
-                                    <b>COWS 4-8</b> (mild withdrawal), give 4mg with a further 4mg after 1-2
-                                    hours - split dosing reduces the risk of precipitated withdrawal.
+                                <td>Most patients should have a Day 1 dose of <b>8mg</b>, once
+                                    <b>COWS &ge; 8</b>. It may be given as a single 8mg dose, or split as 4mg
+                                    with a further 4mg after 1-2 hours - split dosing reduces the risk of
+                                    precipitated withdrawal.
                                     <b>Lower doses (2-4mg total)</b> suit low or uncertain dependence, high-risk
                                     polydrug use (alcohol, benzodiazepines), or other severe medical
                                     complications - seek specialist advice if concerned. Some patients need more
@@ -3843,13 +3842,13 @@ textarea {
                         that set review frequency and setting; the assessment requirements; and the
                         prescribing rules, including that the inpatient exception is 14 days and is not a
                         route into ongoing community treatment.</li>
-                    <li><strong>Buprenorphine induction is corrected: COWS &ge; 4 is enough to start.</strong>
-                        The page previously said to defer the first dose until COWS &ge; 8. That is the
-                        threshold for giving <b>8mg as a single dose</b>, not for starting at all - at
-                        <b>COWS 4-8</b> you give 4mg and a further 4mg after 1-2 hours, because splitting the
-                        dose is what reduces the precipitated-withdrawal risk there. A 2mg test dose with
-                        review at 1 hour, then a further 2-6mg, remains the more cautious alternative to
-                        either.</li>
+                    <li><strong>Buprenorphine induction reads as one rule.</strong> The threshold to
+                        initiate stays at <b>COWS &ge; 8</b> - below that, do not dose, reassess later. The
+                        first dose is <b>8mg</b>, given whole or <b>split as 4mg with a further 4mg after 1-2
+                        hours</b>, splitting being the more cautious. A 2mg test dose with review at 1 hour,
+                        then a further 2-6mg, is a further alternative. The <b>COWS 4-8 dosing band has been
+                        removed</b>: it read as a second, lower threshold sitting under the first, and the
+                        split-dose technique it carried is now offered at COWS &ge; 8 instead.</li>
                     <li><strong>8-12mg and 8-16mg are now labelled Day 1 <em>totals</em></strong>, not first
                         doses. Unlabelled they looked like they contradicted the 4-8mg first-dose figures
                         further down the same page.</li>

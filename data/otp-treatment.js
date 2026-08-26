@@ -135,13 +135,12 @@ export const CASE_FLAGGING_SOURCE = SRC_OTP_2018('&sect;2.4.4, pp32-33')
 
 // --- Pharmacotherapy ---------------------------------------------------------
 //
-// The three Day 1 figures the app used to carry are one scheme, not three:
-// COWS >= 4 is the threshold to begin, the score picks the size of the first
-// dose (4mg + 4mg below 8, a single 8mg at or above it), the 2mg test dose is
-// the cautious alternative to either, and 8-12mg / 8-16mg are Day 1 totals
-// rather than first doses. The row below states the first-dose rule and leaves
-// the full sequence, including the precipitated-withdrawal precautions, on the
-// induction protocol - one protocol, stated once.
+// The Day 1 figures the app used to carry are one scheme, not three. COWS >= 8
+// is the threshold to initiate; the 8mg first dose may be given whole or split
+// 4mg + 4mg; the 2mg test dose is a further alternative; and 8-12mg / 8-16mg
+// are Day 1 totals rather than first doses. The row below states the first-dose
+// rule and leaves the full sequence, including the precipitated-withdrawal
+// precautions, on the induction protocol - one protocol, stated once.
 export const PHARMACOTHERAPY = [
     {
         medication: 'Oral methadone',
@@ -156,12 +155,11 @@ export const PHARMACOTHERAPY = [
         medication: 'Sublingual buprenorphine (SL BPN / BNX)',
         formulation: 'Sublingual film or tablets. Partial mu-agonist. <strong>Buprenorphine-naloxone (BNX) '
             + 'is preferred</strong>, to deter misuse.',
-        initiation: 'Begin at <strong>COWS &ge; 4</strong>. <strong>COWS 4-8:</strong> 4mg, then a further '
-            + '4mg after 1-2 hours. <strong>COWS &ge; 8:</strong> 8mg as a single dose. A 2mg test dose with '
-            + 'review at 1 hour is the cautious alternative to either. Day 1 <em>total</em> 8-12mg '
-            + '(outpatient) or 8-16mg (inpatient); then <strong>up to 16mg on Day 2</strong> and '
-            + '<strong>up to 24mg on Day 3</strong>. The precipitated-withdrawal precautions are on the '
-            + 'induction protocol.',
+        initiation: 'Do not initiate below <strong>COWS 8</strong>. First dose <strong>8mg</strong>, '
+            + 'as a single dose or split as 4mg with a further 4mg after 1-2 hours; a 2mg test dose with '
+            + 'review at 1 hour is a further alternative. Day 1 <em>total</em> 8-12mg (outpatient) or 8-16mg '
+            + '(inpatient); then <strong>up to 16mg on Day 2</strong> and <strong>up to 24mg on Day 3</strong>. '
+            + 'The precipitated-withdrawal precautions are on the induction protocol.',
         maintenance: '<strong>12-24mg/day.</strong> Maximum licensed daily dose 32mg/day.',
         source: SRC_OTP_2018('&sect;2.4.3-2.4.4, pp25-26, 29-30')
     },

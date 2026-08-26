@@ -1055,11 +1055,9 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
     // buprenorphine protocols back into the app - which is what this guards.
     test('the buprenorphine row states the same first-dose rule as the induction protocol', () => {
         const init = cell('Sublingual buprenorphine', 'initiation');
-        assert.ok(/COWS &ge; 4/.test(init), 'the threshold to begin is missing');
-        assert.ok(/COWS 4-8/.test(init) && /4mg after 1-2 hours/.test(init),
-            'the split first dose for mild withdrawal is missing');
-        assert.ok(/COWS &ge; 8/.test(init) && /8mg as a single dose/.test(init),
-            'the single 8mg dose for moderate-severe withdrawal is missing');
+        assert.ok(/Do not initiate below <strong>COWS 8/.test(init), 'the threshold is missing');
+        assert.ok(/split as 4mg with a further 4mg after 1-2 hours/.test(init),
+            'the split-dose option for the 8mg first dose is missing');
         assert.ok(/16mg on Day 2/.test(init) && /24mg on Day 3/.test(init),
             'the Day 2 and Day 3 ceilings are missing');
     });
@@ -1067,24 +1065,27 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
     test('the induction protocol carries every limb of that rule', () => {
         const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
             html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->')).replace(/\s+/g, ' ');
-        assert.ok(/COWS &ge; 4<\/strong> is enough to begin/.test(opioid),
-            'the threshold to begin is missing or has reverted to a flat COWS >= 8');
-        assert.ok(/COWS 4-8/.test(opioid), 'the mild-withdrawal split dose is missing');
-        assert.ok(/COWS &ge; 8/.test(opioid), 'the moderate-severe single dose is missing');
+        assert.ok(/objective withdrawal \(COWS &ge; 8\)/.test(opioid), 'the threshold to initiate is missing');
+        assert.ok(/split as 4mg with a further 4mg after 1-2 hours/.test(opioid),
+            'the split-dose option is missing');
         assert.ok(/2mg SL test dose/.test(opioid), 'the test-dose alternative is missing');
-        // The conflation that caused the apparent disagreement in the first
-        // place: 8-12mg is what the day adds up to, not what is given first.
-        assert.ok(/8-12mg outpatient, 8-16mg inpatient<\/strong> This is the total/.test(opioid)
-            || /Day 1 total: 8-12mg outpatient, 8-16mg inpatient/.test(opioid),
+        // The conflation that made three compatible figures look like three
+        // rival protocols: 8-12mg is what the day adds up to, not a first dose.
+        assert.ok(/Day 1 total: 8-12mg outpatient, 8-16mg inpatient/.test(opioid),
             'the Day 1 figures no longer say they are totals rather than first doses');
     });
 
-    test('no page states a flat COWS >= 8 threshold for starting buprenorphine', () => {
-        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
-            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->')).replace(/\s+/g, ' ');
-        assert.ok(!/until <strong>objective withdrawal \(COWS &ge; 8\)/.test(opioid),
-            'the flat COWS >= 8 threshold is back - it is the threshold for a single 8mg dose, '
-            + 'not for starting at all');
+    // The threshold to initiate is COWS >= 8 and nothing in the app may imply a
+    // lower one. The 4mg + 4mg split survives as a technique for giving the 8mg
+    // first dose, so a "COWS 4-8" band label reappearing means the guideline's
+    // framing has been pasted back in over this decision.
+    test('no page offers a dosing band below the COWS >= 8 threshold', () => {
+        const pages = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Benzo Withdrawal Page -->')).replace(/\s+/g, ' ');
+        const clinical = pages.replace(/<span class="src-tag[^]*?<\/span>/g, '');
+        assert.ok(!/COWS 4-8/.test(clinical),
+            'a COWS 4-8 dosing band is back - the app does not initiate below COWS 8');
+        assert.ok(!/COWS &ge; 4\b/.test(clinical), 'a COWS >= 4 threshold is back');
     });
 
     // Direct initiation is the one cell a reader can carry to the wrong drug.

@@ -72,16 +72,20 @@ The user-facing version of this lives at `#changelog-page` in the app.
   it is the one cell of the table a reader can carry to the wrong drug: it does
   not relax the precipitated-withdrawal precautions for sublingual buprenorphine
   and does not apply to someone coming off a long-acting agonist.
-- **The buprenorphine induction steps no longer state a flat COWS >= 8
-  threshold, which was the app's own error.** COWS >= 8 is the threshold for
-  giving 8mg as a single first dose, not the threshold for starting at all. The
-  steps now read as the one scheme they are: begin at **COWS >= 4**; at **COWS
-  4-8** give 4mg then a further 4mg after 1-2 hours, because splitting the dose
-  is what reduces the precipitated-withdrawal risk at that end of the range; at
-  **COWS >= 8** a single 8mg dose is appropriate; and a **2mg test dose with
-  review at 1 hour, then a further 2-6mg**, is an acceptable and more cautious
-  alternative to either. The wider second increment is tagged as adapted - NSWCG
-  publishes the single figure 6mg, not a range.
+- **Buprenorphine induction now states one first-dose rule in both places, and
+  the threshold to initiate stays at COWS >= 8.** Below that, do not dose -
+  reassess later. The first dose is **8mg**, given either whole or **split as
+  4mg with a further 4mg after 1-2 hours**, splitting being the more cautious of
+  the two; a **2mg test dose with review at 1 hour, then a further 2-6mg** and
+  occasionally up to 12mg, is a further alternative. The wider second increment
+  is tagged as adapted - NSWCG publishes the single figure 6mg, not a range.
+- **The COWS 4-8 dosing band is gone.** The 2018 guidelines present the 4mg +
+  4mg split as what to do in that band, which read as a second, lower threshold
+  sitting under the COWS >= 8 one on the same page. Since the app does not
+  initiate below COWS 8, the split is carried across as a way of giving the 8mg
+  first dose rather than as a band of its own - the cautious technique survives,
+  the implied lower threshold does not. Tagged LOCAL, with that reasoning, and a
+  test fails if a COWS 4-8 band reappears in clinical text on either page.
 - **8-12mg outpatient and 8-16mg inpatient are now labelled as Day 1 totals.**
   Unlabelled, they read as first doses and appeared to contradict the 4-8mg
   first-dose figures elsewhere on the page. That conflation is what made three
