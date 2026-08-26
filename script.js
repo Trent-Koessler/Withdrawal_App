@@ -11,7 +11,8 @@ import {
 } from './data/otp-missed-doses.js';
 import {
     PRESCRIBER_FRAMEWORK, PRESCRIBER_CAPS, OTP_ASSESSMENT, CASE_FLAGGING, CASE_FLAGGING_RULE,
-    CASE_FLAGGING_SOURCE, PHARMACOTHERAPY, PHARMACOTHERAPY_WARNING
+    CASE_FLAGGING_SOURCE, PHARMACOTHERAPY, PHARMACOTHERAPY_WARNING,
+    SL_TO_BUVIDAL, SL_TO_BUVIDAL_SOURCE, SL_TO_BUVIDAL_NOTES
 } from './data/otp-treatment.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
@@ -1271,6 +1272,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 m.formulation, m.initiation, m.maintenance
             ])
         }) + `<div class="warning-box">${PHARMACOTHERAPY_WARNING}</div>`;
+    });
+
+    // --- SL BUPRENORPHINE TO BUVIDAL CONVERSION --- //
+    // The "no equivalent" cells are the reason this renders as its own table
+    // rather than a column on the one above: they are the two rows where the
+    // answer is that the conversion cannot be made, and a blank cell would read
+    // as missing data rather than as the finding it is.
+    document.querySelectorAll('[data-buvidal-conversion]').forEach(host => {
+        const dose = (mg, product) => mg === null
+            ? `<em>No ${product} equivalent</em>`
+            : `<strong>${mg}mg</strong>`;
+        host.innerHTML = renderClinicalTable({
+            headers: ['Daily sublingual buprenorphine', 'Buvidal Weekly', 'Buvidal Monthly'],
+            rows: SL_TO_BUVIDAL.map(r => [
+                r.label, dose(r.weeklyMg, 'Weekly'), dose(r.monthlyMg, 'Monthly')
+            ])
+        }) + `<ul>` + SL_TO_BUVIDAL_NOTES.map(n => `<li>${n}</li>`).join('') + `</ul>`
+            + `<p>${SL_TO_BUVIDAL_SOURCE}</p>`;
     });
 
     // --- OTP ASSESSMENT AND CASE FLAGGING --- //

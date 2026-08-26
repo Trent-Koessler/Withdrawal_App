@@ -17,7 +17,8 @@ import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 import { CONTENT_META, formatReviewMonth } from '../data/content-meta.js';
-import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS } from '../data/otp-treatment.js';
+import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidalDoseFor }
+    from '../data/otp-treatment.js';
 import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1119,5 +1120,78 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
         assert.equal(PRESCRIBER_CAPS.rows.length, 2);
         assert.ok(/<details class="warning-box"><summary>/.test(read('script.js')),
             'the caseload limits no longer render inside a collapsed block');
+    });
+});
+
+describe('SL buprenorphine to Buvidal conversion (LAIB Table 4)', () => {
+    test('every band converts to the published depot doses', () => {
+        assert.deepEqual(
+            SL_TO_BUVIDAL.map((r) => [r.label, r.weeklyMg, r.monthlyMg]),
+            [
+                ['2-6mg', 8, null],
+                ['8-10mg', 16, 64],
+                ['12-16mg', 24, 96],
+                ['18-24mg', 32, 128],
+                ['26-32mg', null, 160]
+            ]);
+    });
+
+    // The relationship that holds across the whole table. A transcription slip
+    // in any Weekly or Monthly figure breaks it, which makes this a better
+    // guard than re-typing the numbers a second time.
+    test('the Monthly dose is four times the Weekly dose wherever both exist', () => {
+        for (const row of SL_TO_BUVIDAL) {
+            if (row.weeklyMg === null || row.monthlyMg === null) continue;
+            assert.equal(row.monthlyMg, row.weeklyMg * 4,
+                `${row.label}: ${row.monthlyMg}mg Monthly is not 4x ${row.weeklyMg}mg Weekly`);
+        }
+    });
+
+    // Both gaps are gaps in the manufactured range, and the arithmetic above is
+    // why: the missing product in each case is the 4x partner of a dose that
+    // does exist. If a future edit fills either cell in, that is a change to
+    // what can be prescribed, not a tidy-up.
+    test('the two "no equivalent" cells are where the 4x partner is not manufactured', () => {
+        const weeklyDoses = SL_TO_BUVIDAL.map((r) => r.weeklyMg).filter(Boolean);
+        const monthlyDoses = SL_TO_BUVIDAL.map((r) => r.monthlyMg).filter(Boolean);
+        const lowest = SL_TO_BUVIDAL[0];
+        assert.equal(lowest.monthlyMg, null, 'the 2-6mg band has gained a Monthly equivalent');
+        assert.ok(!monthlyDoses.includes(lowest.weeklyMg * 4),
+            'a 32mg Monthly now exists, so the 2-6mg band should no longer be blank');
+        const highest = SL_TO_BUVIDAL[SL_TO_BUVIDAL.length - 1];
+        assert.equal(highest.weeklyMg, null, 'the 26-32mg band has gained a Weekly equivalent');
+        assert.ok(!weeklyDoses.includes(highest.monthlyMg / 4),
+            'a 40mg Weekly now exists, so the 26-32mg band should no longer be blank');
+    });
+
+    // Sublingual buprenorphine is dispensed in 2mg steps, so the bands have to
+    // cover every even dose up to the 32mg licensed maximum exactly once. A
+    // band boundary typed wrong shows up here as a gap or an overlap.
+    test('the bands cover every dispensable dose from 2 to 32mg, once each', () => {
+        for (let mg = 2; mg <= 32; mg += 2) {
+            const matches = SL_TO_BUVIDAL.filter((r) => mg >= r.minMg && mg <= r.maxMg);
+            assert.equal(matches.length, 1,
+                `${mg}mg daily falls in ${matches.length} bands - the table must cover it exactly once`);
+        }
+        assert.equal(SL_TO_BUVIDAL[SL_TO_BUVIDAL.length - 1].maxMg, 32,
+            'the table no longer ends at the 32mg licensed maximum stated in the pharmacotherapy row');
+    });
+
+    test('the lookup returns the right row, and nothing outside the table', () => {
+        assert.equal(buvidalDoseFor(6).weeklyMg, 8);
+        assert.equal(buvidalDoseFor(10).monthlyMg, 64);
+        assert.equal(buvidalDoseFor(24).weeklyMg, 32);
+        assert.equal(buvidalDoseFor(32).monthlyMg, 160);
+        assert.equal(buvidalDoseFor(32).weeklyMg, null, 'a Weekly dose was invented for the top band');
+        for (const bad of [0, 1, 33, 40, NaN, undefined]) {
+            assert.equal(buvidalDoseFor(bad), null, `${bad}mg produced a conversion`);
+        }
+    });
+
+    test('the conversion renders on the OTP page', () => {
+        const html = read('index.html');
+        const page = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+            html.indexOf('<!-- Benzo Withdrawal Page -->'));
+        assert.ok(/data-buvidal-conversion/.test(page), 'the conversion table has no host on the page');
     });
 });

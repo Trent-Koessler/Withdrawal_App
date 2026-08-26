@@ -181,3 +181,44 @@ export const PHARMACOTHERAPY_WARNING =
     + 'short-acting opioids.</strong> It does not relax the precipitated-withdrawal precautions for '
     + 'sublingual buprenorphine, and it does not apply to a patient coming off methadone or another '
     + 'long-acting agonist.';
+
+// --- SL buprenorphine to Buvidal dose conversion --------------------------
+//
+// LAIB Guidance 2024, Table 4. Held as data with the band bounds separate from
+// their label so the lookup below cannot disagree with what the page renders -
+// reading across a five-row conversion table is exactly the step where a
+// depot dose gets picked off the wrong line.
+//
+// Two properties of the table worth knowing when reading it: the Monthly dose
+// is four times the Weekly one in every row that has both, and the two "no
+// equivalent" cells are gaps in the product range rather than clinical
+// contraindications - 8mg Weekly x4 would be a 32mg Monthly and 160mg Monthly
+// / 4 would be a 40mg Weekly, and neither is manufactured.
+export const SL_TO_BUVIDAL = [
+    { minMg: 2, maxMg: 6, label: '2-6mg', weeklyMg: 8, monthlyMg: null },
+    { minMg: 8, maxMg: 10, label: '8-10mg', weeklyMg: 16, monthlyMg: 64 },
+    { minMg: 12, maxMg: 16, label: '12-16mg', weeklyMg: 24, monthlyMg: 96 },
+    { minMg: 18, maxMg: 24, label: '18-24mg', weeklyMg: 32, monthlyMg: 128 },
+    { minMg: 26, maxMg: 32, label: '26-32mg', weeklyMg: null, monthlyMg: 160 }
+];
+
+export const SL_TO_BUVIDAL_SOURCE = SRC_LAIB_2024('Table 4');
+
+export const SL_TO_BUVIDAL_NOTES = [
+    'A patient on <strong>2-6mg</strong> of sublingual buprenorphine daily has <strong>no Buvidal Monthly '
+        + 'equivalent</strong>, and one on <strong>26-32mg</strong> has <strong>no Weekly equivalent</strong>. '
+        + 'Both are gaps in the manufactured dose range, not clinical contraindications - but neither can be '
+        + 'prescribed around by picking the nearest row.',
+    'The Monthly dose is four times the Weekly dose throughout, which is the arithmetic to check a '
+        + 'conversion against if the table is not to hand.',
+    'The 8mg Weekly dose sits below the 16-32mg maintenance range above it: it exists for conversion from a '
+        + 'low sublingual dose, not as a maintenance target.'
+];
+
+// Returns the row a daily sublingual dose falls in, or null. Doses between the
+// bands - 7mg, 11mg - are not dispensable in film or tablet strengths, so a
+// miss here means the input is wrong rather than the table being incomplete.
+export function buvidalDoseFor(slDailyMg) {
+    if (!Number.isFinite(slDailyMg)) return null;
+    return SL_TO_BUVIDAL.find((row) => slDailyMg >= row.minMg && slDailyMg <= row.maxMg) || null;
+}

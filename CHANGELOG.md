@@ -90,6 +90,21 @@ The user-facing version of this lives at `#changelog-page` in the app.
   Unlabelled, they read as first doses and appeared to contradict the 4-8mg
   first-dose figures elsewhere on the page. That conflation is what made three
   compatible protocols look like three rival ones.
+- **Sublingual buprenorphine converts to Buvidal, from LAIB Table 4.** 2-6mg
+  daily to 8mg Weekly; 8-10mg to 16mg Weekly or 64mg Monthly; 12-16mg to 24mg or
+  96mg; 18-24mg to 32mg or 128mg; 26-32mg to 160mg Monthly. The two blank cells
+  are the point of the table as much as the numbers are: a patient on 2-6mg has
+  **no Monthly equivalent** and one on 26-32mg has **no Weekly equivalent**, and
+  neither can be prescribed around by taking the nearest row. Both are gaps in
+  the manufactured range rather than clinical contraindications - the Monthly
+  dose is four times the Weekly one throughout, and in each blank the 4x partner
+  is a product that is not made.
+- **The conversion is guarded structurally rather than by re-typing it.** Tests
+  assert the 4x relationship across every row, that the bands cover each
+  dispensable 2mg step from 2 to 32mg exactly once with no gap or overlap, that
+  the table still ends on the 32mg licensed maximum the pharmacotherapy row
+  states, and that each blank cell is where its 4x partner is unmanufactured. A
+  single mistyped figure breaks at least one of those.
 - **Case flagging sets review frequency and setting**, from monthly clinical and
   2-monthly medical review in a specialist clinic for high need, down to
   3-monthly and 6-monthly in primary care for low need. The guideline lists each
