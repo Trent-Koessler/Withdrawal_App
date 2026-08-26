@@ -2552,34 +2552,21 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>7. Pain in a patient on buprenorphine</h4>
-                <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
-                    Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
-                    <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
-                    <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or consult the ANZCA
-                    Faculty of Pain Medicine acute pain guidance.
-                    <span class="src-tag src-nswcg">NSWCG §8.3.5, §2.6</span></p>
-
-                </div>
-                <div class="clinical-block">
-                <h4>8. NSW regulatory requirements</h4>
+                <h4>7. NSW regulatory requirements</h4>
                 <ul>
                     <li><strong>In hospital</strong>, doctors may use methadone or buprenorphine without an authority
                         for opioid-dependent inpatients - <strong>limited to 14 days by policy directive</strong>.
                         <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
                     <li><strong>Community prescribing requires authorisation.</strong>
                         <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
-                    <li><strong>Confirm current opioid agonist treatment</strong> through the Ministry of Health -
-                        <a href="tel:0294245921">(02) 9424 5921</a> or <a href="tel:0293919944">(02) 9391 9944</a> -
-                        and contact the dosing point for a dosing history <strong>before prescribing</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
-                    <li>For prescription opioids, check <strong>SafeScript NSW / RTPM</strong> and
-                        <strong>My Health Record</strong>. <span class="src-tag src-nswcg">NSWCG §8.2</span></li>
                 </ul>
+
+                <h5>Confirming what the patient is currently on</h5>
+                <div data-confirm-otp></div>
 
                 </div>
                 <div class="clinical-block">
-                <h4>9. Complications of chronic use</h4>
+                <h4>8. Complications of chronic use</h4>
                 <ul>
                     <li><strong>Endocrine:</strong> reduced testosterone, raised prolactin, reduced FSH/LH,
                         oligomenorrhoea or amenorrhoea, infertility.</li>
@@ -2602,10 +2589,17 @@ textarea {
                 <p>For patients <strong>already established on methadone, sublingual buprenorphine or
                     Buvidal</strong>. Starting someone on treatment is on the
                     <button class="link-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
-                    page; this page covers what happens when established dosing is interrupted.</p>
+                    page. This one is for the patient already in treatment: confirming what they are on,
+                    missed doses, and pain.</p>
 
                 <div class="clinical-block">
-                <h4>1. Missed doses</h4>
+                <h4>1. Confirm what the patient is on</h4>
+                <p>Before the bands below can be counted, and before anything is prescribed.</p>
+                <div data-confirm-otp></div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>2. Missed doses</h4>
                 <p>For a patient already on a program who has not attended for dosing. This is the dispensing
                     decision - what may be given today, and who has to authorise it - and it applies at the
                     dosing point and on the ward alike. An admitted patient whose dosing has lapsed is counted
@@ -2615,7 +2609,7 @@ textarea {
                 </div>
 
                 <div class="clinical-block">
-                <h4>2. Work out today's dose</h4>
+                <h4>3. Work out today's dose</h4>
                 <p>Enter the usual daily dose and how many consecutive doses have been missed. The result is
                     the starting point for the conversation with the prescriber, not a substitute for it.</p>
                 <div class="form-grid otp-missed-grid">
@@ -2636,6 +2630,18 @@ textarea {
                     <button id="reset-otp-missed-btn" type="button">Reset</button>
                 </div>
                 </div>
+
+                <div class="clinical-block">
+                <h4>4. Pain in a patient on buprenorphine</h4>
+                <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
+                    Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
+                    <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
+                    <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or consult the ANZCA
+                    Faculty of Pain Medicine acute pain guidance.
+                    <span class="src-tag src-nswcg">NSWCG §8.3.5, §2.6</span></p>
+
+                </div>
+                <div class="clinical-block" data-harm-reduction="opioid"></div>
 
             </div>
 
@@ -3782,6 +3788,17 @@ textarea {
                     <li><strong>Two absolutes are stated before the bands:</strong> an intoxicated patient is not
                         dosed with either drug, and no contactable prescriber and no valid prescription means no
                         dose - refer back for review.</li>
+                    <li><strong>Confirming what the patient is on comes first</strong>, because the bands
+                        cannot be counted without it. Check SafeScript NSW, then contact the pharmacy or other
+                        dosing point for a dosing history before prescribing; the Ministry of Health line is the
+                        fallback when the dosing point is unknown. The same block renders on the Opioid
+                        Withdrawal page, so the numbers exist in one place.</li>
+                    <li><strong>Pain in a patient on buprenorphine has moved to the OTP page</strong>, unchanged.
+                        Full agonists still work and the buprenorphine does not need to be stopped - guidance
+                        about a patient already in treatment, which is what the new page is for. Opioid
+                        Withdrawal is renumbered to eight sections.</li>
+                    <li><strong>Naloxone and overdose prevention render on the OTP page</strong>, next to the
+                        bands that warn about lost tolerance.</li>
                     <li><strong>Buvidal is handled separately</strong>, because it is counted in days overdue
                         rather than missed doses. Weekly may be given days five to nine, monthly weeks three to
                         five; re-induction may be needed beyond 10-14 days (weekly) or eight weeks (monthly).</li>

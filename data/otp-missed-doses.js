@@ -13,6 +13,33 @@
 // buprenorphine (LAIB) for opioid dependence treatment - Guidance document,
 // §5.3.3.
 
+// Confirming what the patient is actually on, before anything else.
+//
+// Rendered on both the OTP page and the withdrawal page's regulatory section,
+// because it is the same task from either direction and the phone numbers must
+// not exist in two places. It leads the OTP page because the missed-dose bands
+// below it cannot be applied without it: the count of consecutive missed doses
+// and the usual daily dose both come from the dosing point, not from the
+// patient and not from the prescription.
+export const CONFIRM_CURRENT_TREATMENT = [
+    '<strong>Check SafeScript NSW (RTPM).</strong>',
+    '<strong>Contact the dosing point - the pharmacy, clinic or correctional health service - for a '
+        + 'dosing history, before prescribing.</strong> What was dispensed and when the last dose was '
+        + 'actually given is what a missed-dose count is made of. A prescribed dose is not evidence that a '
+        + 'dose was taken.',
+    'If the dosing point is not known or cannot be reached, current opioid agonist treatment can be '
+        + 'confirmed through the Ministry of Health - <a href="tel:0294245921">(02) 9424 5921</a> or '
+        + '<a href="tel:0293919944">(02) 9391 9944</a>.',
+    'For prescription opioids, also check <strong>My Health Record</strong>.'
+];
+
+export const CONFIRM_CURRENT_TREATMENT_SOURCE =
+    '<span class="src-tag src-nswcg-adapted">NSWCG-adapted §8.3.5, §8.2 - rationale: NSWCG '
+    + 'directs the clinician to the Ministry of Health line first and lists SafeScript separately, under '
+    + 'prescription opioids. In practice confirmation starts with SafeScript NSW and the dosing point, '
+    + 'which is also the only route to the dosing history the missed-dose bands are counted from, so the '
+    + 'order here is reversed and the Ministry line is given as the fallback it is used as.</span>';
+
 // What the review before dosing has to cover, whoever is doing it. Identical in
 // every band - the bands change what dose follows, not what is assessed.
 export const MISSED_DOSE_REVIEW = [

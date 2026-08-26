@@ -7,7 +7,7 @@ import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from '.
 import {
     MISSED_DOSE_REVIEW, MISSED_DOSE_STOPS, MISSED_DOSE_RATIONALE, MISSED_DOSE_BANDS, ORAL_OTP_AGENTS,
     BUVIDAL_WINDOWS, BUVIDAL_NOTES, MISSED_DOSE_SOURCE, BUVIDAL_SOURCE, RESTART_CAP_SOURCE,
-    bandFor, restartDose
+    CONFIRM_CURRENT_TREATMENT, CONFIRM_CURRENT_TREATMENT_SOURCE, bandFor, restartDose
 } from './data/otp-missed-doses.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
@@ -1252,6 +1252,15 @@ document.addEventListener('DOMContentLoaded', () => {
             rows: BENZO_EQUIVALENCE.map(e => [e.drug, `${e.mg}mg`])
         }) + `<ul>` + EQUIVALENCE_CAVEATS.map(c => `<li>${c}</li>`).join('') + `</ul>`
             + `<p><span class="src-tag src-other">OTHER - eTG, via NSWCG Table 11.2</span></p>`;
+    });
+
+    // --- CONFIRMING CURRENT OPIOID TREATMENT --- //
+    // Two hosts, one list: the OTP page opens with it, and the withdrawal page's
+    // regulatory section ends with it. The Ministry of Health numbers exist once.
+    document.querySelectorAll('[data-confirm-otp]').forEach(host => {
+        host.innerHTML = `<ul>`
+            + CONFIRM_CURRENT_TREATMENT.map(item => `<li>${item}</li>`).join('')
+            + `</ul><p>${CONFIRM_CURRENT_TREATMENT_SOURCE}</p>`;
     });
 
     // --- MISSED DOSES ON OTP --- //

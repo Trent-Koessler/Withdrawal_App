@@ -46,6 +46,25 @@ The user-facing version of this lives at `#changelog-page` in the app.
   it says there is no dose today and states the re-induction position for that
   agent. Only the 4-5 band produces a milligram figure, and it says in the same
   card that the figure cannot be dispensed without the prescriber.
+- **Confirming what the patient is currently on leads the OTP page**, because
+  the missed-dose bands cannot be counted without it: the number of consecutive
+  missed doses and the usual daily dose both come from the dosing point, not
+  from the patient and not from the prescription. Check SafeScript NSW, then
+  contact the pharmacy or other dosing point for a dosing history before
+  prescribing, with the Ministry of Health line as the fallback when the dosing
+  point is unknown or unreachable. NSWCG puts the Ministry line first and lists
+  SafeScript separately under prescription opioids, so the order here is an
+  adaptation and is tagged as one. The same block renders in the withdrawal
+  page's regulatory section, so the phone numbers exist in one place.
+- **Pain in a patient on buprenorphine moved to the OTP page.** Full agonists
+  remain effective for analgesia and the buprenorphine does not need to be
+  stopped - which is guidance about a patient already in treatment, and was
+  sitting on a page about starting or ending it. The text and its sourcing are
+  unchanged.
+- **The opioid harm-reduction block now renders on the OTP page too.** It opens
+  on reduced tolerance and carries the naloxone brands, which is exactly what
+  the missed-dose bands above it are warning about. It is the existing shared
+  block, so nothing is duplicated.
 
 ### Housekeeping
 

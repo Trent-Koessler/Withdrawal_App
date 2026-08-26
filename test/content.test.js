@@ -466,13 +466,19 @@ describe('P2-09 — opioid pathway depth', () => {
 
     test('NSW regulatory requirements are stated', () => {
         assert.ok(/limited to 14 days by policy directive/.test(flat), 'the 14-day hospital limit is missing');
-        assert.ok(/9424 5921/.test(flat), 'the Ministry of Health confirmation line is missing');
-        assert.ok(/SafeScript NSW/.test(flat), 'SafeScript is missing');
+        assert.ok(/Community prescribing requires authorisation/.test(flat),
+            'the community authorisation requirement is missing');
+        // The confirmation route itself is shared with the OTP page and lives in
+        // data/otp-missed-doses.js; the page only has to still render it.
+        assert.ok(/data-confirm-otp/.test(flat),
+            'the withdrawal page no longer renders the confirm-current-treatment block');
     });
 
-    test('pain management on buprenorphine is addressed', () => {
-        assert.ok(/[Ff]ull agonists remain effective for analgesia/.test(flat),
-            'the point that buprenorphine need not be ceased to treat pain is missing');
+    // Moved to the OTP page: this is a patient already in treatment. Asserted
+    // here as an absence so the two pages cannot both end up carrying it.
+    test('pain on buprenorphine is not duplicated back onto this page', () => {
+        assert.ok(!/[Ff]ull agonists remain effective for analgesia/.test(flat),
+            'the pain section has been copied back onto the withdrawal page');
     });
 });
 
@@ -990,5 +996,24 @@ describe('the OTP page', () => {
             html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'));
         assert.ok(!/data-otp-missed-doses|id="otp-agent"/.test(opioid),
             'the missed-dose block has been left on, or inlined back into, the opioid page');
+    });
+
+    test('pain on buprenorphine moved here', () => {
+        assert.ok(/[Ff]ull agonists remain effective for analgesia/.test(flat),
+            'the pain section did not arrive on the OTP page');
+        assert.ok(/1800023687/.test(flat), 'the DASAS number did not come with it');
+    });
+
+    // Loss of tolerance after missed doses is the overdose scenario naloxone
+    // exists for, so the shared opioid harm-reduction block renders here too.
+    test('the opioid harm-reduction block renders here', () => {
+        assert.ok(/data-harm-reduction="opioid"/.test(flat),
+            'naloxone and overdose prevention are not on the page that warns about lost tolerance');
+    });
+
+    test('confirming current treatment leads the page', () => {
+        assert.ok(/data-confirm-otp/.test(flat), 'the confirm-current-treatment block is missing');
+        assert.ok(flat.indexOf('data-confirm-otp') < flat.indexOf('data-otp-missed-doses'),
+            'the missed-dose bands come before the step that produces the numbers they need');
     });
 });
