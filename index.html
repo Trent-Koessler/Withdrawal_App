@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.7" />
+    <meta name="app-build" content="0.4.8" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -359,7 +359,7 @@ button:hover {
     outline-offset: 2px;
 }
 
-textarea, input[type="number"] {
+textarea, input[type="number"], select {
     width: 100%;
     background-color: var(--card-bg);
     color: var(--text-color);
@@ -1160,6 +1160,50 @@ textarea {
     padding-left: 22px;
 }
 
+/* --- Missed-dose calculator (opioid page) --- */
+/* The result card's colour is the answer's severity, not decoration: a resumed
+   normal dose, a reduced dose that still needs a prescription, and no dose at
+   all without a prescriber review must not look alike at a dosing window. */
+.otp-result-card {
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--border-color);
+}
+
+.otp-result-card.resume {
+    border-color: var(--border-color);
+    border-left-color: var(--link-color);
+}
+
+.otp-result-card.reduced {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-border);
+}
+
+.otp-result-card.review {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-color: var(--danger-border);
+}
+
+.otp-result-card a {
+    color: inherit;
+    font-weight: 600;
+}
+
+.otp-result-card > strong:first-child {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.otp-result-card p:last-child {
+    margin-bottom: 0;
+}
+
 /* --- Routing card: a cell that must not render a dose regimen (P0-05) --- */
 .routing-card {
     background-color: var(--danger-bg);
@@ -1242,24 +1286,32 @@ textarea {
     margin-top: 4px;
 }
 
-/* --- Substance page sectioning ---
+/* --- Sectioned page headings ---
    The "Other Substances" pages (opioid, benzo, cannabis, psychostimulant,
    gabapentinoid, GHB, nicotine, volatile) had no heading treatment beyond
    the browser default, so an <h4> section break read the same as a bolded
-   word in a paragraph. Scoped to .substance-page rather than applied
-   globally, so it doesn't reflow the tab-based alcohol pages, which already
-   have their own visual language. */
-.substance-page h4 {
+   word in a paragraph. Scoped rather than applied globally, so it doesn't
+   reflow the tab-based alcohol pages, which already have their own visual
+   language.
+
+   .sectioned-page is the same treatment for a page built the same way -
+   numbered <h4> sections with <h5> subheadings - that is not a substance.
+   The OTP page is the first. The substance pages keep the class they already
+   carry rather than being renamed for it. */
+.substance-page h4,
+.sectioned-page h4 {
     margin-top: 32px;
     padding-bottom: 6px;
     border-bottom: 2px solid var(--border-color);
 }
 
-.substance-page h4:first-of-type {
+.substance-page h4:first-of-type,
+.sectioned-page h4:first-of-type {
     margin-top: 20px;
 }
 
-.substance-page h5 {
+.substance-page h5,
+.sectioned-page h5 {
     margin-top: 18px;
     margin-bottom: 6px;
     color: var(--link-color);
@@ -2217,6 +2269,7 @@ textarea {
                 </div>
 
                 <div class="button-container" style="margin: 20px 0;">
+                    <button class="big-button" data-page="otp-page">Opioid Treatment Program (OTP)</button>
                     <button class="big-button" data-link-to-scale="cows">Go to COWS Scale</button>
                 </div>
 
@@ -2287,13 +2340,31 @@ textarea {
                     before Day 1 if possible.</p>
                 <ol>
                     <li>Defer the first dose until <strong>objective withdrawal (COWS &ge; 8)</strong>.
+                        Below that, do not dose - reassess later.
                         <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
-                    <li>Give a <strong>2mg SL test dose</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
-                    <li><strong>Review at 1 hour.</strong> If there is no increase in severity and the patient is still
-                        in withdrawal, give a further <strong>6mg</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
-                    <li>Day 1 total: <strong>8-12mg outpatient</strong>, <strong>8-16mg inpatient</strong>.
+                    <li>The first dose is <strong>8mg</strong>. It may be given as a <strong>single 8mg
+                            dose</strong>, or <strong>split as 4mg with a further 4mg after 1-2 hours</strong>
+                        - splitting is the more cautious of the two, and reduces the risk of precipitated
+                        withdrawal.
+                        <span class="src-tag src-other">OTHER - NSW Health, NSW Clinical Guidelines: Treatment
+                            of Opioid Dependence (2018), §2.4.3-2.4.4, Table 10</span>
+                        <span class="src-tag src-local">LOCAL - rationale: the 2018 guidelines present the
+                            4mg + 4mg split as what to do in the COWS 4-8 band. Since this app does not
+                            initiate below COWS 8, the split is carried across as a way of giving the 8mg
+                            first dose rather than as a lower dosing band, so that the more cautious technique
+                            remains available without implying a lower threshold to start.</span></li>
+                    <li><strong>A test-dose approach is a further alternative:</strong> a <strong>2mg SL test
+                            dose</strong>, <strong>review at 1 hour</strong>, and - if there is no increase in
+                        severity and the patient is still in withdrawal - a further <strong>2-6mg</strong>,
+                        occasionally up to 12mg.
+                        <span class="src-tag src-nswcg">NSWCG §8.3.6</span>
+                        <span class="src-tag src-nswcg-adapted">NSWCG-adapted §8.3.6 - rationale: NSWCG gives
+                            one test-dose sequence, 2mg followed by a further 6mg. The wider 2-6mg second
+                            increment, and the occasional 12mg, are what the range is used as in practice when
+                            the test dose is chosen over the severity-based first dose above; the figures are
+                            not published as a range in either source.</span></li>
+                    <li><strong>Day 1 total: 8-12mg outpatient, 8-16mg inpatient.</strong> This is the total
+                        reached across the day by any of the routes above, not a first dose.
                         <span class="src-tag src-nswcg">NSWCG §8.3.6</span></li>
                 </ol>
 
@@ -2328,10 +2399,10 @@ textarea {
                             </tr>
                             <tr>
                                 <td>Starting dose of buprenorphine</td>
-                                <td>Most patients should have a Day 1 dose of <b>8mg</b>: for <b>COWS &gt; 8</b>
-                                    (moderate-severe withdrawal), an initial 8mg dose is appropriate; for
-                                    <b>COWS 4-8</b> (mild withdrawal), give 4mg with a further 4mg after 1-2
-                                    hours - split dosing reduces the risk of precipitated withdrawal.
+                                <td>Most patients should have a Day 1 dose of <b>8mg</b>, once
+                                    <b>COWS &ge; 8</b>. It may be given as a single 8mg dose, or split as 4mg
+                                    with a further 4mg after 1-2 hours - split dosing reduces the risk of
+                                    precipitated withdrawal.
                                     <b>Lower doses (2-4mg total)</b> suit low or uncertain dependence, high-risk
                                     polydrug use (alcohol, benzodiazepines), or other severe medical
                                     complications - seek specialist advice if concerned. Some patients need more
@@ -2499,34 +2570,21 @@ textarea {
 
                 </div>
                 <div class="clinical-block">
-                <h4>7. Pain in a patient on buprenorphine</h4>
-                <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
-                    Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
-                    <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
-                    <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or consult the ANZCA
-                    Faculty of Pain Medicine acute pain guidance.
-                    <span class="src-tag src-nswcg">NSWCG §8.3.5, §2.6</span></p>
-
-                </div>
-                <div class="clinical-block">
-                <h4>8. NSW regulatory requirements</h4>
+                <h4>7. NSW regulatory requirements</h4>
                 <ul>
                     <li><strong>In hospital</strong>, doctors may use methadone or buprenorphine without an authority
                         for opioid-dependent inpatients - <strong>limited to 14 days by policy directive</strong>.
                         <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
                     <li><strong>Community prescribing requires authorisation.</strong>
                         <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
-                    <li><strong>Confirm current opioid agonist treatment</strong> through the Ministry of Health -
-                        <a href="tel:0294245921">(02) 9424 5921</a> or <a href="tel:0293919944">(02) 9391 9944</a> -
-                        and contact the dosing point for a dosing history <strong>before prescribing</strong>.
-                        <span class="src-tag src-nswcg">NSWCG §8.3.5</span></li>
-                    <li>For prescription opioids, check <strong>SafeScript NSW / RTPM</strong> and
-                        <strong>My Health Record</strong>. <span class="src-tag src-nswcg">NSWCG §8.2</span></li>
                 </ul>
+
+                <h5>Confirming what the patient is currently on</h5>
+                <div data-confirm-otp></div>
 
                 </div>
                 <div class="clinical-block">
-                <h4>9. Complications of chronic use</h4>
+                <h4>8. Complications of chronic use</h4>
                 <ul>
                     <li><strong>Endocrine:</strong> reduced testosterone, raised prolactin, reduced FSH/LH,
                         oligomenorrhoea or amenorrhoea, infertility.</li>
@@ -2538,6 +2596,98 @@ textarea {
                 <p><span class="src-tag src-nswcg">NSWCG §8.2</span></p>
 
                 </div>
+                <div class="clinical-block" data-harm-reduction="opioid"></div>
+
+            </div>
+
+            <!-- Opioid Treatment Program (OTP) Page -->
+            <div id="otp-page" class="page sectioned-page" data-title="Opioid Treatment Program (OTP)">
+                <button data-page="opioid-withdrawal-page" class="back-to-selection-btn">Opioid Withdrawal</button>
+                <h3>Opioid Treatment Program (OTP)</h3>
+                <div class="warning-box">
+                    <strong>&#128679; Under construction.</strong> This page is an incomplete draft. Sections
+                    are still being written - takeaway doses and transfer, travel and interstate dosing are
+                    not covered at all yet - and nothing on it has been independently reviewed. Check every
+                    figure against the source guideline before acting on it.
+                </div>
+                <p>For patients <strong>already established on methadone, sublingual buprenorphine or
+                    Buvidal</strong>. Starting someone on treatment is on the
+                    <button class="link-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
+                    page. This one is for the patient already in treatment: confirming what they are on,
+                    missed doses, the medicines and their dosing, pain, and how the program is run.</p>
+
+                <div class="clinical-block">
+                <h4>1. Confirm what the patient is on</h4>
+                <p>Before the bands below can be counted, and before anything is prescribed.</p>
+                <div data-confirm-otp></div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>2. Missed doses</h4>
+                <p>For a patient already on a program who has not attended for dosing. This is the dispensing
+                    decision - what may be given today, and who has to authorise it - and it applies at the
+                    dosing point and on the ward alike. An admitted patient whose dosing has lapsed is counted
+                    the same way.</p>
+                <div data-otp-missed-doses></div>
+
+                </div>
+
+                <div class="clinical-block">
+                <h4>3. Work out today's dose</h4>
+                <p>Enter the usual daily dose and how many consecutive doses have been missed. The result is
+                    the starting point for the conversation with the prescriber, not a substitute for it.</p>
+                <div class="form-grid otp-missed-grid">
+                    <label for="otp-agent">Agent</label>
+                    <select id="otp-agent">
+                        <option value="methadone">Methadone</option>
+                        <option value="buprenorphine">Buprenorphine (sublingual)</option>
+                    </select>
+                    <label for="otp-usual-dose">Usual daily dose (mg)</label>
+                    <input type="number" id="otp-usual-dose" min="0" step="0.5" inputmode="decimal"
+                        placeholder="e.g. 90">
+                    <label for="otp-missed-count">Consecutive doses missed</label>
+                    <input type="number" id="otp-missed-count" min="0" step="1" inputmode="numeric"
+                        placeholder="e.g. 4">
+                </div>
+                <div id="otp-missed-result" role="status" aria-live="polite"></div>
+                <div class="button-group">
+                    <button id="reset-otp-missed-btn" type="button">Reset</button>
+                </div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>4. Pharmacotherapy options and dosing</h4>
+                <p>The three medicines, as maintenance treatment. Starting a patient from scratch is the
+                    induction protocol on the
+                    <button class="link-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
+                    page.</p>
+                <div data-otp-pharmacotherapy></div>
+
+                <h5>Converting sublingual buprenorphine to Buvidal</h5>
+                <p>For a patient already stable on a daily sublingual dose who is moving to depot.</p>
+                <div data-buvidal-conversion></div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>5. Pain in a patient on buprenorphine</h4>
+                <p><strong>Full agonists remain effective for analgesia while buprenorphine is continued.</strong>
+                    Buprenorphine does not need to be stopped to treat acute pain. Contact DASAS
+                    <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
+                    <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or consult the ANZCA
+                    Faculty of Pain Medicine acute pain guidance.
+                    <span class="src-tag src-nswcg">NSWCG §8.3.5, §2.6</span></p>
+
+                </div>
+                <div class="clinical-block">
+                <h4>6. Assessment and review</h4>
+                <div data-otp-assessment></div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>7. Prescribing and regulatory framework (NSW)</h4>
+                <div data-otp-framework></div>
+                </div>
+
                 <div class="clinical-block" data-harm-reduction="opioid"></div>
 
             </div>
@@ -3658,6 +3808,71 @@ textarea {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.4.8 - August 2026</h4>
+                <p><em>Missed doses on opioid treatment programs - what may be dispensed today, and who has to
+                        authorise it. New page, linked from the top of Opioid Withdrawal.</em></p>
+                <ul>
+                    <li><strong>The OTP page is marked under construction.</strong> It has known gaps -
+                        takeaway doses, and transfer, travel and interstate dosing - and says so at the top.</li>
+                    <li><strong>There is now an Opioid Treatment Program page</strong>, for patients already
+                        established on methadone, sublingual buprenorphine or Buvidal. Reach it from the button
+                        at the top of Opioid Withdrawal. The withdrawal page is still where starting someone on
+                        treatment lives; this one is for when established dosing is interrupted.</li>
+                    <li><strong>The three bands are stated as a table.</strong> One to three consecutive doses
+                        missed is a review then the normal dose; four to five is a reduced dose that cannot be
+                        given without contacting the prescriber and getting a legal script to the dosing site;
+                        more than five means the prescriber must review the patient before treatment
+                        recommences.</li>
+                    <li><strong>A calculator works out today's dose.</strong> Enter the agent, the usual daily
+                        dose and the number of consecutive doses missed. In the four-to-five band it applies the
+                        rule - half the usual dose, or 40mg methadone / 8mg buprenorphine, whichever is higher -
+                        and states the climb back to the usual dose. In the other two bands it deliberately gives
+                        no number, because the dose is not the decision there.</li>
+                    <li><strong>The "whichever is higher" floor is capped at the usual dose.</strong> Read
+                        literally, the rule gives a patient maintained on 30mg of methadone <em>40mg</em> on the
+                        day they return from a gap that has cost them tolerance. The app caps the restart dose at
+                        the usual dose and says on screen that it has done so. This is a departure from the source
+                        and is tagged as one.</li>
+                    <li><strong>Two absolutes are stated before the bands:</strong> an intoxicated patient is not
+                        dosed with either drug, and no contactable prescriber and no valid prescription means no
+                        dose - refer back for review.</li>
+                    <li><strong>Confirming what the patient is on comes first</strong>, because the bands
+                        cannot be counted without it. Check SafeScript NSW, then contact the pharmacy or other
+                        dosing point for a dosing history before prescribing; the Ministry of Health line is the
+                        fallback when the dosing point is unknown. The same block renders on the Opioid
+                        Withdrawal page, so the numbers exist in one place.</li>
+                    <li><strong>Pain in a patient on buprenorphine has moved to the OTP page</strong>, unchanged.
+                        Full agonists still work and the buprenorphine does not need to be stopped - guidance
+                        about a patient already in treatment, which is what the new page is for. Opioid
+                        Withdrawal is renumbered to eight sections.</li>
+                    <li><strong>Naloxone and overdose prevention render on the OTP page</strong>, next to the
+                        bands that warn about lost tolerance.</li>
+                    <li><strong>The OTP page now carries the program framework.</strong> A pharmacotherapy
+                        table for all three medicines - methadone, sublingual buprenorphine and Buvidal -
+                        with formulation, initiation and target maintenance dose; the case-flagging tiers
+                        that set review frequency and setting; the assessment requirements; and the
+                        prescribing rules, including that the inpatient exception is 14 days and is not a
+                        route into ongoing community treatment.</li>
+                    <li><strong>Sublingual buprenorphine now converts to Buvidal.</strong> The full
+                        conversion table is on the OTP page, under Pharmacotherapy. Note the two ends: a
+                        patient on <b>2-6mg</b> daily has <b>no Monthly equivalent</b>, and one on
+                        <b>26-32mg</b> has <b>no Weekly equivalent</b> - gaps in the manufactured dose range,
+                        and not something to prescribe around by taking the nearest row.</li>
+                    <li><strong>Buprenorphine induction reads as one rule.</strong> The threshold to
+                        initiate stays at <b>COWS &ge; 8</b> - below that, do not dose, reassess later. The
+                        first dose is <b>8mg</b>, given whole or <b>split as 4mg with a further 4mg after 1-2
+                        hours</b>, splitting being the more cautious. A 2mg test dose with review at 1 hour,
+                        then a further 2-6mg, is a further alternative. The <b>COWS 4-8 dosing band has been
+                        removed</b>: it read as a second, lower threshold sitting under the first, and the
+                        split-dose technique it carried is now offered at COWS &ge; 8 instead.</li>
+                    <li><strong>8-12mg and 8-16mg are now labelled Day 1 <em>totals</em></strong>, not first
+                        doses. Unlabelled they looked like they contradicted the 4-8mg first-dose figures
+                        further down the same page.</li>
+                    <li><strong>Buvidal is handled separately</strong>, because it is counted in days overdue
+                        rather than missed doses. Weekly may be given days five to nine, monthly weeks three to
+                        five; re-induction may be needed beyond 10-14 days (weekly) or eight weeks (monthly).</li>
+                </ul>
 
                 <h4>0.4.7 - August 2026</h4>
                 <p><em>The standard drinks calculator covers the containers people actually report. No dose, band or

@@ -5,6 +5,143 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.8 - August 2026
+
+### Clinical
+
+- **Missed doses on OTP are covered, on a new Opioid Treatment Program page**
+  linked from the top of Opioid Withdrawal. The app already carried induction
+  and taper protocols for both agents and said nothing about the far commoner
+  question: a patient already on a program turns up having missed doses, and
+  someone at the dosing point has to decide what may be given today. It is a
+  page rather than a section because the reader is different - someone holding
+  an established patient's dose, not someone starting a new one - and because
+  none of it comes from the guidance the withdrawal page is built on. The bands are 1-3 (review, then the normal
+  dose if there is no intoxication, no significant withdrawal and no other
+  concern), 4-5 (reduced dose, prescriber contacted, legal prescription to the
+  dosing site) and more than 5 (prescriber must review before treatment
+  recommences). Two absolutes render above them rather than as a footnote: an
+  intoxicated patient is not dosed with either drug, and no prescriber and no
+  valid script means no dose.
+- **The restart dose is calculated rather than described.** `restartDose()` in
+  `data/otp-missed-doses.js` applies half the usual dose or the agent's floor -
+  40mg methadone, 8mg buprenorphine - whichever is higher, and the section
+  renders the climb back afterwards: 5-7 days in steps of up to 20mg for
+  methadone, 2-3 days in steps of up to 8mg for buprenorphine. The bands and the
+  arithmetic come out of one module so the table and the calculator cannot
+  disagree.
+- **The dose is capped at the patient's usual dose, which the source does not
+  say.** "Half the regular dose or 40mg, whichever is higher" is written for the
+  doses the guideline assumes. Below the floor it inverts: a patient maintained
+  on 30mg of methadone would be given 40mg on the day they return from a gap
+  that has cost them tolerance. The cap fires, the calculator says on screen
+  that it fired and why, and the departure carries a LOCAL provenance chip.
+- **Buvidal is a separate table**, because nothing about it is a count of missed
+  daily doses. Weekly may be given on days five to nine, monthly in weeks three
+  to five, a missed dose is given as soon as practicable, and re-induction may
+  be required beyond 10-14 days between weekly doses or eight weeks between
+  monthly ones.
+- **The calculator gives no number in the bands where the number is not the
+  decision.** At 1-3 it names the usual dose and points at the review; above 5
+  it says there is no dose today and states the re-induction position for that
+  agent. Only the 4-5 band produces a milligram figure, and it says in the same
+  card that the figure cannot be dispensed without the prescriber.
+- **Confirming what the patient is currently on leads the OTP page**, because
+  the missed-dose bands cannot be counted without it: the number of consecutive
+  missed doses and the usual daily dose both come from the dosing point, not
+  from the patient and not from the prescription. Check SafeScript NSW, then
+  contact the pharmacy or other dosing point for a dosing history before
+  prescribing, with the Ministry of Health line as the fallback when the dosing
+  point is unknown or unreachable. NSWCG puts the Ministry line first and lists
+  SafeScript separately under prescription opioids, so the order here is an
+  adaptation and is tagged as one. The same block renders in the withdrawal
+  page's regulatory section, so the phone numbers exist in one place.
+- **Pain in a patient on buprenorphine moved to the OTP page.** Full agonists
+  remain effective for analgesia and the buprenorphine does not need to be
+  stopped - which is guidance about a patient already in treatment, and was
+  sitting on a page about starting or ending it. The text and its sourcing are
+  unchanged.
+- **The OTP page gains the program framework: pharmacotherapy, assessment and
+  prescribing.** Three medicines in one table - oral methadone, sublingual
+  buprenorphine (BNX preferred), and Buvidal Weekly/Monthly - with formulation,
+  initiation and target maintenance dose for each. Methadone maintenance is
+  60-100mg/day, with specialist review above 150mg and Pharmaceutical Services
+  Unit approval above 200mg; Buvidal is 16-32mg Weekly or 64-160mg Monthly, and
+  can be started directly from short-acting opioids without a withdrawal run-in
+  at 16mg or 24mg Weekly. That last figure carries a warning of its own, because
+  it is the one cell of the table a reader can carry to the wrong drug: it does
+  not relax the precipitated-withdrawal precautions for sublingual buprenorphine
+  and does not apply to someone coming off a long-acting agonist.
+- **Buprenorphine induction now states one first-dose rule in both places, and
+  the threshold to initiate stays at COWS >= 8.** Below that, do not dose -
+  reassess later. The first dose is **8mg**, given either whole or **split as
+  4mg with a further 4mg after 1-2 hours**, splitting being the more cautious of
+  the two; a **2mg test dose with review at 1 hour, then a further 2-6mg** and
+  occasionally up to 12mg, is a further alternative. The wider second increment
+  is tagged as adapted - NSWCG publishes the single figure 6mg, not a range.
+- **The COWS 4-8 dosing band is gone.** The 2018 guidelines present the 4mg +
+  4mg split as what to do in that band, which read as a second, lower threshold
+  sitting under the COWS >= 8 one on the same page. Since the app does not
+  initiate below COWS 8, the split is carried across as a way of giving the 8mg
+  first dose rather than as a band of its own - the cautious technique survives,
+  the implied lower threshold does not. Tagged LOCAL, with that reasoning, and a
+  test fails if a COWS 4-8 band reappears in clinical text on either page.
+- **8-12mg outpatient and 8-16mg inpatient are now labelled as Day 1 totals.**
+  Unlabelled, they read as first doses and appeared to contradict the 4-8mg
+  first-dose figures elsewhere on the page. That conflation is what made three
+  compatible protocols look like three rival ones.
+- **Sublingual buprenorphine converts to Buvidal, from LAIB Table 4.** 2-6mg
+  daily to 8mg Weekly; 8-10mg to 16mg Weekly or 64mg Monthly; 12-16mg to 24mg or
+  96mg; 18-24mg to 32mg or 128mg; 26-32mg to 160mg Monthly. The two blank cells
+  are the point of the table as much as the numbers are: a patient on 2-6mg has
+  **no Monthly equivalent** and one on 26-32mg has **no Weekly equivalent**, and
+  neither can be prescribed around by taking the nearest row. Both are gaps in
+  the manufactured range rather than clinical contraindications - the Monthly
+  dose is four times the Weekly one throughout, and in each blank the 4x partner
+  is a product that is not made.
+- **The conversion is guarded structurally rather than by re-typing it.** Tests
+  assert the 4x relationship across every row, that the bands cover each
+  dispensable 2mg step from 2 to 32mg exactly once with no gap or overlap, that
+  the table still ends on the 32mg licensed maximum the pharmacotherapy row
+  states, and that each blank cell is where its 4x partner is unmanufactured. A
+  single mistyped figure breaks at least one of those.
+- **Case flagging sets review frequency and setting**, from monthly clinical and
+  2-monthly medical review in a specialist clinic for high need, down to
+  3-monthly and 6-monthly in primary care for low need. The guideline lists each
+  tier's features across three unrelated axes without saying how to combine
+  them, which leaves a housed, stable patient with mild polydrug use classifiable
+  two ways; the app states that any single feature flags a patient up, and tags
+  that as the local decision it is.
+- **Assessment and prescribing framework.** The biopsychosocial assessment and
+  what it must document; urine drug screening as corroboration, with treatment
+  never delayed for laboratory results. Authority to prescribe in the community
+  is applied for through SafeScript NSW, with the Pharmaceutical Services Unit as
+  the alternative channel - and the inpatient exception is stated as an
+  exception: no authority is needed for an opioid-dependent inpatient, for 14
+  days, and it is not a route into ongoing community treatment. Caseload limits
+  per prescriber render collapsed, because they bind the prescriber setting up a
+  practice rather than the clinician holding a dose.
+- **The opioid harm-reduction block now renders on the OTP page too.** It opens
+  on reduced tolerance and carries the naloxone brands, which is exactly what
+  the missed-dose bands above it are warning about. It is the existing shared
+  block, so nothing is duplicated.
+
+### Housekeeping
+
+- **The OTP page carries an under-construction banner.** It ships with known
+  holes - takeaway doses and transfer, travel and interstate dosing are not
+  covered at all - and the banner says so at the top rather than leaving a
+  reader to discover the gap by not finding what they came for.
+
+- `data/otp-missed-doses.js` is added to the service worker precache list and to
+  the provenance test's source list, so the page works offline and its chips are
+  checked like every other page's.
+- The OTP page carries its own review footer naming its two sources - the 2018
+  opioid dependence guidelines and the LAIB guidance - rather than borrowing the
+  withdrawal page's. The Opioid Withdrawal page's own metadata is unchanged.
+- The opioid pathway's section numbering is unchanged: the new content is a
+  page, not an insertion.
+
 ## 0.4.7 - August 2026
 
 ### Safety

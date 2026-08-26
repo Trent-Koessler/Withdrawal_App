@@ -326,7 +326,7 @@ button:hover {
     outline-offset: 2px;
 }
 
-textarea, input[type="number"] {
+textarea, input[type="number"], select {
     width: 100%;
     background-color: var(--card-bg);
     color: var(--text-color);
@@ -1127,6 +1127,50 @@ textarea {
     padding-left: 22px;
 }
 
+/* --- Missed-dose calculator (opioid page) --- */
+/* The result card's colour is the answer's severity, not decoration: a resumed
+   normal dose, a reduced dose that still needs a prescription, and no dose at
+   all without a prescriber review must not look alike at a dosing window. */
+.otp-result-card {
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--border-color);
+}
+
+.otp-result-card.resume {
+    border-color: var(--border-color);
+    border-left-color: var(--link-color);
+}
+
+.otp-result-card.reduced {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-border);
+}
+
+.otp-result-card.review {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-color: var(--danger-border);
+}
+
+.otp-result-card a {
+    color: inherit;
+    font-weight: 600;
+}
+
+.otp-result-card > strong:first-child {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.otp-result-card p:last-child {
+    margin-bottom: 0;
+}
+
 /* --- Routing card: a cell that must not render a dose regimen (P0-05) --- */
 .routing-card {
     background-color: var(--danger-bg);
@@ -1209,24 +1253,32 @@ textarea {
     margin-top: 4px;
 }
 
-/* --- Substance page sectioning ---
+/* --- Sectioned page headings ---
    The "Other Substances" pages (opioid, benzo, cannabis, psychostimulant,
    gabapentinoid, GHB, nicotine, volatile) had no heading treatment beyond
    the browser default, so an <h4> section break read the same as a bolded
-   word in a paragraph. Scoped to .substance-page rather than applied
-   globally, so it doesn't reflow the tab-based alcohol pages, which already
-   have their own visual language. */
-.substance-page h4 {
+   word in a paragraph. Scoped rather than applied globally, so it doesn't
+   reflow the tab-based alcohol pages, which already have their own visual
+   language.
+
+   .sectioned-page is the same treatment for a page built the same way -
+   numbered <h4> sections with <h5> subheadings - that is not a substance.
+   The OTP page is the first. The substance pages keep the class they already
+   carry rather than being renamed for it. */
+.substance-page h4,
+.sectioned-page h4 {
     margin-top: 32px;
     padding-bottom: 6px;
     border-bottom: 2px solid var(--border-color);
 }
 
-.substance-page h4:first-of-type {
+.substance-page h4:first-of-type,
+.sectioned-page h4:first-of-type {
     margin-top: 20px;
 }
 
-.substance-page h5 {
+.substance-page h5,
+.sectioned-page h5 {
     margin-top: 18px;
     margin-bottom: 6px;
     color: var(--link-color);

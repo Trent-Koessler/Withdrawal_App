@@ -17,6 +17,8 @@ import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 import { CONTENT_META, formatReviewMonth } from '../data/content-meta.js';
+import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidalDoseFor }
+    from '../data/otp-treatment.js';
 import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -423,7 +425,7 @@ describe('child protection contacts survive the removal of Before You Prescribe'
 describe('P2-09 — opioid pathway depth', () => {
     const html = read('index.html');
     const page = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
-        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+        html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'));
     const flat = page.replace(/\s+/g, ' ');
 
     test('methadone is offered as an option', () => {
@@ -436,7 +438,7 @@ describe('P2-09 — opioid pathway depth', () => {
     test('the buprenorphine test-dose protocol is complete', () => {
         assert.ok(/2mg SL test dose/.test(flat), 'test dose missing');
         assert.ok(/[Rr]eview at 1 hour/.test(flat), 'the 1-hour review is missing');
-        assert.ok(/further <strong>6mg<\/strong>/.test(flat), 'the second increment is missing');
+        assert.ok(/further <strong>2-6mg<\/strong>/.test(flat), 'the second increment is missing');
         assert.ok(/8-12mg outpatient/.test(flat) && /8-16mg inpatient/.test(flat), 'Day 1 totals missing');
     });
 
@@ -466,13 +468,19 @@ describe('P2-09 — opioid pathway depth', () => {
 
     test('NSW regulatory requirements are stated', () => {
         assert.ok(/limited to 14 days by policy directive/.test(flat), 'the 14-day hospital limit is missing');
-        assert.ok(/9424 5921/.test(flat), 'the Ministry of Health confirmation line is missing');
-        assert.ok(/SafeScript NSW/.test(flat), 'SafeScript is missing');
+        assert.ok(/Community prescribing requires authorisation/.test(flat),
+            'the community authorisation requirement is missing');
+        // The confirmation route itself is shared with the OTP page and lives in
+        // data/otp-missed-doses.js; the page only has to still render it.
+        assert.ok(/data-confirm-otp/.test(flat),
+            'the withdrawal page no longer renders the confirm-current-treatment block');
     });
 
-    test('pain management on buprenorphine is addressed', () => {
-        assert.ok(/[Ff]ull agonists remain effective for analgesia/.test(flat),
-            'the point that buprenorphine need not be ceased to treat pain is missing');
+    // Moved to the OTP page: this is a patient already in treatment. Asserted
+    // here as an absence so the two pages cannot both end up carrying it.
+    test('pain on buprenorphine is not duplicated back onto this page', () => {
+        assert.ok(!/[Ff]ull agonists remain effective for analgesia/.test(flat),
+            'the pain section has been copied back onto the withdrawal page');
     });
 });
 
@@ -946,5 +954,253 @@ describe('AUTH-03 — contributors and clinical review', () => {
     test('reviewers are still to be identified', () => {
         const comments = [...page.matchAll(/<!--[\s\S]*?-->/g)].map((m) => m[0]).join('\n');
         assert.ok(/TODO\(review\):/.test(comments), 'no record of the reviewers still to be approached');
+    });
+});
+
+describe('the OTP page', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    // The page is only reachable from the opioid page. A page with no route to
+    // it is a page nobody reads, and the missed-dose bands are the part of this
+    // app most likely to be opened under time pressure.
+    test('the opioid page links to it', () => {
+        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'));
+        assert.ok(/data-page="otp-page"/.test(opioid),
+            'nothing on the opioid page navigates to the OTP page');
+    });
+
+    test('it links back to the opioid page', () => {
+        assert.ok(/data-page="opioid-withdrawal-page"/.test(flat),
+            'the OTP page is a dead end - nothing navigates back');
+    });
+
+    // The bands and the Buvidal windows render from the data module, so the
+    // markup carries only the host. If the host is renamed or dropped the page
+    // renders as a heading with nothing under it, which no test would otherwise
+    // notice.
+    test('the missed-dose host is present for the renderer', () => {
+        assert.ok(/data-otp-missed-doses/.test(flat), 'the missed-doses block has no host element');
+    });
+
+    test('the calculator controls are all present', () => {
+        for (const id of ['otp-agent', 'otp-usual-dose', 'otp-missed-count',
+            'otp-missed-result', 'reset-otp-missed-btn']) {
+            assert.ok(new RegExp(`id="${id}"`).test(flat), `calculator element "${id}" is missing`);
+        }
+    });
+
+    test('the withdrawal page no longer carries a copy of the missed-dose content', () => {
+        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'));
+        assert.ok(!/data-otp-missed-doses|id="otp-agent"/.test(opioid),
+            'the missed-dose block has been left on, or inlined back into, the opioid page');
+    });
+
+    test('pain on buprenorphine moved here', () => {
+        assert.ok(/[Ff]ull agonists remain effective for analgesia/.test(flat),
+            'the pain section did not arrive on the OTP page');
+        assert.ok(/1800023687/.test(flat), 'the DASAS number did not come with it');
+    });
+
+    // Loss of tolerance after missed doses is the overdose scenario naloxone
+    // exists for, so the shared opioid harm-reduction block renders here too.
+    test('the opioid harm-reduction block renders here', () => {
+        assert.ok(/data-harm-reduction="opioid"/.test(flat),
+            'naloxone and overdose prevention are not on the page that warns about lost tolerance');
+    });
+
+    // The page ships with known holes in it. The banner is what makes that the
+    // reader's information rather than only the author's, so it is asserted to
+    // be above the first clinical statement on the page.
+    test('the under-construction banner is the first thing on the page', () => {
+        assert.ok(/[Uu]nder construction/.test(flat), 'the under-construction banner is missing');
+        assert.ok(flat.indexOf('Under construction') < flat.indexOf('data-confirm-otp'),
+            'the banner sits below clinical content instead of above it');
+    });
+
+    test('confirming current treatment leads the page', () => {
+        assert.ok(/data-confirm-otp/.test(flat), 'the confirm-current-treatment block is missing');
+        assert.ok(flat.indexOf('data-confirm-otp') < flat.indexOf('data-otp-missed-doses'),
+            'the missed-dose bands come before the step that produces the numbers they need');
+    });
+});
+
+describe('OTP framework, assessment and pharmacotherapy', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+    const cell = (med, key) => PHARMACOTHERAPY.find((m) => m.medication.includes(med))[key];
+
+    test('all three hosts are on the page', () => {
+        for (const host of ['data-otp-pharmacotherapy', 'data-otp-assessment', 'data-otp-framework']) {
+            assert.ok(new RegExp(host).test(flat), `${host} is missing from the OTP page`);
+        }
+    });
+
+    // The figures the table exists for. Asserted against the module rather than
+    // the markup because the markup is only a host.
+    test('the methadone figures match the guideline table', () => {
+        assert.ok(/20-30mg daily/.test(cell('methadone', 'initiation')), 'methadone starting dose');
+        assert.ok(/5-10mg every 3-5 days/.test(cell('methadone', 'initiation')), 'methadone titration');
+        assert.ok(/60-100mg\/day/.test(cell('methadone', 'maintenance')), 'methadone maintenance range');
+        assert.ok(/150mg/.test(cell('methadone', 'maintenance'))
+            && /200mg/.test(cell('methadone', 'maintenance')), 'the two methadone approval ceilings');
+    });
+
+    test('the Buvidal figures match the LAIB guidance', () => {
+        const init = cell('Buvidal', 'initiation');
+        assert.ok(/16mg or 24mg Weekly/.test(init), 'Buvidal direct-initiation doses');
+        assert.ok(/32mg in week 1/.test(init), 'the week-1 supplemental ceiling');
+        assert.ok(/Weekly: 16-32mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Weekly maintenance');
+        assert.ok(/Monthly: 64-160mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Monthly maintenance');
+    });
+
+    // The two pages state the same first-dose rule. They are written
+    // independently, so a change to one that is not made to the other puts two
+    // buprenorphine protocols back into the app - which is what this guards.
+    test('the buprenorphine row states the same first-dose rule as the induction protocol', () => {
+        const init = cell('Sublingual buprenorphine', 'initiation');
+        assert.ok(/Do not initiate below <strong>COWS 8/.test(init), 'the threshold is missing');
+        assert.ok(/split as 4mg with a further 4mg after 1-2 hours/.test(init),
+            'the split-dose option for the 8mg first dose is missing');
+        assert.ok(/16mg on Day 2/.test(init) && /24mg on Day 3/.test(init),
+            'the Day 2 and Day 3 ceilings are missing');
+    });
+
+    test('the induction protocol carries every limb of that rule', () => {
+        const opioid = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->')).replace(/\s+/g, ' ');
+        assert.ok(/objective withdrawal \(COWS &ge; 8\)/.test(opioid), 'the threshold to initiate is missing');
+        assert.ok(/split as 4mg with a further 4mg after 1-2 hours/.test(opioid),
+            'the split-dose option is missing');
+        assert.ok(/2mg SL test dose/.test(opioid), 'the test-dose alternative is missing');
+        // The conflation that made three compatible figures look like three
+        // rival protocols: 8-12mg is what the day adds up to, not a first dose.
+        assert.ok(/Day 1 total: 8-12mg outpatient, 8-16mg inpatient/.test(opioid),
+            'the Day 1 figures no longer say they are totals rather than first doses');
+    });
+
+    // The threshold to initiate is COWS >= 8 and nothing in the app may imply a
+    // lower one. The 4mg + 4mg split survives as a technique for giving the 8mg
+    // first dose, so a "COWS 4-8" band label reappearing means the guideline's
+    // framing has been pasted back in over this decision.
+    test('no page offers a dosing band below the COWS >= 8 threshold', () => {
+        const pages = html.slice(html.indexOf('id="opioid-withdrawal-page"'),
+            html.indexOf('<!-- Benzo Withdrawal Page -->')).replace(/\s+/g, ' ');
+        const clinical = pages.replace(/<span class="src-tag[^]*?<\/span>/g, '');
+        assert.ok(!/COWS 4-8/.test(clinical),
+            'a COWS 4-8 dosing band is back - the app does not initiate below COWS 8');
+        assert.ok(!/COWS &ge; 4\b/.test(clinical), 'a COWS >= 4 threshold is back');
+    });
+
+    // Direct initiation is the one cell a reader can carry to the wrong drug.
+    test('the LAIB direct-initiation caveat is present', () => {
+        assert.ok(/does not relax the precipitated-withdrawal precautions/
+            .test(read('data/otp-treatment.js')),
+            'nothing stops direct initiation being read as applying to sublingual buprenorphine');
+    });
+
+    test('the case-flagging tiers are decidable and ordered', () => {
+        assert.equal(CASE_FLAGGING.length, 3);
+        assert.deepEqual(CASE_FLAGGING.map((t) => t.tier),
+            ['High need', 'Moderate need', 'Low need'], 'the tiers are not in descending order of need');
+        // Clinical review is more frequent than medical review in every tier.
+        const months = (s) => (s === 'Monthly' ? 1 : parseInt(s, 10));
+        for (const t of CASE_FLAGGING) {
+            assert.ok(months(t.clinical) <= months(t.medical),
+                `${t.tier}: medical review is more frequent than clinical review`);
+        }
+    });
+
+    test('the any-one-flags-up rule is stated, and tagged as the local decision it is', () => {
+        const module = read('data/otp-treatment.js');
+        assert.ok(/[Aa]ny single feature is enough to flag a patient up/.test(module),
+            'the combination rule is missing, leaving the tiers undecidable');
+        assert.ok(/src-local[^]*?Any-one-flags-up is a local decision/.test(module),
+            'the combination rule is presented as guideline text rather than a local decision');
+    });
+
+    test('the caseload limits are collapsed, not deleted', () => {
+        assert.equal(PRESCRIBER_CAPS.rows.length, 2);
+        assert.ok(/<details class="warning-box"><summary>/.test(read('script.js')),
+            'the caseload limits no longer render inside a collapsed block');
+    });
+});
+
+describe('SL buprenorphine to Buvidal conversion (LAIB Table 4)', () => {
+    test('every band converts to the published depot doses', () => {
+        assert.deepEqual(
+            SL_TO_BUVIDAL.map((r) => [r.label, r.weeklyMg, r.monthlyMg]),
+            [
+                ['2-6mg', 8, null],
+                ['8-10mg', 16, 64],
+                ['12-16mg', 24, 96],
+                ['18-24mg', 32, 128],
+                ['26-32mg', null, 160]
+            ]);
+    });
+
+    // The relationship that holds across the whole table. A transcription slip
+    // in any Weekly or Monthly figure breaks it, which makes this a better
+    // guard than re-typing the numbers a second time.
+    test('the Monthly dose is four times the Weekly dose wherever both exist', () => {
+        for (const row of SL_TO_BUVIDAL) {
+            if (row.weeklyMg === null || row.monthlyMg === null) continue;
+            assert.equal(row.monthlyMg, row.weeklyMg * 4,
+                `${row.label}: ${row.monthlyMg}mg Monthly is not 4x ${row.weeklyMg}mg Weekly`);
+        }
+    });
+
+    // Both gaps are gaps in the manufactured range, and the arithmetic above is
+    // why: the missing product in each case is the 4x partner of a dose that
+    // does exist. If a future edit fills either cell in, that is a change to
+    // what can be prescribed, not a tidy-up.
+    test('the two "no equivalent" cells are where the 4x partner is not manufactured', () => {
+        const weeklyDoses = SL_TO_BUVIDAL.map((r) => r.weeklyMg).filter(Boolean);
+        const monthlyDoses = SL_TO_BUVIDAL.map((r) => r.monthlyMg).filter(Boolean);
+        const lowest = SL_TO_BUVIDAL[0];
+        assert.equal(lowest.monthlyMg, null, 'the 2-6mg band has gained a Monthly equivalent');
+        assert.ok(!monthlyDoses.includes(lowest.weeklyMg * 4),
+            'a 32mg Monthly now exists, so the 2-6mg band should no longer be blank');
+        const highest = SL_TO_BUVIDAL[SL_TO_BUVIDAL.length - 1];
+        assert.equal(highest.weeklyMg, null, 'the 26-32mg band has gained a Weekly equivalent');
+        assert.ok(!weeklyDoses.includes(highest.monthlyMg / 4),
+            'a 40mg Weekly now exists, so the 26-32mg band should no longer be blank');
+    });
+
+    // Sublingual buprenorphine is dispensed in 2mg steps, so the bands have to
+    // cover every even dose up to the 32mg licensed maximum exactly once. A
+    // band boundary typed wrong shows up here as a gap or an overlap.
+    test('the bands cover every dispensable dose from 2 to 32mg, once each', () => {
+        for (let mg = 2; mg <= 32; mg += 2) {
+            const matches = SL_TO_BUVIDAL.filter((r) => mg >= r.minMg && mg <= r.maxMg);
+            assert.equal(matches.length, 1,
+                `${mg}mg daily falls in ${matches.length} bands - the table must cover it exactly once`);
+        }
+        assert.equal(SL_TO_BUVIDAL[SL_TO_BUVIDAL.length - 1].maxMg, 32,
+            'the table no longer ends at the 32mg licensed maximum stated in the pharmacotherapy row');
+    });
+
+    test('the lookup returns the right row, and nothing outside the table', () => {
+        assert.equal(buvidalDoseFor(6).weeklyMg, 8);
+        assert.equal(buvidalDoseFor(10).monthlyMg, 64);
+        assert.equal(buvidalDoseFor(24).weeklyMg, 32);
+        assert.equal(buvidalDoseFor(32).monthlyMg, 160);
+        assert.equal(buvidalDoseFor(32).weeklyMg, null, 'a Weekly dose was invented for the top band');
+        for (const bad of [0, 1, 33, 40, NaN, undefined]) {
+            assert.equal(buvidalDoseFor(bad), null, `${bad}mg produced a conversion`);
+        }
+    });
+
+    test('the conversion renders on the OTP page', () => {
+        const html = read('index.html');
+        const page = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+            html.indexOf('<!-- Benzo Withdrawal Page -->'));
+        assert.ok(/data-buvidal-conversion/.test(page), 'the conversion table has no host on the page');
     });
 });

@@ -4,13 +4,23 @@ import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
+import {
+    MISSED_DOSE_REVIEW, MISSED_DOSE_STOPS, MISSED_DOSE_RATIONALE, MISSED_DOSE_BANDS, ORAL_OTP_AGENTS,
+    BUVIDAL_WINDOWS, BUVIDAL_NOTES, MISSED_DOSE_SOURCE, BUVIDAL_SOURCE, RESTART_CAP_SOURCE,
+    CONFIRM_CURRENT_TREATMENT, CONFIRM_CURRENT_TREATMENT_SOURCE, bandFor, restartDose
+} from './data/otp-missed-doses.js';
+import {
+    PRESCRIBER_FRAMEWORK, PRESCRIBER_CAPS, OTP_ASSESSMENT, CASE_FLAGGING, CASE_FLAGGING_RULE,
+    CASE_FLAGGING_SOURCE, PHARMACOTHERAPY, PHARMACOTHERAPY_WARNING,
+    SL_TO_BUVIDAL, SL_TO_BUVIDAL_SOURCE, SL_TO_BUVIDAL_NOTES
+} from './data/otp-treatment.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
 // Published before anything else runs, and outside the DOMContentLoaded
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.4.7';
+const APP_VERSION = '0.4.8';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1248,6 +1258,207 @@ document.addEventListener('DOMContentLoaded', () => {
         }) + `<ul>` + EQUIVALENCE_CAVEATS.map(c => `<li>${c}</li>`).join('') + `</ul>`
             + `<p><span class="src-tag src-other">OTHER - eTG, via NSWCG Table 11.2</span></p>`;
     });
+
+    // --- OTP PHARMACOTHERAPY --- //
+    // Three medicines, four columns. The warning below it is rendered from the
+    // same module because it exists only to stop one cell of the table being
+    // carried across to the wrong drug.
+    document.querySelectorAll('[data-otp-pharmacotherapy]').forEach(host => {
+        host.innerHTML = renderClinicalTable({
+            headers: ['Medication', 'Formulation and route', 'Initiation and titration',
+                'Target maintenance dose'],
+            rows: PHARMACOTHERAPY.map(m => [
+                `<strong>${m.medication}</strong><br>${m.source}`,
+                m.formulation, m.initiation, m.maintenance
+            ])
+        }) + `<div class="warning-box">${PHARMACOTHERAPY_WARNING}</div>`;
+    });
+
+    // --- SL BUPRENORPHINE TO BUVIDAL CONVERSION --- //
+    // The "no equivalent" cells are the reason this renders as its own table
+    // rather than a column on the one above: they are the two rows where the
+    // answer is that the conversion cannot be made, and a blank cell would read
+    // as missing data rather than as the finding it is.
+    document.querySelectorAll('[data-buvidal-conversion]').forEach(host => {
+        const dose = (mg, product) => mg === null
+            ? `<em>No ${product} equivalent</em>`
+            : `<strong>${mg}mg</strong>`;
+        host.innerHTML = renderClinicalTable({
+            headers: ['Daily sublingual buprenorphine', 'Buvidal Weekly', 'Buvidal Monthly'],
+            rows: SL_TO_BUVIDAL.map(r => [
+                r.label, dose(r.weeklyMg, 'Weekly'), dose(r.monthlyMg, 'Monthly')
+            ])
+        }) + `<ul>` + SL_TO_BUVIDAL_NOTES.map(n => `<li>${n}</li>`).join('') + `</ul>`
+            + `<p>${SL_TO_BUVIDAL_SOURCE}</p>`;
+    });
+
+    // --- OTP ASSESSMENT AND CASE FLAGGING --- //
+    document.querySelectorAll('[data-otp-assessment]').forEach(host => {
+        host.innerHTML = OTP_ASSESSMENT.map(item =>
+            `<h5>${item.heading}</h5><ul>`
+            + item.points.map(p => `<li>${p}</li>`).join('')
+            + `</ul><p>${item.source}</p>`).join('')
+            + `<h5>Case flagging - review frequency and setting</h5>`
+            + `<p>${CASE_FLAGGING_RULE}</p>`
+            + renderClinicalTable({
+                headers: ['Tier', 'Features', 'Setting', 'Clinical review', 'Medical review'],
+                rows: CASE_FLAGGING.map(t => [
+                    `<strong>${t.tier}</strong>`, t.features, t.setting, t.clinical, t.medical
+                ])
+            })
+            + `<p>${CASE_FLAGGING_SOURCE}</p>`;
+    });
+
+    // --- OTP PRESCRIBING AND REGULATORY FRAMEWORK --- //
+    // The caseload limits render inside a <details> because they bind the
+    // prescriber setting up a practice, not the clinician holding a dose.
+    document.querySelectorAll('[data-otp-framework]').forEach(host => {
+        host.innerHTML = PRESCRIBER_FRAMEWORK.map(item =>
+            `<h5>${item.heading}</h5><p>${item.body}</p><p>${item.source}</p>`).join('')
+            + `<details class="warning-box"><summary><strong>${PRESCRIBER_CAPS.summary}</strong></summary>`
+            + renderClinicalTable({
+                headers: ['Prescriber', 'Limit'],
+                rows: PRESCRIBER_CAPS.rows
+            })
+            + `<p>${PRESCRIBER_CAPS.source}</p></details>`;
+    });
+
+    // --- CONFIRMING CURRENT OPIOID TREATMENT --- //
+    // Two hosts, one list: the OTP page opens with it, and the withdrawal page's
+    // regulatory section ends with it. The Ministry of Health numbers exist once.
+    document.querySelectorAll('[data-confirm-otp]').forEach(host => {
+        host.innerHTML = `<ul>`
+            + CONFIRM_CURRENT_TREATMENT.map(item => `<li>${item}</li>`).join('')
+            + `</ul><p>${CONFIRM_CURRENT_TREATMENT_SOURCE}</p>`;
+    });
+
+    // --- MISSED DOSES ON OTP --- //
+    // The static half: the two absolutes, what the review covers, the bands, and
+    // the Buvidal windows. Rendered from data so the section and the calculator
+    // below it cannot drift apart.
+    document.querySelectorAll('[data-otp-missed-doses]').forEach(host => {
+        host.innerHTML =
+            `<div class="danger-box"><strong>&#128721; Before anything else:</strong><ul>`
+            + MISSED_DOSE_STOPS.map(s => `<li>${s}</li>`).join('')
+            + `</ul></div>`
+            + `<h5>Review before dosing, in every band</h5>`
+            + `<p>Done by the dispenser, the prescriber, or - if neither is available - their delegate, the `
+            + `dosing clinician or an experienced drug and alcohol clinician.</p><ul>`
+            + MISSED_DOSE_REVIEW.map(item => `<li>${item}</li>`).join('')
+            + `</ul>`
+            + `<h5>What is at risk after more than three missed doses</h5><ul>`
+            + `<li><strong>Methadone:</strong> ${MISSED_DOSE_RATIONALE.methadone}</li>`
+            + `<li><strong>Buprenorphine:</strong> ${MISSED_DOSE_RATIONALE.buprenorphine}</li>`
+            + `</ul>`
+            + renderClinicalTable({
+                headers: ['Consecutive doses missed', 'Who decides', 'Dose'],
+                rows: MISSED_DOSE_BANDS.map(b => [b.missed, b.decidedBy, b.action])
+            })
+            + `<p><span class="src-tag src-nswcg">NSWCG &sect;8.3.5</span> ${MISSED_DOSE_SOURCE}</p>`
+            + `<h5>Buvidal (long-acting injectable buprenorphine)</h5>`
+            + `<p>Counted in days overdue, not in missed doses.</p>`
+            + renderClinicalTable({
+                headers: ['Product', 'Scheduled', 'Flexible window', 'When re-induction may be required'],
+                rows: BUVIDAL_WINDOWS.map(w => [w.product, w.scheduled, w.window, w.reinduction])
+            })
+            + `<ul>` + BUVIDAL_NOTES.map(n => `<li>${n}</li>`).join('') + `</ul>`
+            + `<p>${BUVIDAL_SOURCE}</p>`;
+    });
+
+    // The calculator. It answers one question - what may be dispensed today -
+    // and refuses to answer it as a number in the two bands where the number is
+    // not the decision: at 1-3 the dose is the usual one subject to the review,
+    // and above 5 there is no dose without the prescriber.
+    const otpAgentEl = document.getElementById('otp-agent');
+    const otpDoseEl = document.getElementById('otp-usual-dose');
+    const otpMissedEl = document.getElementById('otp-missed-count');
+    const otpResultEl = document.getElementById('otp-missed-result');
+
+    if (otpAgentEl && otpDoseEl && otpMissedEl && otpResultEl) {
+        // Half a milligram is dispensable for methadone syrup; a trailing ".0"
+        // on a whole number is not how a dose is written on a chart.
+        const mg = (n) => `${Number(n.toFixed(1))}mg`;
+
+        const card = (tone, title, body) =>
+            `<div class="otp-result-card ${tone}"><strong>${title}</strong>${body}</div>`;
+
+        const updateOtpMissed = () => {
+            const agentKey = otpAgentEl.value;
+            const agent = ORAL_OTP_AGENTS[agentKey];
+            const usual = parseFloat(otpDoseEl.value);
+            const missed = parseInt(otpMissedEl.value, 10);
+            const band = bandFor(missed);
+
+            if (!band) {
+                otpResultEl.innerHTML = '';
+                return;
+            }
+
+            if (band.key === 'resume') {
+                otpResultEl.innerHTML = card('resume',
+                    `${agent.label} - ${missed} dose${missed === 1 ? '' : 's'} missed: usual dose, after review`,
+                    `<p>Resume the <strong>normal dose</strong>`
+                    + (Number.isFinite(usual) && usual > 0 ? ` (${mg(usual)})` : '')
+                    + ` if the review above finds no intoxication, no significant withdrawal and no other `
+                    + `clinical concern. If it does, consult the prescriber or delegate, or seek DASAS advice `
+                    + `on <a href="tel:1800023687">1800 023 687</a>.</p>`);
+                return;
+            }
+
+            if (band.key === 'review') {
+                otpResultEl.innerHTML = card('review',
+                    `${agent.label} - ${missed} doses missed: prescriber review, no dose today`,
+                    `<p><strong>The prescriber must review the patient before treatment recommences.</strong> `
+                    + `Tolerance can no longer be assumed from the previous dose`
+                    + (Number.isFinite(usual) && usual > 0 ? ` of ${mg(usual)}` : '')
+                    + `, so this is a re-induction rather than a resumed dose.</p>`
+                    + `<p>${agent.reinduction}</p>`);
+                return;
+            }
+
+            const result = restartDose(agentKey, usual);
+            if (!result) {
+                otpResultEl.innerHTML = card('reduced',
+                    `${agent.label} - ${missed} doses missed: reduced dose, prescriber must authorise`,
+                    `<p>Enter the usual daily dose to calculate today's reduced dose. The rule is half the `
+                    + `usual dose or ${agent.floorMg}mg, whichever is higher.</p>`);
+                return;
+            }
+
+            otpResultEl.innerHTML = card('reduced',
+                `${agent.label} - ${missed} doses missed: ${mg(result.doseMg)} today`,
+                `<p>Half of ${mg(result.usualDoseMg)} is ${mg(result.halfDoseMg)}; the floor for `
+                + `${agent.label.toLowerCase()} is ${agent.floorMg}mg. `
+                + (result.cappedAtUsual
+                    ? `Taking the higher of the two would give ${agent.floorMg}mg - <strong>more than this `
+                      + `patient's usual dose</strong>, immediately after a gap that has cost them tolerance. `
+                      + `Capped at the usual dose, ${mg(result.doseMg)}.`
+                    : `<strong>Today's dose is ${mg(result.doseMg)}.</strong>`)
+                + `</p>`
+                + `<p><strong>This dose cannot be given without the prescriber.</strong> Contact the prescriber `
+                + `or delegate; a legal prescription must reach the dosing site - a faxed script or a telephone `
+                + `order will do. If neither can be obtained, the patient cannot be dosed and must be referred `
+                + `back for review.</p>`
+                + `<p><strong>Then:</strong> clinician review before each subsequent dose, climbing back to `
+                + `${mg(result.usualDoseMg)} over ${agent.returnDays}, in increments of up to `
+                + `${agent.stepMg}mg per day.</p>`
+                + (result.cappedAtUsual ? `<p>${RESTART_CAP_SOURCE}</p>` : ''));
+        };
+
+        [otpAgentEl, otpDoseEl, otpMissedEl].forEach(el => {
+            el.addEventListener('input', updateOtpMissed);
+            el.addEventListener('change', updateOtpMissed);
+        });
+
+        document.getElementById('reset-otp-missed-btn')?.addEventListener('click', () => {
+            otpAgentEl.selectedIndex = 0;
+            otpDoseEl.value = '';
+            otpMissedEl.value = '';
+            updateOtpMissed();
+        });
+
+        updateOtpMissed();
+    }
 
     // --- PER-PAGE REVIEW METADATA (AUTH-02) --- //
     // Appended to the page itself rather than kept in a repository file: a
