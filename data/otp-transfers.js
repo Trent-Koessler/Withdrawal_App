@@ -54,7 +54,9 @@ export const TRANSFER_STOPS = [
         + 'the same prescriber held that authority already.',
     '<strong>Plan it while the patient is otherwise stable</strong>, and tell them what happens if the '
         + 'transfer does not succeed. A transfer attempted around a housing, health or legal crisis is the '
-        + 'one that destabilises the patient rather than moving them.'
+        + 'one that destabilises the patient rather than moving them. <strong>The exception is a transfer '
+        + 'driven by a medical reason</strong> - a long QT interval on ECG, or a drug interaction - which '
+        + 'is more urgent than elective and may need to be done as an inpatient.'
 ];
 
 export const TRANSFER_STOPS_SOURCE = SRC_INTERIM_2023('pp1-4');
@@ -240,6 +242,10 @@ export const BRIDGING_DAY3 = {
             + 'Buvidal Weekly 16mg</strong>.',
         'The immediate-release oxycodone is given <strong>immediately before</strong> the injection, because '
             + 'Buvidal takes 3-6 hours to begin working and 12-24 hours for full effect.',
+        // The interim guidance reads "up to 24 hours apart" here, which would be
+        // a floor of nothing at all. LAIB 2024 §5.2.1 says "at least 24 hours
+        // apart" for the same 8mg top-ups, and the app states it once, that way,
+        // on both pages. Do not "correct" this back to the interim wording.
         'Review daily afterwards. Additional <strong>Buvidal Weekly 8mg</strong> doses may be given if '
             + 'withdrawal emerges - at least 24 hours apart, to a maximum of <strong>32mg in the first '
             + 'week</strong>.',
@@ -266,10 +272,11 @@ export const BRIDGING_REVIEWS = [
     {
         when: 'Day 1',
         what: '<strong>Morning, in person:</strong> confirm methadone was ceased yesterday and none taken '
-            + 'today. <strong>Afternoon, telehealth.</strong> First oxycodone dose supervised, second as an '
-            + 'individually packaged takeaway. <strong>Confirm with the dosing point that the methadone '
-            + 'script is inactivated.</strong> Dispense take-home naloxone with an overdose brief '
-            + 'intervention. Symptomatic medicines as needed - <strong>benzodiazepines are not '
+            + 'today; COWS and SOWS. <strong>Afternoon, telehealth (2-4pm).</strong> First oxycodone dose '
+            + 'supervised, second as an individually packaged takeaway. <strong>Confirm with the dosing '
+            + 'point that the methadone script is inactivated.</strong> Dispense take-home naloxone with an '
+            + 'overdose brief intervention. Take the patient\'s address, contact number and emergency '
+            + 'contact. Symptomatic medicines as needed - <strong>benzodiazepines are not '
             + 'recommended</strong>. SOWS twice daily, returned the next day.'
     },
     {
@@ -287,6 +294,14 @@ export const BRIDGING_REVIEWS = [
             + 'over the next few days if needed, and book the next Buvidal dose.'
     }
 ];
+
+// The line that repeats in every cell of the source table, and so belongs
+// under it rather than in six of the rows: there is a person to ring, and
+// intoxication is the named example of when to ring them.
+export const BRIDGING_REVIEWS_RULE =
+    '<strong>At every review, discuss with an addiction medicine specialist or the on-call AOD medical '
+    + 'officer if there is any concern - intoxication above all.</strong> Days 1 to 3 are in person in the '
+    + 'morning; the afternoon contact is structured telehealth.';
 
 export const BRIDGING_REVIEWS_SOURCE = SRC_INTERIM_2023('Table 5, pp9-11');
 

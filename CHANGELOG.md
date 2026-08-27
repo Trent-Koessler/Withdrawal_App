@@ -78,8 +78,34 @@ The user-facing version of this lives at `#changelog-page` in the app.
   wildly varied protocols, transfer usually succeeding even from high doses, and
   few designs that compare one approach with another.
 
+- **The OTP page's Buvidal content was checked against LAIB 5.2.1 and gained the
+  week it was missing.** The dose column was right; everything around it was
+  absent. 16mg Weekly is the licensed starting dose and 24mg is clinical
+  experience for higher opioid use, which the cell now distinguishes. Under the
+  table: hold the first dose if the patient is intoxicated; be confident there
+  has been no recent methadone, prescribed or diverted, with a point-of-care
+  urine drug test where it is in doubt, because a positive one moves the patient
+  onto the transfer pathway rather than delaying this one; run in on sublingual
+  buprenorphine where severe hepatic disease (Child-Pugh B or C) or drug
+  interactions make a titratable dose the safer start, since a depot cannot be
+  taken back out. And the counselling point that decides whether a good first
+  dose is read as a failed one: it may wear off before day 7, felt as withdrawal
+  or cravings, and the patient can come in early on day 5 or 6 or have a
+  supplementary 8mg - levels accumulate to steady state over three to four
+  doses.
+- **The transfers page picked up three details from the source tables**: there
+  is an addiction medicine specialist or on-call AOD medical officer to ring at
+  every review, with intoxication the named example; the afternoon contact is
+  structured telehealth between 2 and 4pm and address, contact number and
+  emergency contact are taken on day 1; and a transfer driven by a medical
+  reason - a long QT interval on ECG, a drug interaction - is more urgent than
+  elective and may need to be an inpatient one.
+
 ### Housekeeping
 
+- Where the interim guidance reads "up to 24 hours apart" for the supplemental
+  8mg Buvidal doses, the app states "at least 24 hours apart" with the LAIB
+  guidance, on both pages, and the module says why so it is not corrected back.
 - The 2024 LAIB guidance, the 2023 interim transfer guidance and Hammig et al.
   (2016) are named on the Sources page. The first was already being relied on by
   the OTP page without being listed there.

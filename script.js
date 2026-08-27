@@ -12,14 +12,15 @@ import {
 import {
     PRESCRIBER_FRAMEWORK, PRESCRIBER_CAPS, OTP_ASSESSMENT, CASE_FLAGGING, CASE_FLAGGING_RULE,
     CASE_FLAGGING_SOURCE, PHARMACOTHERAPY, PHARMACOTHERAPY_WARNING,
-    SL_TO_BUVIDAL, SL_TO_BUVIDAL_SOURCE, SL_TO_BUVIDAL_NOTES
+    SL_TO_BUVIDAL, SL_TO_BUVIDAL_SOURCE, SL_TO_BUVIDAL_NOTES, DIRECT_INITIATION
 } from './data/otp-treatment.js';
 import {
     TRANSFER_STOPS, TRANSFER_STOPS_SOURCE, TRANSFER_ROUTES, TRANSFER_ROUTE_WARNING,
     MICRODOSING_SUITABILITY, MICRODOSING_SCHEDULE, MICRODOSING_NOTES, MICRODOSING_SOURCE,
     MICRODOSING_MISSED, MICRODOSING_MISSED_RULE, MICRODOSING_MISSED_SOURCE,
     BRIDGING_RATIONALE, BRIDGING_ELIGIBILITY, BRIDGING_ELIGIBILITY_SOURCE, BRIDGING_SCHEDULE,
-    BRIDGING_SCHEDULE_SOURCE, BRIDGING_DAY3, BRIDGING_REVIEWS, BRIDGING_REVIEWS_SOURCE,
+    BRIDGING_SCHEDULE_SOURCE, BRIDGING_DAY3, BRIDGING_REVIEWS, BRIDGING_REVIEWS_RULE,
+    BRIDGING_REVIEWS_SOURCE,
     BRIDGING_SUBLOCADE_WARNING, BRIDGING_SUBLOCADE_SOURCE, TRANSFER_EVIDENCE
 } from './data/otp-transfers.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
@@ -1279,7 +1280,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 `<strong>${m.medication}</strong><br>${m.source}`,
                 m.formulation, m.initiation, m.maintenance
             ])
-        }) + `<div class="warning-box">${PHARMACOTHERAPY_WARNING}</div>`;
+        }) + `<div class="warning-box">${PHARMACOTHERAPY_WARNING}</div>`
+            + `<h5>${DIRECT_INITIATION.heading}</h5><ul>`
+            + DIRECT_INITIATION.points.map(p => `<li>${p}</li>`).join('')
+            + `</ul><p>${DIRECT_INITIATION.source}</p>`;
     });
 
     // --- SL BUPRENORPHINE TO BUVIDAL CONVERSION --- //
@@ -1395,7 +1399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: ['When', 'What'],
                 rows: BRIDGING_REVIEWS.map(r => [`<strong>${r.when}</strong>`, r.what])
             })
-            + `<p>${BRIDGING_REVIEWS_SOURCE}</p>`;
+            + `<p>${BRIDGING_REVIEWS_RULE}</p><p>${BRIDGING_REVIEWS_SOURCE}</p>`;
     });
 
     document.querySelectorAll('[data-transfer-evidence]').forEach(host => {

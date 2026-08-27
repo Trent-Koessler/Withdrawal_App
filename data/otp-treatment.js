@@ -168,8 +168,10 @@ export const PHARMACOTHERAPY = [
         formulation: 'Subcutaneous injection - buttock, thigh, abdomen or upper arm, at 90&deg;. Store '
             + 'below 25&deg;C.',
         initiation: '<strong>Direct initiation from short-acting opioids</strong> (heroin, oxycodone) '
-            + 'without a withdrawal run-in: <strong>16mg or 24mg Weekly</strong>. Supplemental 8mg doses '
-            + 'PRN, to a maximum of 32mg in week 1.',
+            + 'without a withdrawal run-in: <strong>16mg Weekly</strong>, which is the licensed starting '
+            + 'dose, or <strong>24mg Weekly</strong> for heavier opioid use. Supplemental 8mg doses at '
+            + 'least 24 hours apart, to a maximum of 32mg in week 1. See the notes below the table for '
+            + 'week 1.',
         maintenance: '<strong>Weekly: 16-32mg. Monthly: 64-160mg.</strong>',
         source: SRC_LAIB_2024('&sect;3.1.1, &sect;5.2.1, &sect;6.1.1, pp21, 36, 50')
     }
@@ -181,6 +183,45 @@ export const PHARMACOTHERAPY_WARNING =
     + 'short-acting opioids.</strong> It does not relax the precipitated-withdrawal precautions for '
     + 'sublingual buprenorphine, and it does not apply to a patient coming off methadone or another '
     + 'long-acting agonist.';
+
+// --- Starting Buvidal directly: what week 1 involves --------------------------
+//
+// The table above gives the dose. This is everything else about the first week
+// that the guidance spends four paragraphs on and a four-column table cannot
+// hold: who direct initiation suits, when to run in on sublingual instead, and
+// what the patient has to be told before they leave with a depot in them that
+// cannot be taken back out.
+//
+// The wearing-off point is here rather than as a caveat on the dose because it
+// is the commonest reason a successful first dose looks like a failed one: week
+// 1 is the only week without accumulated plasma levels behind it.
+export const DIRECT_INITIATION = {
+    heading: 'Starting Buvidal directly - the first week',
+    points: [
+        '<strong>Who it suits:</strong> the patient has had buprenorphine before without hypersensitivity '
+            + 'or other significant adverse events, and would rather start depot than dose sublingually '
+            + 'each day.',
+        '<strong>Be confident there has been no recent methadone</strong>, prescribed or diverted. '
+            + '<strong>If in doubt, a point-of-care urine drug test</strong> - a positive one moves the '
+            + 'patient onto the methadone transfer pathway, which is a different protocol rather than a '
+            + 'delay to this one.',
+        '<strong>Delay the first dose if the patient is intoxicated</strong> - opioids, alcohol or other '
+            + 'drugs. Assessment by a suitably skilled clinician; specialist advice if in doubt.',
+        '<strong>Run in on sublingual buprenorphine instead where there are safety concerns about '
+            + 'buprenorphine itself</strong> - severe hepatic disease (Child-Pugh B or C), or drug-drug '
+            + 'interactions. Sublingual doses are easier to titrate to clinical response, and LAIB can be '
+            + 'considered once that safety and the logistics of daily dosing are established.',
+        '<strong>Tell the patient the first dose may wear off before day 7</strong>, felt as withdrawal or '
+            + 'cravings. That is week 1 rather than a failed dose: they can attend early for the second '
+            + 'dose - <strong>day 5 or 6</strong> - or have a supplementary 8mg Weekly. Doses become more '
+            + 'effective as plasma levels accumulate, with <strong>steady state after three to four '
+            + 'doses</strong>.',
+        '<strong>Review before the second week</strong>, by the prescriber or an experienced clinician: '
+            + 'effects and side effects of the first dose, withdrawal, cravings and other substance use. '
+            + 'Then continue Weekly, transfer to Monthly using the conversion below, or titrate.'
+    ],
+    source: SRC_LAIB_2024('&sect;5.2.1, pp35-36')
+};
 
 // --- SL buprenorphine to Buvidal dose conversion --------------------------
 //

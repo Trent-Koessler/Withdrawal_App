@@ -17,11 +17,11 @@ import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 import { CONTENT_META, formatReviewMonth } from '../data/content-meta.js';
-import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidalDoseFor }
-    from '../data/otp-treatment.js';
+import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidalDoseFor,
+    DIRECT_INITIATION } from '../data/otp-treatment.js';
 import {
     TRANSFER_ROUTES, MICRODOSING_SCHEDULE, MICRODOSING_MISSED, BRIDGING_SCHEDULE, BRIDGING_DAY3,
-    BRIDGING_ELIGIBILITY, TRANSFER_STOPS
+    BRIDGING_ELIGIBILITY, TRANSFER_STOPS, BRIDGING_REVIEWS_RULE
 } from '../data/otp-transfers.js';
 import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
@@ -1058,7 +1058,10 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
 
     test('the Buvidal figures match the LAIB guidance', () => {
         const init = cell('Buvidal', 'initiation');
-        assert.ok(/16mg or 24mg Weekly/.test(init), 'Buvidal direct-initiation doses');
+        assert.ok(/16mg Weekly/.test(init) && /24mg Weekly/.test(init), 'Buvidal direct-initiation doses');
+        assert.ok(/licensed starting dose/.test(init),
+            '16mg is the licensed starting dose and 24mg is clinical experience - the cell no longer says '
+            + 'which is which');
         assert.ok(/32mg in week 1/.test(init), 'the week-1 supplemental ceiling');
         assert.ok(/Weekly: 16-32mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Weekly maintenance');
         assert.ok(/Monthly: 64-160mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Monthly maintenance');
@@ -1107,6 +1110,23 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
         assert.ok(/does not relax the precipitated-withdrawal precautions/
             .test(read('data/otp-treatment.js')),
             'nothing stops direct initiation being read as applying to sublingual buprenorphine');
+    });
+
+    // The four paragraphs of LAIB 5.2.1 that a dose column cannot hold. The
+    // wearing-off point is the one that changes what the patient is told, so it
+    // is asserted rather than left to survive on its own.
+    test('the first week of Buvidal is described, not just the dose', () => {
+        const points = DIRECT_INITIATION.points.join(' ');
+        assert.ok(/wear off/.test(points) && /day 5 or 6/.test(points),
+            'the patient is no longer told the first dose may wear off, or that they can come in early');
+        assert.ok(/steady state after three to four/.test(points),
+            'the reason week 1 feels lighter than later weeks is not stated');
+        assert.ok(/Child-Pugh B or C/.test(points),
+            'the hepatic-disease reason for a sublingual run-in has gone');
+        assert.ok(/point-of-care urine drug test/.test(points),
+            'nothing prompts a UDS where recent methadone is in doubt before an irretrievable depot dose');
+        assert.ok(/data-otp-pharmacotherapy/.test(read('index.html')),
+            'the host that renders it is gone from the OTP page');
     });
 
     test('the case-flagging tiers are decidable and ordered', () => {
@@ -1255,6 +1275,13 @@ describe('the methadone to buprenorphine transfers page', () => {
     test('the routes are ordered by methadone dose, the number the prescriber has', () => {
         assert.deepEqual(TRANSFER_ROUTES.map((r) => r.dose),
             ['&le;30mg methadone', '&gt;40mg to 150mg', '&gt;150mg']);
+    });
+
+    test('there is a named person to ring, and intoxication is the example', () => {
+        assert.ok(/addiction medicine specialist or the on-call AOD medical officer/
+            .test(BRIDGING_REVIEWS_RULE), 'the escalation route has gone from the review schedule');
+        assert.ok(/[Ii]ntoxication/.test(BRIDGING_REVIEWS_RULE),
+            'intoxication is the source table\'s named trigger for that call, and is no longer stated');
     });
 
     test('the offline precache carries the module', () => {
