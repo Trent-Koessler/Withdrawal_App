@@ -5,6 +5,138 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.9 - August 2026
+
+### Clinical
+
+- **Transferring a patient from methadone to buprenorphine has its own page**,
+  reached from the pharmacotherapy section of the Opioid Treatment Program page.
+  The OTP page already converted a daily sublingual dose to a depot dose; this
+  is the other question people ask it, and a different kind of answer - a
+  procedure run over a week, with a different drug prescribed on each day of it.
+- **The route is selected by the methadone dose**, which is the number the
+  prescriber already has: 30mg or less transfers directly, above 40mg and up to
+  150mg goes by micro-dosing or by bridging with oxycodone, and above 150mg
+  needs specialist advice, a reduction to 150mg for bridging, and consideration
+  of admission - there are no reported ambulatory micro-dose transfers above
+  that dose.
+- **The micro-dosing schedule is carried in full**, from `data/otp-transfers.js`
+  so the table cannot drift from anything else that reads it. Buprenorphine runs
+  0.2mg BD (or 0.4mg mane) on day 1 to 16-32mg on day 7; methadone is unchanged
+  through day 5, halved on day 6 and quartered on day 7. **Methadone is not
+  stopped on day 7**, and the page says so in its own note: it is the row people
+  reconstruct wrongly from memory, and stopping a day early is a day of
+  uncovered withdrawal. Buvidal Weekly may be started on day 7 instead.
+- **A calculator prints the schedule for a given patient.** The buprenorphine
+  column is fixed and the methadone column is the one worked out by hand at the
+  end of a clinic, so that is what it does: enter the usual daily dose and it
+  gives the days as they would go on the script, each reduced figure labelled
+  with the fraction it is - "45mg (half of 90mg)" - so the number can be checked
+  against the published table rather than taken on trust. It also names the
+  route the dose selects, including the band NSW does not answer: direct
+  transfer is published at 30mg or less and micro-dosing above 40, and between
+  the two the calculator says the guidance states neither and to seek specialist
+  advice, rather than treating the gap as a choice left open. A blank or
+  impossible dose prints nothing.
+- **The schedule can be run over one week or two.** One week is the NSW
+  schedule. Two weeks holds each of its rungs for two days instead of one, so
+  every buprenorphine dose and every methadone reduction is still a published
+  one and only the duration changes; day 0 is not doubled, because two days of
+  no buprenorphine is a delay rather than a gentler start. It is offered because
+  a slower transfer is often what is wanted for a high dose or an anxious
+  patient and the realistic alternative is a schedule improvised at the bedside,
+  but **it is not the NSW schedule**: it carries a LOCAL provenance chip, says
+  so on screen, and reminds the prescriber that the methadone authority has to
+  cover however long the transfer actually runs. Tests assert that no dose
+  appears on it that is not on the published schedule.
+- **The printed table and the calculator come out of the same eight rungs**, so
+  a change to one is a change to both - the same reason the missed-dose bands
+  and their calculator share a module.
+- **Missed doses during micro-dosing are answered by a COWS score**, not by the
+  step the patient had reached, because after a gap the question has changed.
+  One day resumes the schedule. Two to three days: COWS above 24 inducts,
+  below 24 resumes. Four to five days: COWS above 13 inducts, below 13 restarts
+  the procedure at day 6. Beyond five days the patient is inducted. In every
+  band the patient may elect to return to methadone instead, and the page says
+  to ask.
+- **The oxycodone conversion multiplies, and the page states the direction
+  twice.** Total daily oxycodone is three to four times the methadone dose in
+  milligrams - 50mg of methadone becomes 150mg of OxyContin daily on day 1, as
+  75mg BD; up to 200mg daily on day 2; and on day 3 a 4:1 calculation of which
+  one third is given as immediate-release oxycodone immediately before the
+  Buvidal injection. Read as a division rather than a multiplication it gives a
+  dose roughly ten times too small, which is a patient in full withdrawal with
+  two days of takeaway opioid in the house, so every row carries a worked
+  example.
+- **Bridging is a Buvidal protocol and is not to be used to transfer onto
+  Sublocade.** NSW Health advises against it, and it renders as a danger box
+  rather than a footnote because the depot substitution is an easy one to make
+  at the point of ordering.
+- **The Buvidal dose on day 3 depends on which side of 40mg the methadone dose
+  was**: 24mg Weekly from above, 16mg Weekly from below, with 8mg top-ups at
+  least 24 hours apart to a maximum of 32mg in the first week, and the next dose
+  scheduled at 7 days and giveable from 5.
+- **What has to be true before the first oxycodone dose is handed over** is
+  listed with the day-by-day reviews: the methadone script confirmed inactivated
+  with the dosing point, take-home naloxone dispensed with an overdose brief
+  intervention, SOWS twice daily, and no benzodiazepine added to a regimen that
+  already has two opioids in it.
+- **The COWS >6 figure on the route table belongs to Buvidal alone.** It works
+  because the depot takes 12-24 hours to reach peak plasma levels. The threshold
+  for a sublingual first dose is unchanged at COWS >= 8, and the page carries
+  that as a warning under the table rather than leaving the two figures to be
+  read as rival thresholds.
+- **Waiting longer than that for a first Buvidal dose is not the cautious
+  option**, and the same warning says so. Deferring until moderate or severe
+  withdrawal (COWS >= 12) leaves the patient in withdrawal for the eight to 12
+  hours the depot takes to reach effective plasma levels, and makes the transfer
+  more uncomfortable rather than safer. The first Buvidal dose after low-dose
+  methadone is 16mg Weekly, given once there is mild withdrawal with objective
+  signs - often 48-72 hours after the last methadone dose, but as early as 24
+  hours if withdrawal is present - and off several days at the low dose rather
+  than off a rapid taper.
+- **Both methods are marked as what they are**: off-label, specialist-initiated,
+  with a developing evidence base, and requiring a PRU authority that covers
+  methadone and buprenorphine at the same time - Sections D and E of the
+  application. A short closing section names what the methods rest on: the two
+  Bernese cases from 2016, and the 2022 systematic review that found 18 studies,
+  wildly varied protocols, transfer usually succeeding even from high doses, and
+  few designs that compare one approach with another.
+
+- **The OTP page's Buvidal content was checked against LAIB 5.2.1 and gained the
+  week it was missing.** The dose column was right; everything around it was
+  absent. 16mg Weekly is the licensed starting dose and 24mg is clinical
+  experience for higher opioid use, which the cell now distinguishes. Under the
+  table: hold the first dose if the patient is intoxicated; be confident there
+  has been no recent methadone, prescribed or diverted, with a point-of-care
+  urine drug test where it is in doubt, because a positive one moves the patient
+  onto the transfer pathway rather than delaying this one; run in on sublingual
+  buprenorphine where severe hepatic disease (Child-Pugh B or C) or drug
+  interactions make a titratable dose the safer start, since a depot cannot be
+  taken back out. And the counselling point that decides whether a good first
+  dose is read as a failed one: it may wear off before day 7, felt as withdrawal
+  or cravings, and the patient can come in early on day 5 or 6 or have a
+  supplementary 8mg - levels accumulate to steady state over three to four
+  doses.
+- **The transfers page picked up three details from the source tables**: there
+  is an addiction medicine specialist or on-call AOD medical officer to ring at
+  every review, with intoxication the named example; the afternoon contact is
+  structured telehealth between 2 and 4pm and address, contact number and
+  emergency contact are taken on day 1; and a transfer driven by a medical
+  reason - a long QT interval on ECG, a drug interaction - is more urgent than
+  elective and may need to be an inpatient one.
+
+### Housekeeping
+
+- Where the interim guidance reads "up to 24 hours apart" for the supplemental
+  8mg Buvidal doses, the app states "at least 24 hours apart" with the LAIB
+  guidance, on both pages, and the module says why so it is not corrected back.
+- The 2024 LAIB guidance, the 2023 interim transfer guidance and Hammig et al.
+  (2016) are named on the Sources page. The first was already being relied on by
+  the OTP page without being listed there.
+- `data/otp-transfers.js` is added to the service worker precache list, so the
+  page works offline like the rest of the app.
+
 ## 0.4.8 - August 2026
 
 ### Clinical

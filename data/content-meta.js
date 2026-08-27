@@ -42,6 +42,14 @@ const LAIB_GUIDANCE = 'NSW Health, Long-acting injectable buprenorphine (LAIB) f
     + 'treatment - Guidance document (2024)';
 const MISSED_DOSES_ADDED = '2026-08-26';
 
+// The transfers page is a third source again: the micro-dosing and bridging
+// schedules are NSW Health's April 2023 interim guidance, carried into the 2024
+// LAIB document as Appendix C. It is a page of its own because it is a
+// procedure run over a week, not a fact about the program.
+const INTERIM_TRANSFER_2023 = 'NSW Health, Interim Clinical Guidance: Outpatient Transfer from Methadone '
+    + 'to Buprenorphine Using the Micro-dosing or Bridging Methods (April 2023)';
+const TRANSFERS_ADDED = '2026-08-27';
+
 export const CONTENT_META = {
     'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: SELECTOR_REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
@@ -54,6 +62,10 @@ export const CONTENT_META = {
     'otp-page': {
         source: `${OPIOID_DEPENDENCE_2018}; ${LAIB_GUIDANCE}`,
         lastReviewed: MISSED_DOSES_ADDED
+    },
+    'otp-transfers-page': {
+        source: `${INTERIM_TRANSFER_2023}; ${LAIB_GUIDANCE}; ${OPIOID_DEPENDENCE_2018}`,
+        lastReviewed: TRANSFERS_ADDED
     },
     'benzo-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'cannabis-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },

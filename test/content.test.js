@@ -17,8 +17,13 @@ import { HARM_REDUCTION } from '../data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS } from '../data/benzo-equivalence.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 import { CONTENT_META, formatReviewMonth } from '../data/content-meta.js';
-import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidalDoseFor }
-    from '../data/otp-treatment.js';
+import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidalDoseFor,
+    DIRECT_INITIATION } from '../data/otp-treatment.js';
+import {
+    TRANSFER_ROUTES, MICRODOSING_SCHEDULE, MICRODOSING_MISSED, BRIDGING_SCHEDULE, BRIDGING_DAY3,
+    BRIDGING_ELIGIBILITY, TRANSFER_STOPS, BRIDGING_REVIEWS_RULE, microdosingPlan,
+    MICRODOSING_VERDICTS, MICRODOSING_EXTENDED_SOURCE, MICRODOSING_EXTENDED_NOTES
+} from '../data/otp-transfers.js';
 import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1054,7 +1059,10 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
 
     test('the Buvidal figures match the LAIB guidance', () => {
         const init = cell('Buvidal', 'initiation');
-        assert.ok(/16mg or 24mg Weekly/.test(init), 'Buvidal direct-initiation doses');
+        assert.ok(/16mg Weekly/.test(init) && /24mg Weekly/.test(init), 'Buvidal direct-initiation doses');
+        assert.ok(/licensed starting dose/.test(init),
+            '16mg is the licensed starting dose and 24mg is clinical experience - the cell no longer says '
+            + 'which is which');
         assert.ok(/32mg in week 1/.test(init), 'the week-1 supplemental ceiling');
         assert.ok(/Weekly: 16-32mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Weekly maintenance');
         assert.ok(/Monthly: 64-160mg/.test(cell('Buvidal', 'maintenance')), 'Buvidal Monthly maintenance');
@@ -1105,6 +1113,23 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
             'nothing stops direct initiation being read as applying to sublingual buprenorphine');
     });
 
+    // The four paragraphs of LAIB 5.2.1 that a dose column cannot hold. The
+    // wearing-off point is the one that changes what the patient is told, so it
+    // is asserted rather than left to survive on its own.
+    test('the first week of Buvidal is described, not just the dose', () => {
+        const points = DIRECT_INITIATION.points.join(' ');
+        assert.ok(/wear off/.test(points) && /day 5 or 6/.test(points),
+            'the patient is no longer told the first dose may wear off, or that they can come in early');
+        assert.ok(/steady state after three to four/.test(points),
+            'the reason week 1 feels lighter than later weeks is not stated');
+        assert.ok(/Child-Pugh B or C/.test(points),
+            'the hepatic-disease reason for a sublingual run-in has gone');
+        assert.ok(/point-of-care urine drug test/.test(points),
+            'nothing prompts a UDS where recent methadone is in doubt before an irretrievable depot dose');
+        assert.ok(/data-otp-pharmacotherapy/.test(read('index.html')),
+            'the host that renders it is gone from the OTP page');
+    });
+
     test('the case-flagging tiers are decidable and ordered', () => {
         assert.equal(CASE_FLAGGING.length, 3);
         assert.deepEqual(CASE_FLAGGING.map((t) => t.tier),
@@ -1129,6 +1154,219 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
         assert.equal(PRESCRIBER_CAPS.rows.length, 2);
         assert.ok(/<details class="warning-box"><summary>/.test(read('script.js')),
             'the caseload limits no longer render inside a collapsed block');
+    });
+});
+
+describe('the methadone to buprenorphine transfers page', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('<!-- Methadone to Buprenorphine Transfers Page -->'),
+        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('the OTP page links to it, and it links back', () => {
+        const otp = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+            html.indexOf('<!-- Methadone to Buprenorphine Transfers Page -->'));
+        assert.ok(/data-page="otp-transfers-page"/.test(otp),
+            'nothing on the OTP page navigates to the transfers page');
+        assert.ok(/data-page="otp-page"/.test(flat), 'the transfers page is a dead end');
+    });
+
+    test('every host the renderer looks for is on the page', () => {
+        for (const host of ['data-transfer-stops', 'data-microdosing', 'data-microdosing-missed',
+            'data-bridging', 'data-transfer-evidence']) {
+            assert.ok(new RegExp(host).test(flat), `${host} is missing - its section would render empty`);
+        }
+    });
+
+    // Methadone runs at the usual dose to day 5, halves on day 6 and quarters
+    // on day 7. The failure this guards is the schedule being "tidied" into a
+    // cessation on day 7, which is a day of uncovered withdrawal.
+    test('the micro-dosing schedule matches the guidance, and methadone is never stopped', () => {
+        assert.deepEqual(MICRODOSING_SCHEDULE.map((d) => d.day),
+            ['0', '1', '2', '3', '4', '5', '6', '7']);
+        assert.deepEqual(MICRODOSING_SCHEDULE.map((d) => d.bup),
+            ['Nil', '0.2mg BD <em>or</em> 0.4mg mane', '0.4mg BD', '2mg', '4mg', '8mg', '16mg', '16-32mg']);
+        for (const day of MICRODOSING_SCHEDULE.slice(0, 6)) {
+            assert.equal(day.methadone, 'X', `day ${day.day}: methadone should be the unchanged usual dose`);
+        }
+        assert.equal(MICRODOSING_SCHEDULE[6].methadone, '&frac12;X', 'day 6 halves the methadone dose');
+        assert.equal(MICRODOSING_SCHEDULE[7].methadone, '&frac14;X', 'day 7 quarters it - it does not stop');
+        assert.ok(/not stopped on day 7/.test(read('data/otp-transfers.js')),
+            'the note that day 7 is not a cessation has gone');
+    });
+
+    test('the missed-dose bands are decided by COWS, at the published thresholds', () => {
+        assert.equal(MICRODOSING_MISSED.length, 4);
+        assert.ok(/&gt;24/.test(MICRODOSING_MISSED[1].action), 'the 2-3 day threshold is not COWS 24');
+        assert.ok(/&gt;13/.test(MICRODOSING_MISSED[2].action), 'the 4-5 day threshold is not COWS 13');
+        assert.ok(/day 6/.test(MICRODOSING_MISSED[2].action),
+            'below COWS 13 the procedure restarts at day 6');
+    });
+
+    // The catastrophic misreading: oxycodone is the weaker drug here, so the
+    // daily dose is a multiple of the methadone dose, not a fraction of it.
+    // Both the ratio and a worked example have to survive on every row.
+    test('the oxycodone conversion states its direction and carries a worked example', () => {
+        assert.deepEqual(BRIDGING_SCHEDULE.map((d) => d.day), ['1', '2', '3']);
+        assert.ok(/3 &times; the methadone dose/.test(BRIDGING_SCHEDULE[0].conversion),
+            'day 1 no longer says which way the 3:1 ratio runs');
+        for (const day of BRIDGING_SCHEDULE) {
+            assert.ok(/50mg methadone/.test(day.example),
+                `day ${day.day} has lost its worked example, leaving a bare ratio to be read either way`);
+        }
+        assert.ok(/150mg daily = 75mg BD/.test(BRIDGING_SCHEDULE[0].example),
+            'the day 1 example no longer converts 50mg of methadone to 150mg of oxycodone');
+        assert.ok(/multiplies/.test(read('script.js')),
+            'the heading that states the direction of the conversion has gone');
+    });
+
+    test('the day 3 Buvidal dose splits at 40mg, and the week 1 ceiling is stated', () => {
+        const points = BRIDGING_DAY3.points.join(' ');
+        assert.ok(/&gt;40mg methadone: Buvidal Weekly 24mg/.test(points), 'the 24mg dose above 40mg');
+        assert.ok(/&lt;40mg: Buvidal Weekly 16mg/.test(points), 'the 16mg dose below 40mg');
+        assert.ok(/32mg in the first week/.test(points), 'the week 1 supplemental ceiling');
+    });
+
+    test('bridging is marked as a Buvidal protocol, not a Sublocade one', () => {
+        assert.ok(/Do not use it to transfer onto Sublocade/.test(read('data/otp-transfers.js')),
+            'nothing stops the bridging protocol being used to start Sublocade');
+    });
+
+    test('the eligibility limits that keep takeaway oxycodone off the wrong patient survive', () => {
+        const rules = BRIDGING_ELIGIBILITY.join(' ');
+        assert.ok(/40-150mg daily/.test(rules), 'the methadone dose range');
+        assert.ok(/4 standard drinks/.test(rules), 'the alcohol limit');
+        assert.ok(/10mg diazepam equivalent/.test(rules), 'the benzodiazepine limit');
+        assert.ok(/intravenous/.test(rules), 'the injecting exclusion');
+    });
+
+    // Both methods are off-label and need an authority covering two drugs at
+    // once. A page that lost either would read as though this were routine
+    // prescribing.
+    test('the page says the methods are off-label and names the authority sections', () => {
+        const stops = TRANSFER_STOPS.join(' ');
+        assert.ok(/off-label/.test(stops), 'the off-label status is not stated');
+        assert.ok(/Section D/.test(stops) && /Section E/.test(stops),
+            'the two sections of the PRU application that a transfer needs are not named');
+    });
+
+    // COWS >= 6 is a property of the depot's absorption. Nothing about it
+    // relaxes the sublingual threshold, and the two figures appear within a
+    // table of each other.
+    test('the COWS 6 figure is bound to Buvidal and the sublingual threshold restated', () => {
+        const module = read('data/otp-transfers.js');
+        assert.ok(/COWS &gt;6/.test(TRANSFER_ROUTES[0].route), 'the Buvidal threshold has gone');
+        assert.ok(/COWS &ge; 8/.test(TRANSFER_ROUTES[0].route),
+            'the sublingual threshold is no longer stated alongside it');
+        assert.ok(/belongs to Buvidal, not to sublingual buprenorphine/.test(module),
+            'nothing stops COWS 6 being read as a sublingual threshold');
+    });
+
+    // Deferring a first Buvidal dose to moderate withdrawal reads as the
+    // careful choice and is the opposite: it buys eight to 12 hours of
+    // unrelieved withdrawal while the depot comes up.
+    test('the page says that waiting for moderate withdrawal is not the cautious option', () => {
+        const module = read('data/otp-transfers.js');
+        assert.ok(/not the cautious option/.test(module),
+            'the warning against deferring the first Buvidal dose to COWS 12 has gone');
+        assert.ok(/eight to 12 hours/.test(module),
+            'the cost of deferring it - the time the depot takes to reach effective levels - is not stated');
+    });
+
+    test('the routes are ordered by methadone dose, the number the prescriber has', () => {
+        assert.deepEqual(TRANSFER_ROUTES.map((r) => r.dose),
+            ['&le;30mg methadone', '&gt;40mg to 150mg', '&gt;150mg']);
+    });
+
+    test('there is a named person to ring, and intoxication is the example', () => {
+        assert.ok(/addiction medicine specialist or the on-call AOD medical officer/
+            .test(BRIDGING_REVIEWS_RULE), 'the escalation route has gone from the review schedule');
+        assert.ok(/[Ii]ntoxication/.test(BRIDGING_REVIEWS_RULE),
+            'intoxication is the source table\'s named trigger for that call, and is no longer stated');
+    });
+
+    // The calculator's only job is the methadone column. Everything it prints
+    // has to be a row of the published table with the arithmetic done, which is
+    // what these assert - starting with the day count.
+    test('the one-week plan is the published schedule, with the milligrams worked out', () => {
+        const plan = microdosingPlan(60, 1);
+        assert.equal(plan.lastDay, 7, 'a one-week schedule that does not end on day 7');
+        assert.deepEqual(plan.rows.map((r) => r.dayLabel),
+            ['Day 0', 'Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']);
+        assert.deepEqual(plan.rows.map((r) => r.methadoneMg), [60, 60, 60, 60, 60, 60, 30, 15]);
+        assert.deepEqual(plan.rows.map((r) => r.bup), MICRODOSING_SCHEDULE.map((d) => d.bup),
+            'the calculator and the printed table disagree about the buprenorphine doses');
+    });
+
+    // Two weeks is the same rungs held twice as long. Every dose on it must
+    // still be a dose the guidance publishes - a schedule with a new dose level
+    // on it would be an invented protocol rather than a lengthened one.
+    test('the two-week plan holds each rung for two days and invents no new dose', () => {
+        const plan = microdosingPlan(90, 2);
+        assert.equal(plan.lastDay, 14, 'a two-week schedule that does not end on day 14');
+        assert.deepEqual(plan.rows.map((r) => r.dayLabel),
+            ['Day 0', 'Days 1-2', 'Days 3-4', 'Days 5-6', 'Days 7-8', 'Days 9-10', 'Days 11-12',
+                'Days 13-14']);
+        assert.deepEqual(plan.rows.map((r) => r.bup), MICRODOSING_SCHEDULE.map((d) => d.bup),
+            'the two-week schedule carries a buprenorphine dose the guidance does not publish');
+        assert.deepEqual(plan.rows.map((r) => r.fraction),
+            MICRODOSING_SCHEDULE.map((_, i) => microdosingPlan(90, 1).rows[i].fraction),
+            'the methadone reductions land on different rungs than the published schedule');
+    });
+
+    // Doubling day 0 would be two days of no buprenorphine at the start, which
+    // is a delay rather than a gentler ramp.
+    test('the baseline day is never doubled', () => {
+        assert.equal(microdosingPlan(60, 2).rows[0].dayLabel, 'Day 0');
+    });
+
+    test('methadone is never taken to zero by the calculator', () => {
+        for (const weeks of [1, 2]) {
+            for (const dose of [45, 60, 90, 120, 150]) {
+                const last = microdosingPlan(dose, weeks).rows.at(-1);
+                assert.equal(last.methadoneMg, dose / 4,
+                    `${dose}mg over ${weeks} week(s): the last day is not a quarter of the usual dose`);
+                assert.ok(last.methadoneMg > 0, 'the calculator has stopped methadone on the last day');
+            }
+        }
+    });
+
+    // The dose bands the method itself is bounded by. The 30-40mg one is the
+    // band the guidance does not answer, and saying so is the answer.
+    test('the dose decides the verdict, and the unstated band is named as unstated', () => {
+        assert.equal(microdosingPlan(25, 1).verdict, 'direct');
+        assert.equal(microdosingPlan(35, 1).verdict, 'gap');
+        assert.equal(microdosingPlan(60, 1).verdict, 'standard');
+        assert.equal(microdosingPlan(180, 1).verdict, 'specialist');
+        assert.ok(/NSW states neither/.test(MICRODOSING_VERDICTS.gap.body),
+            'the 30-40mg gap is being answered rather than named');
+    });
+
+    test('a blank or impossible dose produces no schedule at all', () => {
+        for (const bad of [NaN, 0, -10, undefined]) {
+            assert.equal(microdosingPlan(bad, 1), null, `${bad} produced a schedule`);
+        }
+    });
+
+    // A local extension of a published schedule is exactly what the provenance
+    // system exists to mark, and the page must not present it as guidance.
+    test('the two-week option is tagged as a local extension', () => {
+        assert.ok(/src-local/.test(MICRODOSING_EXTENDED_SOURCE),
+            'the two-week schedule is presented as though NSW published it');
+        assert.ok(/This is not the NSW schedule/.test(MICRODOSING_EXTENDED_NOTES.join(' ')),
+            'the two-week schedule no longer says on the page that it is not the published one');
+    });
+
+    test('the calculator controls are on the page', () => {
+        for (const id of ['microdosing-dose', 'microdosing-weeks', 'microdosing-result',
+            'reset-microdosing-btn']) {
+            assert.ok(new RegExp(`id="${id}"`).test(flat), `calculator element "${id}" is missing`);
+        }
+    });
+
+    test('the offline precache carries the module', () => {
+        assert.ok(/data\/otp-transfers\.js/.test(read('sw.js')),
+            'the transfers module is not precached - the page would be blank offline');
     });
 });
 

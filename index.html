@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.8" />
+    <meta name="app-build" content="0.4.9" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -2666,6 +2666,15 @@ textarea {
                 <h5>Converting sublingual buprenorphine to Buvidal</h5>
                 <p>For a patient already stable on a daily sublingual dose who is moving to depot.</p>
                 <div data-buvidal-conversion></div>
+
+                <h5>Transferring from methadone to buprenorphine</h5>
+                <p>A different question, and a procedure rather than a conversion: micro-dosing, bridging
+                    with oxycodone, and which of them a given methadone dose selects.</p>
+                <div class="button-container" style="margin: 12px 0;">
+                    <!-- One line deliberately: showPage() takes the page title from this button's text,
+                         and a wrapped label arrives there with the indentation still in it. -->
+                    <button class="big-button" data-page="otp-transfers-page">Methadone to buprenorphine transfers</button>
+                </div>
                 </div>
 
                 <div class="clinical-block">
@@ -2690,6 +2699,63 @@ textarea {
 
                 <div class="clinical-block" data-harm-reduction="opioid"></div>
 
+            </div>
+
+            <!-- Methadone to Buprenorphine Transfers Page -->
+            <div id="otp-transfers-page" class="page sectioned-page"
+                data-title="Methadone to Buprenorphine Transfers">
+                <button data-page="otp-page" class="back-to-selection-btn">Opioid Treatment Program</button>
+                <h3>Methadone to buprenorphine transfers</h3>
+                <p>For a patient established on methadone who is moving to buprenorphine. The two routes
+                    that avoid a withdrawal washout - <strong>micro-dosing</strong> and <strong>bridging
+                    with oxycodone</strong> - are set out in full; direct transfer is the first row of the
+                    route table and is otherwise the induction protocol on the
+                    <button class="link-button" data-page="opioid-withdrawal-page">Opioid Withdrawal</button>
+                    page.</p>
+
+                <div class="clinical-block">
+                <h4>1. Which route, and what has to be in place first</h4>
+                <div data-transfer-stops></div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>2. Micro-dosing</h4>
+                <p>Buprenorphine is introduced in micrograms while methadone continues at the usual dose.
+                    No washout, and the patient is not asked to be in withdrawal at any point.</p>
+                <div data-microdosing></div>
+
+                <h5>Work out the schedule for this patient</h5>
+                <p>Enter the usual daily methadone dose. The buprenorphine column is fixed; what this works
+                    out is the methadone column and the day numbers, as they would be written on the
+                    script.</p>
+                <div class="form-grid otp-missed-grid">
+                    <label for="microdosing-dose">Usual daily methadone dose (mg)</label>
+                    <input type="number" id="microdosing-dose" min="0" step="0.5" inputmode="decimal"
+                        placeholder="e.g. 60">
+                    <label for="microdosing-weeks">Over</label>
+                    <select id="microdosing-weeks">
+                        <option value="1">One week - the NSW schedule</option>
+                        <option value="2">Two weeks - each step held for two days</option>
+                    </select>
+                </div>
+                <div id="microdosing-result" role="status" aria-live="polite"></div>
+                <div class="button-group">
+                    <button id="reset-microdosing-btn" type="button">Reset</button>
+                </div>
+
+                <h5>Missed doses during micro-dosing</h5>
+                <div data-microdosing-missed></div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>3. Bridging with oxycodone</h4>
+                <div data-bridging></div>
+                </div>
+
+                <div class="clinical-block">
+                <h4>4. What these methods rest on</h4>
+                <div data-transfer-evidence></div>
+                </div>
             </div>
 
             <!-- Benzo Withdrawal Page -->
@@ -3809,6 +3875,73 @@ textarea {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
+                <h4>0.4.9 - August 2026</h4>
+                <p><em>Transferring a patient from methadone to buprenorphine - micro-dosing and bridging
+                        with oxycodone. New page, reached from the pharmacotherapy section of the Opioid
+                        Treatment Program page.</em></p>
+                <ul>
+                    <li><strong>There is now a methadone-to-buprenorphine transfers page.</strong> It opens
+                        with a table that picks the route from the methadone dose: direct transfer at 30mg
+                        or less, micro-dosing or oxycodone bridging above 40mg, and specialist advice above
+                        150mg.</li>
+                    <li><strong>The micro-dosing schedule is stated day by day.</strong> Buprenorphine goes
+                        0.2mg twice daily to 16-32mg over a week while methadone continues unchanged to day
+                        5, is halved on day 6 and quartered on day 7. <strong>Methadone is not stopped on
+                            day 7</strong> - the page says so, because that is the usual misreading of the
+                        table. Buvidal Weekly may be started on day 7 instead.</li>
+                    <li><strong>A calculator works out the schedule for the patient in front of you.</strong>
+                        Enter the usual daily methadone dose and it prints the days as they would be written
+                        on the script - the fixed buprenorphine column beside the methadone one worked out,
+                        with each reduced figure shown as the fraction it is so it can be checked against
+                        the published table. It also says which route the dose selects: direct transfer at
+                        30mg or less, micro-dosing above 40, specialist advice above 150 - and, between 30
+                        and 40mg, that NSW states neither, which is a gap in the guidance rather than a
+                        choice left open.</li>
+                    <li><strong>The schedule can be run over one week or two.</strong> One week is the NSW
+                        schedule. Two weeks holds each of its steps for two days - every buprenorphine dose
+                        and every methadone reduction is still a published one, and only the duration
+                        changes. It is offered because a slower transfer is often what is wanted for a high
+                        dose or an anxious patient, and the realistic alternative is a schedule improvised at
+                        the bedside. <strong>It is not the NSW schedule, is tagged as a local extension, and
+                            says so on screen</strong> - along with the reminder that the methadone authority
+                        has to cover however long the transfer actually runs.</li>
+                    <li><strong>Missed doses during micro-dosing are answered by COWS, not by where the
+                            patient was up to.</strong> One day missed resumes the schedule; two to three
+                        days is a COWS above 24 to induct outright; four to five days is a COWS above 13, and
+                        below that the procedure restarts at day 6; beyond five days the patient is
+                        inducted. In every band the patient may choose to go back to methadone instead.</li>
+                    <li><strong>The oxycodone conversion multiplies, and the page says so twice.</strong> The
+                        daily oxycodone dose is three to four times the methadone dose in milligrams -
+                        50mg of methadone becomes 150mg of OxyContin daily on day 1, given as 75mg twice
+                        daily. Reading that ratio the other way round gives a dose an order of magnitude too
+                        small and a patient in full withdrawal, so each row carries a worked example.</li>
+                    <li><strong>Bridging is a Buvidal protocol and must not be used to transfer onto
+                            Sublocade.</strong> That is a danger box on the page rather than a footnote,
+                        because the substitution is an easy one to make when ordering.</li>
+                    <li><strong>Both methods are off-label and specialist-initiated</strong>, and both need a
+                        PRU authority covering methadone and buprenorphine at once, with Sections D and E of
+                        the application completed. That is stated above the schedules.</li>
+                    <li><strong>The COWS &gt;6 figure on the page belongs to Buvidal only.</strong> A
+                        sublingual first dose still waits for COWS &ge; 8, and the page says which is
+                        which. It also says that waiting <em>longer</em> - deferring a first Buvidal dose
+                        until moderate withdrawal - is not the cautious choice it looks like: the patient
+                        sits in withdrawal for the eight to 12 hours the depot takes to reach effective
+                        plasma levels.</li>
+                    <li><strong>The OTP page now describes the first week of Buvidal, not just the
+                            dose.</strong> Checked against the LAIB guidance directly: 16mg Weekly is the
+                        licensed starting dose and 24mg is clinical experience for heavier opioid use;
+                        the first dose may wear off before day 7, which is week 1 rather than a failed
+                        dose, so the patient can attend early on day 5 or 6 or have a supplementary 8mg;
+                        and doses reach steady state after three to four of them. Also there: a
+                        point-of-care urine drug test where recent methadone is in doubt, holding the
+                        first dose if the patient is intoxicated, and running in on sublingual
+                        buprenorphine where severe hepatic disease or drug interactions make
+                        titration the safer start.</li>
+                    <li><strong>Three sources are named on the Sources page</strong> that the app was already
+                        relying on or now relies on: the 2024 LAIB guidance, the 2023 interim transfer
+                        guidance, and the original 2016 description of the Bernese method.</li>
+                </ul>
+
                 <h4>0.4.8 - August 2026</h4>
                 <p><em>Missed doses on opioid treatment programs - what may be dispensed today, and who has to
                         authorise it. New page, linked from the top of Opioid Withdrawal.</em></p>
@@ -4204,6 +4337,20 @@ textarea {
                             Dependence</em> (2018). A separate NSW Health document from the primary source above;
                         used for the buprenorphine and methadone OAT induction protocols, and the case for
                         preferring OAT over withdrawal.</li>
+                    <li><strong>NSW Health</strong> - <em>Long-acting injectable buprenorphine (LAIB) for
+                            opioid dependence treatment: Guidance document</em> (2024). The source for the
+                        Buvidal and Sublocade content on the Opioid Treatment Program page - dosing, dose
+                        conversion from sublingual buprenorphine, and the windows within which a depot dose
+                        may be given.</li>
+                    <li><strong>NSW Health</strong> - <em>Interim Clinical Guidance: Outpatient Transfer from
+                            Methadone to Buprenorphine Using the Micro-dosing or Bridging Methods</em> (April
+                        2023), reproduced as Appendix C of the LAIB guidance above. The source for the
+                        micro-dosing and oxycodone bridging schedules on the transfers page.</li>
+                    <li><strong>Hämmig R, Kemter A, Strasser J, et al.</strong> - <em>Use of microdoses for
+                            induction of buprenorphine treatment with overlapping full opioid agonist use: the
+                            Bernese method</em>. Substance Abuse and Rehabilitation 2016;7:99-105. The original
+                        description of micro-dosing, cited on the transfers page for where the method came
+                        from rather than for any dose.</li>
                     <li><strong>Austroads</strong> - <em>Assessing Fitness to Drive</em>.</li>
                     <li><strong>RACGP</strong> - <em>Supporting Smoking Cessation: A Guide for Health
                             Professionals</em> (2nd edition, rev. 2021); NRT initial dosage selection.</li>

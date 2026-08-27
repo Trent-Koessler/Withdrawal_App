@@ -8,7 +8,7 @@
 // every device that had already installed kept serving the older snapshot and
 // never saw them. An opaque counter made that easy to forget. Tying it to the
 // version people can read in the footer makes the omission visible.
-const CACHE_NAME = 'withdrawal-app-cache-v0.4.8';
+const CACHE_NAME = 'withdrawal-app-cache-v0.4.9';
 const NETWORK_TIMEOUT = 5000; // ms before falling back to cache
 // style.css is deliberately absent: it is inlined into index.html by
 // tools/build-css.py, so the app never requests it as a separate file.
@@ -26,6 +26,7 @@ const urlsToCache = [
     'data/content-meta.js',
     'data/otp-missed-doses.js',
     'data/otp-treatment.js',
+    'data/otp-transfers.js',
     'manifest.json',
     'favicon.ico',
     'icons/icon.svg',
