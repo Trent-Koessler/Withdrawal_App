@@ -136,6 +136,29 @@ The user-facing version of this lives at `#changelog-page` in the app.
   the OTP page without being listed there.
 - `data/otp-transfers.js` is added to the service worker precache list, so the
   page works offline like the rest of the app.
+- **The quick-start guides are filled in as the page loads**, rather than
+  appearing only once the Copy button is pressed. The guide is what a clinician
+  is deciding whether to paste, so it has to be readable before it goes on the
+  clipboard, not after. The boxes are shown in the same monospace and at the
+  same height as the alcohol EMR block.
+- **Tables inside a quick-start guide are copied out as lists.** Pasted into an
+  EMR field a table loses its column alignment and degrades into pipe-separated
+  fragments that no longer say which figure belongs to which column, so each
+  column header is carried down onto the value instead: the benzodiazepine
+  equivalence table becomes "Alprazolam: 0.5mg" under a line naming the
+  reference diazepam dose, and the NRT selection matrix becomes one group per
+  time-to-first-cigarette with a bullet for each cigarettes-per-day column.
+- **Everything on the EMR export path is folded to ASCII.** An EMR text field
+  is the last place in the stack that is reliably ASCII, and a character it
+  cannot represent comes out as a question mark, a mojibake run, or nothing -
+  which in "≤ 10mg ODDE" or "37.5°C" is a dose or an observation that now reads
+  as a different one. Symbols that carry meaning are spelled out (`≤` becomes
+  `<=`, `°` becomes ` degrees `, `§11` becomes `section 11`), accented letters
+  fall back to the base letter rather than being dropped, and the warning
+  emoji become the word their colour was doing the work of - `🚨` leads the line
+  as `WARNING:`. This covers the regimen block as well as the quick-start
+  guides. A test fails if content arrives using a symbol the fold does not
+  know, so the next one is caught before it reaches a note.
 
 ## 0.4.8 - August 2026
 

@@ -1442,3 +1442,62 @@ describe('SL buprenorphine to Buvidal conversion (LAIB Table 4)', () => {
         assert.ok(/data-buvidal-conversion/.test(page), 'the conversion table has no host on the page');
     });
 });
+
+// The EMR export path folds everything it emits to ASCII, because an EMR text
+// field is the last place in the stack that is reliably ASCII and a dropped
+// character in "<= 10mg ODDE" is a dose that now reads as another one. That
+// only works while `ASCII_FOLD` in script.js knows about every symbol the
+// content actually uses, so this fails when a new one arrives unhandled.
+describe('EMR export stays ASCII', () => {
+    // The fold is defined inside script.js's DOMContentLoaded closure and is
+    // not importable, so the escape codes are read out of its source. Only the
+    // \uXXXX literals are needed - what each one maps to is the browser's
+    // problem, not this test's.
+    const foldedCodePoints = () => {
+        const src = read('script.js');
+        // Through the end of asciiFold, not just the table: the zero-width and
+        // variation-selector strip inside the function covers characters that
+        // have no row of their own.
+        const table = src.slice(src.indexOf('const ASCII_FOLD = ['),
+            src.indexOf('// Clinical strings in data/regimens.js'));
+        assert.ok(table.length > 200, 'ASCII_FOLD was renamed or moved - this guard is now checking nothing');
+        const named = new Set([...table.matchAll(/\\u([0-9A-Fa-f]{4})/g)]
+            .map((m) => parseInt(m[1], 16)));
+        // Ranges are written as \uXXXX-\uYYYY; expand them so a character
+        // covered by one does not read as unhandled.
+        for (const m of table.matchAll(/\\u([0-9A-Fa-f]{4})-\\u([0-9A-Fa-f]{4})/g)) {
+            for (let cp = parseInt(m[1], 16); cp <= parseInt(m[2], 16); cp++) named.add(cp);
+        }
+        return named;
+    };
+
+    // Surrogate pairs in the table (the emoji) are matched on the pair, so an
+    // astral character is covered when both of its halves are named.
+    const isCovered = (ch, named) => {
+        if (ch.length > 1) return [...ch].every((half) => named.has(half.charCodeAt(0)));
+        const cp = ch.codePointAt(0);
+        if (named.has(cp)) return true;
+        // Accented Latin is folded to its base letter by NFD rather than by a
+        // table entry, so it needs no rule of its own.
+        return /[a-zA-Z]/.test(ch.normalize('NFD')[0]);
+    };
+
+    test('every non-ASCII character in the clinical content has a fold rule', () => {
+        const named = foldedCodePoints();
+        const sources = ['index.html', ...fs.readdirSync(path.join(ROOT, 'data'))
+            .filter((f) => f.endsWith('.js')).map((f) => `data/${f}`)];
+        const unhandled = new Map();
+        for (const file of sources) {
+            for (const ch of [...read(file)]) {
+                if (ch.codePointAt(0) < 127) continue;
+                if (isCovered(ch, named)) continue;
+                if (!unhandled.has(ch)) unhandled.set(ch, file);
+            }
+        }
+        assert.equal(unhandled.size, 0,
+            'characters with no ASCII_FOLD rule, which would be dropped from an EMR paste: '
+            + [...unhandled].map(([ch, file]) =>
+                `${JSON.stringify(ch)} (U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}, ${file})`)
+                .join(', '));
+    });
+});
