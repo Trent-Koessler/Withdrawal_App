@@ -14,13 +14,21 @@ import {
     CASE_FLAGGING_SOURCE, PHARMACOTHERAPY, PHARMACOTHERAPY_WARNING,
     SL_TO_BUVIDAL, SL_TO_BUVIDAL_SOURCE, SL_TO_BUVIDAL_NOTES
 } from './data/otp-treatment.js';
+import {
+    TRANSFER_STOPS, TRANSFER_STOPS_SOURCE, TRANSFER_ROUTES, TRANSFER_ROUTE_WARNING,
+    MICRODOSING_SUITABILITY, MICRODOSING_SCHEDULE, MICRODOSING_NOTES, MICRODOSING_SOURCE,
+    MICRODOSING_MISSED, MICRODOSING_MISSED_RULE, MICRODOSING_MISSED_SOURCE,
+    BRIDGING_RATIONALE, BRIDGING_ELIGIBILITY, BRIDGING_ELIGIBILITY_SOURCE, BRIDGING_SCHEDULE,
+    BRIDGING_SCHEDULE_SOURCE, BRIDGING_DAY3, BRIDGING_REVIEWS, BRIDGING_REVIEWS_SOURCE,
+    BRIDGING_SUBLOCADE_WARNING, BRIDGING_SUBLOCADE_SOURCE, TRANSFER_EVIDENCE
+} from './data/otp-transfers.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
 // Published before anything else runs, and outside the DOMContentLoaded
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.4.8';
+const APP_VERSION = '0.4.9';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1321,6 +1329,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 rows: PRESCRIBER_CAPS.rows
             })
             + `<p>${PRESCRIBER_CAPS.source}</p></details>`;
+    });
+
+    // --- METHADONE TO BUPRENORPHINE TRANSFERS --- //
+    // Four hosts, one page. Everything here is a day-numbered procedure, so it
+    // renders from data for the same reason the missed-dose bands do: the page
+    // and anything else that ever reads these figures cannot drift apart.
+    document.querySelectorAll('[data-transfer-stops]').forEach(host => {
+        host.innerHTML =
+            `<div class="danger-box"><strong>&#128721; Before starting one of these:</strong><ul>`
+            + TRANSFER_STOPS.map(s => `<li>${s}</li>`).join('')
+            + `</ul></div><p>${TRANSFER_STOPS_SOURCE}</p>`
+            + renderClinicalTable({
+                headers: ['Methadone dose', 'Route', 'Setting'],
+                rows: TRANSFER_ROUTES.map(r => [
+                    `<strong>${r.dose}</strong><br>${r.source}`, r.route, r.setting
+                ])
+            })
+            + `<div class="warning-box">${TRANSFER_ROUTE_WARNING}</div>`;
+    });
+
+    document.querySelectorAll('[data-microdosing]').forEach(host => {
+        host.innerHTML =
+            `<p>${MICRODOSING_SUITABILITY.outpatient} <strong>Transfer as an inpatient if:</strong></p><ul>`
+            + MICRODOSING_SUITABILITY.inpatient.map(i => `<li>${i}</li>`).join('')
+            + `</ul><p>${MICRODOSING_SUITABILITY.unsupervised} ${MICRODOSING_SUITABILITY.source}</p>`
+            + renderClinicalTable({
+                headers: ['Day', 'Methadone', 'Sublingual buprenorphine', ''],
+                rows: MICRODOSING_SCHEDULE.map(d => [
+                    `<strong>${d.day}</strong>`, d.methadone, `<strong>${d.bup}</strong>`, d.note
+                ])
+            })
+            + `<ul>` + MICRODOSING_NOTES.map(n => `<li>${n}</li>`).join('')
+            + `</ul><p>${MICRODOSING_SOURCE}</p>`;
+    });
+
+    document.querySelectorAll('[data-microdosing-missed]').forEach(host => {
+        host.innerHTML = renderClinicalTable({
+            headers: ['Days of methadone <em>and</em> buprenorphine missed', 'Action'],
+            rows: MICRODOSING_MISSED.map(m => [`<strong>${m.missed}</strong>`, m.action])
+        })
+            + `<p>${MICRODOSING_MISSED_RULE}</p><p>${MICRODOSING_MISSED_SOURCE}</p>`;
+    });
+
+    document.querySelectorAll('[data-bridging]').forEach(host => {
+        host.innerHTML =
+            `<p>${BRIDGING_RATIONALE}</p>`
+            + `<div class="danger-box">${BRIDGING_SUBLOCADE_WARNING} ${BRIDGING_SUBLOCADE_SOURCE}</div>`
+            + `<h5>Who it suits</h5><ul>`
+            + BRIDGING_ELIGIBILITY.map(e => `<li>${e}</li>`).join('')
+            + `</ul><p>${BRIDGING_ELIGIBILITY_SOURCE}</p>`
+            + `<h5>Oxycodone dose - the conversion multiplies</h5>`
+            + renderClinicalTable({
+                headers: ['Day', 'Formulation', 'Conversion from the methadone dose', 'Worked example'],
+                rows: BRIDGING_SCHEDULE.map(d => [
+                    `<strong>${d.day}</strong>`, d.formulation, d.conversion, d.example
+                ])
+            })
+            + `<p>${BRIDGING_SCHEDULE_SOURCE}</p>`
+            + `<h5>${BRIDGING_DAY3.heading}</h5><ul>`
+            + BRIDGING_DAY3.points.map(p => `<li>${p}</li>`).join('')
+            + `</ul><p>${BRIDGING_DAY3.source}</p>`
+            + `<h5>What happens on each day</h5>`
+            + renderClinicalTable({
+                headers: ['When', 'What'],
+                rows: BRIDGING_REVIEWS.map(r => [`<strong>${r.when}</strong>`, r.what])
+            })
+            + `<p>${BRIDGING_REVIEWS_SOURCE}</p>`;
+    });
+
+    document.querySelectorAll('[data-transfer-evidence]').forEach(host => {
+        host.innerHTML = `<ul>` + TRANSFER_EVIDENCE.map(e => `<li>${e}</li>`).join('') + `</ul>`;
     });
 
     // --- CONFIRMING CURRENT OPIOID TREATMENT --- //

@@ -5,6 +5,78 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.4.9 - August 2026
+
+### Clinical
+
+- **Transferring a patient from methadone to buprenorphine has its own page**,
+  reached from the pharmacotherapy section of the Opioid Treatment Program page.
+  The OTP page already converted a daily sublingual dose to a depot dose; this
+  is the other question people ask it, and a different kind of answer - a
+  procedure run over a week, with a different drug prescribed on each day of it.
+- **The route is selected by the methadone dose**, which is the number the
+  prescriber already has: 30mg or less transfers directly, above 40mg and up to
+  150mg goes by micro-dosing or by bridging with oxycodone, and above 150mg
+  needs specialist advice, a reduction to 150mg for bridging, and consideration
+  of admission - there are no reported ambulatory micro-dose transfers above
+  that dose.
+- **The micro-dosing schedule is carried in full**, from `data/otp-transfers.js`
+  so the table cannot drift from anything else that reads it. Buprenorphine runs
+  0.2mg BD (or 0.4mg mane) on day 1 to 16-32mg on day 7; methadone is unchanged
+  through day 5, halved on day 6 and quartered on day 7. **Methadone is not
+  stopped on day 7**, and the page says so in its own note: it is the row people
+  reconstruct wrongly from memory, and stopping a day early is a day of
+  uncovered withdrawal. Buvidal Weekly may be started on day 7 instead.
+- **Missed doses during micro-dosing are answered by a COWS score**, not by the
+  step the patient had reached, because after a gap the question has changed.
+  One day resumes the schedule. Two to three days: COWS above 24 inducts,
+  below 24 resumes. Four to five days: COWS above 13 inducts, below 13 restarts
+  the procedure at day 6. Beyond five days the patient is inducted. In every
+  band the patient may elect to return to methadone instead, and the page says
+  to ask.
+- **The oxycodone conversion multiplies, and the page states the direction
+  twice.** Total daily oxycodone is three to four times the methadone dose in
+  milligrams - 50mg of methadone becomes 150mg of OxyContin daily on day 1, as
+  75mg BD; up to 200mg daily on day 2; and on day 3 a 4:1 calculation of which
+  one third is given as immediate-release oxycodone immediately before the
+  Buvidal injection. Read as a division rather than a multiplication it gives a
+  dose roughly ten times too small, which is a patient in full withdrawal with
+  two days of takeaway opioid in the house, so every row carries a worked
+  example.
+- **Bridging is a Buvidal protocol and is not to be used to transfer onto
+  Sublocade.** NSW Health advises against it, and it renders as a danger box
+  rather than a footnote because the depot substitution is an easy one to make
+  at the point of ordering.
+- **The Buvidal dose on day 3 depends on which side of 40mg the methadone dose
+  was**: 24mg Weekly from above, 16mg Weekly from below, with 8mg top-ups at
+  least 24 hours apart to a maximum of 32mg in the first week, and the next dose
+  scheduled at 7 days and giveable from 5.
+- **What has to be true before the first oxycodone dose is handed over** is
+  listed with the day-by-day reviews: the methadone script confirmed inactivated
+  with the dosing point, take-home naloxone dispensed with an overdose brief
+  intervention, SOWS twice daily, and no benzodiazepine added to a regimen that
+  already has two opioids in it.
+- **The COWS >= 6 figure on the route table belongs to Buvidal alone.** It works
+  because the depot takes 12-24 hours to reach peak plasma levels. The threshold
+  for a sublingual first dose is unchanged at COWS >= 8, and the page carries
+  that as a warning under the table rather than leaving the two figures to be
+  read as rival thresholds.
+- **Both methods are marked as what they are**: off-label, specialist-initiated,
+  with a developing evidence base, and requiring a PRU authority that covers
+  methadone and buprenorphine at the same time - Sections D and E of the
+  application. A short closing section names what the methods rest on: the two
+  Bernese cases from 2016, and the 2022 systematic review that found 18 studies,
+  wildly varied protocols, transfer usually succeeding even from high doses, and
+  few designs that compare one approach with another.
+
+### Housekeeping
+
+- The 2024 LAIB guidance, the 2023 interim transfer guidance and Hammig et al.
+  (2016) are named on the Sources page. The first was already being relied on by
+  the OTP page without being listed there.
+- `data/otp-transfers.js` is added to the service worker precache list, so the
+  page works offline like the rest of the app.
+
 ## 0.4.8 - August 2026
 
 ### Clinical

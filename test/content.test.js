@@ -19,6 +19,10 @@ import { SCALES, SCALE_CAVEATS_UNIVERSAL } from '../data/scales.js';
 import { CONTENT_META, formatReviewMonth } from '../data/content-meta.js';
 import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidalDoseFor }
     from '../data/otp-treatment.js';
+import {
+    TRANSFER_ROUTES, MICRODOSING_SCHEDULE, MICRODOSING_MISSED, BRIDGING_SCHEDULE, BRIDGING_DAY3,
+    BRIDGING_ELIGIBILITY, TRANSFER_STOPS
+} from '../data/otp-transfers.js';
 import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1129,6 +1133,122 @@ describe('OTP framework, assessment and pharmacotherapy', () => {
         assert.equal(PRESCRIBER_CAPS.rows.length, 2);
         assert.ok(/<details class="warning-box"><summary>/.test(read('script.js')),
             'the caseload limits no longer render inside a collapsed block');
+    });
+});
+
+describe('the methadone to buprenorphine transfers page', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('<!-- Methadone to Buprenorphine Transfers Page -->'),
+        html.indexOf('<!-- Benzo Withdrawal Page -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('the OTP page links to it, and it links back', () => {
+        const otp = html.slice(html.indexOf('<!-- Opioid Treatment Program (OTP) Page -->'),
+            html.indexOf('<!-- Methadone to Buprenorphine Transfers Page -->'));
+        assert.ok(/data-page="otp-transfers-page"/.test(otp),
+            'nothing on the OTP page navigates to the transfers page');
+        assert.ok(/data-page="otp-page"/.test(flat), 'the transfers page is a dead end');
+    });
+
+    test('every host the renderer looks for is on the page', () => {
+        for (const host of ['data-transfer-stops', 'data-microdosing', 'data-microdosing-missed',
+            'data-bridging', 'data-transfer-evidence']) {
+            assert.ok(new RegExp(host).test(flat), `${host} is missing - its section would render empty`);
+        }
+    });
+
+    // Methadone runs at the usual dose to day 5, halves on day 6 and quarters
+    // on day 7. The failure this guards is the schedule being "tidied" into a
+    // cessation on day 7, which is a day of uncovered withdrawal.
+    test('the micro-dosing schedule matches the guidance, and methadone is never stopped', () => {
+        assert.deepEqual(MICRODOSING_SCHEDULE.map((d) => d.day),
+            ['0', '1', '2', '3', '4', '5', '6', '7']);
+        assert.deepEqual(MICRODOSING_SCHEDULE.map((d) => d.bup),
+            ['Nil', '0.2mg BD <em>or</em> 0.4mg mane', '0.4mg BD', '2mg', '4mg', '8mg', '16mg', '16-32mg']);
+        for (const day of MICRODOSING_SCHEDULE.slice(0, 6)) {
+            assert.equal(day.methadone, 'X', `day ${day.day}: methadone should be the unchanged usual dose`);
+        }
+        assert.equal(MICRODOSING_SCHEDULE[6].methadone, '&frac12;X', 'day 6 halves the methadone dose');
+        assert.equal(MICRODOSING_SCHEDULE[7].methadone, '&frac14;X', 'day 7 quarters it - it does not stop');
+        assert.ok(/not stopped on day 7/.test(read('data/otp-transfers.js')),
+            'the note that day 7 is not a cessation has gone');
+    });
+
+    test('the missed-dose bands are decided by COWS, at the published thresholds', () => {
+        assert.equal(MICRODOSING_MISSED.length, 4);
+        assert.ok(/&gt;24/.test(MICRODOSING_MISSED[1].action), 'the 2-3 day threshold is not COWS 24');
+        assert.ok(/&gt;13/.test(MICRODOSING_MISSED[2].action), 'the 4-5 day threshold is not COWS 13');
+        assert.ok(/day 6/.test(MICRODOSING_MISSED[2].action),
+            'below COWS 13 the procedure restarts at day 6');
+    });
+
+    // The catastrophic misreading: oxycodone is the weaker drug here, so the
+    // daily dose is a multiple of the methadone dose, not a fraction of it.
+    // Both the ratio and a worked example have to survive on every row.
+    test('the oxycodone conversion states its direction and carries a worked example', () => {
+        assert.deepEqual(BRIDGING_SCHEDULE.map((d) => d.day), ['1', '2', '3']);
+        assert.ok(/3 &times; the methadone dose/.test(BRIDGING_SCHEDULE[0].conversion),
+            'day 1 no longer says which way the 3:1 ratio runs');
+        for (const day of BRIDGING_SCHEDULE) {
+            assert.ok(/50mg methadone/.test(day.example),
+                `day ${day.day} has lost its worked example, leaving a bare ratio to be read either way`);
+        }
+        assert.ok(/150mg daily = 75mg BD/.test(BRIDGING_SCHEDULE[0].example),
+            'the day 1 example no longer converts 50mg of methadone to 150mg of oxycodone');
+        assert.ok(/multiplies/.test(read('script.js')),
+            'the heading that states the direction of the conversion has gone');
+    });
+
+    test('the day 3 Buvidal dose splits at 40mg, and the week 1 ceiling is stated', () => {
+        const points = BRIDGING_DAY3.points.join(' ');
+        assert.ok(/&gt;40mg methadone: Buvidal Weekly 24mg/.test(points), 'the 24mg dose above 40mg');
+        assert.ok(/&lt;40mg: Buvidal Weekly 16mg/.test(points), 'the 16mg dose below 40mg');
+        assert.ok(/32mg in the first week/.test(points), 'the week 1 supplemental ceiling');
+    });
+
+    test('bridging is marked as a Buvidal protocol, not a Sublocade one', () => {
+        assert.ok(/Do not use it to transfer onto Sublocade/.test(read('data/otp-transfers.js')),
+            'nothing stops the bridging protocol being used to start Sublocade');
+    });
+
+    test('the eligibility limits that keep takeaway oxycodone off the wrong patient survive', () => {
+        const rules = BRIDGING_ELIGIBILITY.join(' ');
+        assert.ok(/40-150mg daily/.test(rules), 'the methadone dose range');
+        assert.ok(/4 standard drinks/.test(rules), 'the alcohol limit');
+        assert.ok(/10mg diazepam equivalent/.test(rules), 'the benzodiazepine limit');
+        assert.ok(/intravenous/.test(rules), 'the injecting exclusion');
+    });
+
+    // Both methods are off-label and need an authority covering two drugs at
+    // once. A page that lost either would read as though this were routine
+    // prescribing.
+    test('the page says the methods are off-label and names the authority sections', () => {
+        const stops = TRANSFER_STOPS.join(' ');
+        assert.ok(/off-label/.test(stops), 'the off-label status is not stated');
+        assert.ok(/Section D/.test(stops) && /Section E/.test(stops),
+            'the two sections of the PRU application that a transfer needs are not named');
+    });
+
+    // COWS >= 6 is a property of the depot's absorption. Nothing about it
+    // relaxes the sublingual threshold, and the two figures appear within a
+    // table of each other.
+    test('the COWS 6 figure is bound to Buvidal and the sublingual threshold restated', () => {
+        const module = read('data/otp-transfers.js');
+        assert.ok(/COWS &ge; 6/.test(TRANSFER_ROUTES[0].route), 'the Buvidal threshold has gone');
+        assert.ok(/COWS &ge; 8/.test(TRANSFER_ROUTES[0].route),
+            'the sublingual threshold is no longer stated alongside it');
+        assert.ok(/belongs to Buvidal, not to sublingual buprenorphine/.test(module),
+            'nothing stops COWS 6 being read as a sublingual threshold');
+    });
+
+    test('the routes are ordered by methadone dose, the number the prescriber has', () => {
+        assert.deepEqual(TRANSFER_ROUTES.map((r) => r.dose),
+            ['&le;30mg methadone', '&gt;40mg to 150mg', '&gt;150mg']);
+    });
+
+    test('the offline precache carries the module', () => {
+        assert.ok(/data\/otp-transfers\.js/.test(read('sw.js')),
+            'the transfers module is not precached - the page would be blank offline');
     });
 });
 
