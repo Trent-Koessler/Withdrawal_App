@@ -56,11 +56,20 @@ The user-facing version of this lives at `#changelog-page` in the app.
   with the dosing point, take-home naloxone dispensed with an overdose brief
   intervention, SOWS twice daily, and no benzodiazepine added to a regimen that
   already has two opioids in it.
-- **The COWS >= 6 figure on the route table belongs to Buvidal alone.** It works
+- **The COWS >6 figure on the route table belongs to Buvidal alone.** It works
   because the depot takes 12-24 hours to reach peak plasma levels. The threshold
   for a sublingual first dose is unchanged at COWS >= 8, and the page carries
   that as a warning under the table rather than leaving the two figures to be
   read as rival thresholds.
+- **Waiting longer than that for a first Buvidal dose is not the cautious
+  option**, and the same warning says so. Deferring until moderate or severe
+  withdrawal (COWS >= 12) leaves the patient in withdrawal for the eight to 12
+  hours the depot takes to reach effective plasma levels, and makes the transfer
+  more uncomfortable rather than safer. The first Buvidal dose after low-dose
+  methadone is 16mg Weekly, given once there is mild withdrawal with objective
+  signs - often 48-72 hours after the last methadone dose, but as early as 24
+  hours if withdrawal is present - and off several days at the low dose rather
+  than off a rapid taper.
 - **Both methods are marked as what they are**: off-label, specialist-initiated,
   with a developing evidence base, and requiring a PRU authority that covers
   methadone and buprenorphine at the same time - Sections D and E of the

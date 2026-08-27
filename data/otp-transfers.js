@@ -66,15 +66,14 @@ export const TRANSFER_STOPS_SOURCE = SRC_INTERIM_2023('pp1-4');
 export const TRANSFER_ROUTES = [
     {
         dose: '&le;30mg methadone',
-        route: '<strong>Direct transfer.</strong> Stop methadone, wait for objective withdrawal, then '
-            + 'induct - onto sublingual buprenorphine at <strong>COWS &ge; 8</strong> as on the induction '
-            + 'protocol, or onto <strong>Buvidal Weekly 16mg</strong> at <strong>COWS &ge; 6</strong>, '
-            + 'usually 24-72 hours after the last methadone dose. Do not give a sublingual test dose before '
-            + 'a first Buvidal dose.',
-        setting: 'Outpatient or inpatient',
-        // TODO(review): the COWS >= 6 threshold and the 16mg first Buvidal dose for a transfer from
-        // <=30mg of methadone were taken from a secondary summary of LAIB 2024 §5.8.4 rather than from
-        // the guidance PDF itself - check both against p48 before this page is reviewed.
+        route: '<strong>Direct transfer.</strong> Stop methadone - from several days at the low dose, not '
+            + 'off a rapid taper - and review daily. Induct onto <strong>Buvidal Weekly 16mg</strong> once '
+            + 'there is <strong>mild withdrawal with objective signs (COWS &gt;6)</strong>, often 48-72 '
+            + 'hours after the last methadone dose but as early as 24 hours if withdrawal is present; or '
+            + 'onto sublingual buprenorphine at <strong>COWS &ge; 8</strong> as on the induction protocol. '
+            + 'No sublingual test dose before a first Buvidal dose.',
+        setting: 'Outpatient. Admit if there are significant concerns about other substance use - heavy '
+            + 'alcohol or benzodiazepines - comorbidity, or unstable social conditions.',
         source: SRC_OTP_2018('&sect;2.4.3, p26') + ' ' + SRC_LAIB_2024('&sect;5.8.4, p48')
     },
     {
@@ -95,13 +94,18 @@ export const TRANSFER_ROUTES = [
     }
 ];
 
-// The one line of the route table a reader can carry to the wrong drug. COWS
-// >= 6 is a Buvidal figure and belongs to the depot's slow absorption; the
-// threshold for a sublingual first dose is unchanged at COWS >= 8.
+// Two ways to misread the first row, and they pull in opposite directions.
+// COWS >6 is a Buvidal figure - it belongs to the depot's slow absorption, and
+// the threshold for a sublingual first dose is unchanged at COWS >= 8. But
+// waiting *longer* than COWS >6 for a Buvidal dose is not the safe option it
+// looks like, which is the half of this the guidance spends a paragraph on.
 export const TRANSFER_ROUTE_WARNING =
-    '<strong>The COWS &ge; 6 figure belongs to Buvidal, not to sublingual buprenorphine.</strong> It works '
+    '<strong>The COWS &gt;6 figure belongs to Buvidal, not to sublingual buprenorphine.</strong> It works '
     + 'because the depot takes 12-24 hours to reach peak plasma levels, so displacement is gradual. A '
-    + 'sublingual first dose still waits for <strong>COWS &ge; 8</strong>.';
+    + 'sublingual first dose still waits for <strong>COWS &ge; 8</strong>. <strong>Waiting for moderate or '
+    + 'severe withdrawal (COWS &ge; 12) before a first Buvidal dose is not the cautious option</strong> - '
+    + 'the patient then sits in withdrawal for the eight to 12 hours the depot takes to reach effective '
+    + 'plasma levels, and the transfer is more uncomfortable for it.';
 
 // --- Micro-dosing -------------------------------------------------------------
 export const MICRODOSING_SUITABILITY = {

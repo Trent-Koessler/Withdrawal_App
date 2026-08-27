@@ -1234,11 +1234,22 @@ describe('the methadone to buprenorphine transfers page', () => {
     // table of each other.
     test('the COWS 6 figure is bound to Buvidal and the sublingual threshold restated', () => {
         const module = read('data/otp-transfers.js');
-        assert.ok(/COWS &ge; 6/.test(TRANSFER_ROUTES[0].route), 'the Buvidal threshold has gone');
+        assert.ok(/COWS &gt;6/.test(TRANSFER_ROUTES[0].route), 'the Buvidal threshold has gone');
         assert.ok(/COWS &ge; 8/.test(TRANSFER_ROUTES[0].route),
             'the sublingual threshold is no longer stated alongside it');
         assert.ok(/belongs to Buvidal, not to sublingual buprenorphine/.test(module),
             'nothing stops COWS 6 being read as a sublingual threshold');
+    });
+
+    // Deferring a first Buvidal dose to moderate withdrawal reads as the
+    // careful choice and is the opposite: it buys eight to 12 hours of
+    // unrelieved withdrawal while the depot comes up.
+    test('the page says that waiting for moderate withdrawal is not the cautious option', () => {
+        const module = read('data/otp-transfers.js');
+        assert.ok(/not the cautious option/.test(module),
+            'the warning against deferring the first Buvidal dose to COWS 12 has gone');
+        assert.ok(/eight to 12 hours/.test(module),
+            'the cost of deferring it - the time the depot takes to reach effective levels - is not stated');
     });
 
     test('the routes are ordered by methadone dose, the number the prescriber has', () => {
