@@ -622,13 +622,77 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         walk(clone);
-        return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+        return asciiFold(lines.join('\n')).replace(/\n{3,}/g, '\n\n').trim();
+    }
+
+    // EMR text fields are the last place in the stack that is still reliably
+    // ASCII. Legacy character sets, fixed-width note fields and the interfaces
+    // between them turn anything outside it into a question mark, a mojibake
+    // run, or nothing at all - and a dropped character in "<= 10mg ODDE" or
+    // "37.5 degrees C" is a dose or an observation that now reads as something
+    // else. The hand-written opioid quick-start was already written in plain
+    // ASCII for this reason; everything built out of the page or the data
+    // modules is folded here instead, so the whole EMR path behaves the same
+    // way without every author having to remember it.
+    //
+    // Symbols that carry meaning are spelled out rather than dropped. The
+    // warning emoji become the word the colour was doing the work of, so a
+    // block that shouts on screen still shouts in the note.
+    const ASCII_FOLD = [
+        [/[\u2018\u2019\u201B]/g, "'"],
+        [/[\u201C\u201D\u201F]/g, '"'],
+        [/\u2013/g, '-'],          // en dash
+        [/\u2014/g, ' - '],        // em dash: it separates clauses, so it keeps its spaces
+        [/\u2026/g, '...'],
+        [/\u2264/g, '<='],
+        [/\u2265/g, '>='],
+        [/\u2260/g, '!='],
+        [/[\u2248\u223C]/g, '~'],
+        [/[\u2192\u21D2]/g, '->'],
+        [/[\u2190\u21D0]/g, '<-'],
+        [/\u00D7/g, 'x'],
+        [/\u00B0/g, ' degrees '],
+        [/\u00B1/g, '+/-'],
+        [/\u00BD/g, '1/2'],
+        [/[\u2022\u00B7\u25AA\u25CF]/g, '-'],
+        [/\u00A7\s*/g, 'section '],
+        [/\u00A0/g, ' '],
+        [/\uD83D\uDEA8/g, 'WARNING:'],   // rotating light
+        [/\u26A0/g, 'CAUTION:'],          // warning sign
+        [/\u00A9/g, '(c)'],
+        // Decoration with no reading, dropped rather than spelled out. The
+        // theme toggle's sun and moon are labels on a control that never
+        // reaches an EMR field, but naming them here keeps the table a
+        // complete account of what the content contains.
+        [/\uD83C\uDF19|\u2600/g, ''],
+    ];
+
+    function asciiFold(text) {
+        // Variation selectors and zero-width joiners go first, before the map
+        // below: an emoji spelled as "CAUTION:" would otherwise be followed by
+        // its own invisible modifier, and stripping that at the end takes the
+        // space after it too, giving "CAUTION:Drug interactions".
+        let out = text.replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060]/g, '');
+        out = ASCII_FOLD.reduce((acc, [pattern, replacement]) =>
+            acc.replace(pattern, replacement), out);
+        // Accented Latin becomes its base letter rather than being dropped:
+        // a source author is "Hammig" misspelled, but "Hmmig" is not a name.
+        out = out.normalize('NFD').replace(/[\u0300-\u036F]/g, '').normalize('NFC');
+        // Anything still outside printable ASCII is decoration - a variation
+        // selector, an emoji the list above does not name. It goes, and takes
+        // one following space with it so removing it does not leave the line
+        // starting with a gap.
+        out = out.replace(/[^\x20-\x7E\n]+ ?/g, '');
+        // The spell-outs above can double a space that was already there.
+        // Only runs after a visible character are squeezed: leading spaces are
+        // the list indentation and have to survive.
+        return out.replace(/(\S) {2,}/g, '$1 ').replace(/[ \t]+$/gm, '');
     }
 
     // Clinical strings in data/regimens.js are markup. This renders one as the
     // single plain line it becomes in an EMR field, citations removed.
     function plainLine(html) {
-        return html
+        const line = html
             .replace(/<span class="src-tag[\s\S]*?<\/span>/g, '')
             .replace(/<[^>]+>/g, '')
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
@@ -636,6 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/&nbsp;/g, ' ')
             .replace(/\s+/g, ' ')
             .trim();
+        return asciiFold(line);
     }
 
     // Some cells use the `prn` slot for advice rather than doses - the test-dose
@@ -759,7 +824,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Buprenorphine and Methadone sections on this page; this function does
     // not introduce any figure that is not already stated and sourced there.
     function buildOpioidQuickStart() {
-        return [
+        // Folded like the derived guides even though it is written in ASCII by
+        // hand: that is a convention a later edit can break silently, and this
+        // makes it a property of the output instead.
+        return asciiFold([
             '--- QUICK-START: BUPRENORPHINE COMMENCEMENT ---',
             'WARNING: Defer the first dose until the patient is in objective withdrawal (COWS >= 8) to avoid precipitated withdrawal.',
             '',
@@ -799,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'precipitated-withdrawal recognition, and when to seek specialist advice.',
             `Generated by SUD Toolkit v${APP_VERSION}. Adult patients only. Verify against local policy and current `
             + 'NSW Health guidance before use; this is decision support, not a prescription.'
-        ].join('\n');
+        ].join('\n'));
     }
 
     // Shared by the regimen panel and the monitoring/equivalence tables. Wrapped

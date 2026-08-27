@@ -148,6 +148,17 @@ The user-facing version of this lives at `#changelog-page` in the app.
   equivalence table becomes "Alprazolam: 0.5mg" under a line naming the
   reference diazepam dose, and the NRT selection matrix becomes one group per
   time-to-first-cigarette with a bullet for each cigarettes-per-day column.
+- **Everything on the EMR export path is folded to ASCII.** An EMR text field
+  is the last place in the stack that is reliably ASCII, and a character it
+  cannot represent comes out as a question mark, a mojibake run, or nothing -
+  which in "≤ 10mg ODDE" or "37.5°C" is a dose or an observation that now reads
+  as a different one. Symbols that carry meaning are spelled out (`≤` becomes
+  `<=`, `°` becomes ` degrees `, `§11` becomes `section 11`), accented letters
+  fall back to the base letter rather than being dropped, and the warning
+  emoji become the word their colour was doing the work of - `🚨` leads the line
+  as `WARNING:`. This covers the regimen block as well as the quick-start
+  guides. A test fails if content arrives using a symbol the fold does not
+  know, so the next one is caught before it reaches a note.
 
 ## 0.4.8 - August 2026
 

@@ -3953,6 +3953,14 @@ textarea[id$="-quickstart-summary"] {
                         equivalence table copies as "Alprazolam: 0.5mg" under a line naming the reference
                         diazepam dose, and the NRT table copies as one group per time-to-first-cigarette with a
                         line for each cigarettes-per-day column.</li>
+                    <li><strong>Anything copied for the EMR is now plain ASCII.</strong> EMR text fields
+                        mangle characters outside it, and a dropped one in &ldquo;&le; 10mg ODDE&rdquo; or
+                        &ldquo;37.5&deg;C&rdquo; is a dose or an observation that reads as a different one.
+                        Symbols are spelled out instead - &le; copies as &lt;=, &deg; as
+                        &ldquo;degrees&rdquo;, &sect;11 as &ldquo;section 11&rdquo; - and the warning
+                        symbols copy as the word they stand for, so a block that shouts on screen still
+                        shouts in the note. This applies to the alcohol regimen block as well as the
+                        quick-start guides.</li>
                 </ul>
 
                 <h4>0.4.8 - August 2026</h4>
