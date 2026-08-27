@@ -512,6 +512,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EMR EXPORT (AUTH-06) --- //
 
+    // A table pasted into an EMR field stops being a table: the column
+    // alignment is lost and every row degrades into a run of pipe-separated
+    // fragments that no longer says which figure belongs to which column.
+    // So a table is flattened into a list here, carrying its column headers
+    // down onto each value instead of leaving them stranded on a header row.
+    //
+    // Two shapes, because clinical tables come in two:
+    //   - a two-column lookup (drug -> equivalent dose) becomes one bullet per
+    //     row, "Diazepam: 5mg", under a lead-in naming what the second column
+    //     is (without it, "5mg" loses the reference dose it is equivalent to);
+    //   - a matrix (rows one axis, columns another) becomes a group per row,
+    //     the row label as the lead-in and one indented bullet per column.
+    function tableToList(table, collapse) {
+        const rows = [...table.querySelectorAll('tr')];
+        if (!rows.length) return [];
+
+        // The header row is the one made of <th>, wherever it sits. Rows that
+        // mix <th> and <td> are body rows whose first cell is a row label.
+        const isHeaderRow = (row) => {
+            const cells = [...row.children];
+            return cells.length > 0 && cells.every(c => c.tagName === 'TH');
+        };
+        const headerRow = rows.find(isHeaderRow);
+        const headers = headerRow ? [...headerRow.children].map(c => collapse(c.textContent)) : [];
+        const bodyRows = rows.filter(r => r !== headerRow);
+
+        const lines = [];
+        const caption = table.querySelector('caption');
+        const captionText = caption ? collapse(caption.textContent) : '';
+        if (captionText) lines.push('  ' + captionText);
+
+        // Two columns: the first cell names the row, the second is its single
+        // value, so the whole row fits on one bullet. The lead-in only earns
+        // its line where the header says something the values do not.
+        const twoColumn = bodyRows.length > 0 && bodyRows.every(r => r.children.length === 2);
+        if (twoColumn && headers.length === 2) {
+            lines.push('  ' + headers.filter(Boolean).join(' - ') + ':');
+        }
+
+        bodyRows.forEach(row => {
+            const cells = [...row.children].map(c => collapse(c.textContent));
+            if (!cells.length) return;
+            // A single-cell row is a sub-heading inside the table body.
+            if (cells.length === 1) {
+                lines.push('  ' + cells[0]);
+                return;
+            }
+            if (twoColumn) {
+                lines.push(`  - ${cells[0]}: ${cells[1]}`);
+                return;
+            }
+            // Matrix: the row label leads, each remaining cell is a bullet
+            // under it tagged with its own column header.
+            lines.push('  ' + cells[0] + ':');
+            cells.slice(1).forEach((cell, i) => {
+                if (!cell) return;
+                const header = headers[i + 1];
+                lines.push('    - ' + (header ? `${header}: ${cell}` : cell));
+            });
+        });
+
+        return lines;
+    }
+
     // Turns rendered clinical markup into something that survives being pasted
     // into an EMR text field. Built from the live DOM rather than from the data
     // modules, so what is copied is by construction what the clinician read.
@@ -523,9 +587,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         clone.querySelectorAll('.src-tag').forEach(tag => tag.remove());
         // Buttons are controls, not content; copying their labels is noise.
-        clone.querySelectorAll('button, .clinical-table-wrap').forEach(el => {
-            if (el.tagName === 'BUTTON') el.remove();
-        });
+        clone.querySelectorAll('button').forEach(el => el.remove());
+        // A line break inside a cell is a separator; without this the two halves
+        // run together into one unreadable word when the cell is collapsed.
+        clone.querySelectorAll('br').forEach(br => br.replaceWith(' '));
 
         const collapse = (s) => s.replace(/\s+/g, ' ').trim();
         // Recurse only into containers that hold other blocks. A callout whose
@@ -542,9 +607,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (tag === 'UL' || tag === 'OL') {
                     [...child.children].forEach(li => lines.push('  - ' + collapse(li.textContent)));
                 } else if (tag === 'TABLE') {
-                    [...child.querySelectorAll('tr')].forEach(row => {
-                        lines.push('  ' + [...row.children].map(c => collapse(c.textContent)).join(' | '));
-                    });
+                    // Blank-line fenced: a table's rows are bullets now, and
+                    // whatever list follows it on the page (the equivalence
+                    // caveats, for one) would otherwise read as more rows.
+                    lines.push('', ...tableToList(child, collapse), '');
                 } else if (/^H[1-6]$/.test(tag)) {
                     lines.push('', collapse(child.textContent).toUpperCase());
                 } else if (hasBlockChildren(child)) {
@@ -979,9 +1045,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Every quick-start textarea is filled with its guide as the page is built,
+    // not on the click of its Copy button. The guide is what the clinician is
+    // deciding whether to paste, so it has to be readable first; a copy button
+    // that also happens to be the only way to see the text makes the clinician
+    // put something on the clipboard to find out what it says.
+    // `renderers` keeps each textarea next to the function that fills it, so
+    // the seeding pass below and the click handler cannot disagree about what
+    // the guide contains.
+    const quickStartRenderers = [];
+
     const opioidQuickStartEl = document.getElementById('opioid-quickstart-summary');
     const copyOpioidQuickStartBtn = document.getElementById('copy-opioid-quickstart-btn');
     if (opioidQuickStartEl && copyOpioidQuickStartBtn) {
+        quickStartRenderers.push(() => { opioidQuickStartEl.value = buildOpioidQuickStart(); });
         copyOpioidQuickStartBtn.addEventListener('click', () => {
             opioidQuickStartEl.value = buildOpioidQuickStart();
             opioidQuickStartEl.select();
@@ -1005,13 +1082,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const textarea = document.getElementById(btn.id.replace(/^copy-/, '').replace(/-btn$/, '-summary'));
         const page = btn.closest('.page');
         if (!textarea || !page) return;
-        btn.addEventListener('click', () => {
+
+        const buildPageQuickStart = () => {
             const blocks = [...page.querySelectorAll('[data-quickcopy]')];
             const body = blocks
                 .map(el => elementToPlainText(el))
                 .filter(Boolean)
                 .join('\n\n');
-            const text = [
+            return [
                 `${(page.dataset.title || page.id).toUpperCase()} - QUICK-START REFERENCE`,
                 '',
                 body,
@@ -1021,6 +1099,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 `Generated by SUD Toolkit v${APP_VERSION}. Adult patients only. Verify against local policy and `
                 + 'current NSW Health guidance before use; this is decision support, not a prescription.'
             ].join('\n');
+        };
+
+        quickStartRenderers.push(() => { textarea.value = buildPageQuickStart(); });
+
+        btn.addEventListener('click', () => {
+            // Rebuilt rather than read back out of the textarea: the seeded
+            // value is the same text, but building it here keeps the copy
+            // correct even if the page content behind it has since changed.
+            const text = buildPageQuickStart();
             textarea.value = text;
             textarea.select();
             navigator.clipboard.writeText(text);
@@ -1029,6 +1116,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { btn.textContent = original; }, 2000);
         });
     });
+
+    // Called from the init sequence below rather than here: the generic guides
+    // are read out of the rendered DOM, and the shared symptomatic and harm
+    // reduction blocks two of them draw on have not been rendered yet at this
+    // point in the file.
+    function seedQuickStartSummaries() {
+        quickStartRenderers.forEach(render => render());
+    }
 
     if (document.getElementById('inpatient-guidelines-page')) {
         updateRegimenDisplay();
@@ -1689,6 +1784,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // pass finds nothing left to change.
     new MutationObserver(collapseLongRationales)
         .observe(mainContent, { childList: true, subtree: true });
+
+    // Fills every quick-start textarea, now that the shared blocks they are
+    // built from are on the page.
+    seedQuickStartSummaries();
 
     // --- INITIAL ROUTE --- //
     // Runs last so a deep link like #scales-page/cows lands on a fully built

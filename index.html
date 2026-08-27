@@ -759,8 +759,12 @@ textarea {
 }
 
 /* The EMR block is now short enough to read before pasting it, so show it
-   whole rather than through a four-line window. */
-#plan-summary {
+   whole rather than through a four-line window. The quick-start guides are
+   filled in as the page loads and read the same way, so they get the same
+   treatment: monospace keeps the indented list structure lined up, and the
+   taller box means the guide can be checked without copying it first. */
+#plan-summary,
+textarea[id$="-quickstart-summary"] {
     min-height: 260px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 13px;
@@ -3940,6 +3944,15 @@ textarea {
                     <li><strong>Three sources are named on the Sources page</strong> that the app was already
                         relying on or now relies on: the 2024 LAIB guidance, the 2023 interim transfer
                         guidance, and the original 2016 description of the Bernese method.</li>
+                    <li><strong>The quick-start guides are filled in when the page opens</strong>, instead of
+                        appearing only after the Copy button is pressed. You can read what you are about to
+                        paste before it goes on the clipboard.</li>
+                    <li><strong>Tables in a quick-start guide are copied out as lists.</strong> A table pasted
+                        into an EMR field loses its columns and reads as a run of pipe-separated fragments, so
+                        each column heading is carried down onto its value instead - the benzodiazepine
+                        equivalence table copies as "Alprazolam: 0.5mg" under a line naming the reference
+                        diazepam dose, and the NRT table copies as one group per time-to-first-cigarette with a
+                        line for each cigarettes-per-day column.</li>
                 </ul>
 
                 <h4>0.4.8 - August 2026</h4>

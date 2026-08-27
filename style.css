@@ -726,8 +726,12 @@ textarea {
 }
 
 /* The EMR block is now short enough to read before pasting it, so show it
-   whole rather than through a four-line window. */
-#plan-summary {
+   whole rather than through a four-line window. The quick-start guides are
+   filled in as the page loads and read the same way, so they get the same
+   treatment: monospace keeps the indented list structure lined up, and the
+   taller box means the guide can be checked without copying it first. */
+#plan-summary,
+textarea[id$="-quickstart-summary"] {
     min-height: 260px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 13px;
