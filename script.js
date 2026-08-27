@@ -21,7 +21,8 @@ import {
     BRIDGING_RATIONALE, BRIDGING_ELIGIBILITY, BRIDGING_ELIGIBILITY_SOURCE, BRIDGING_SCHEDULE,
     BRIDGING_SCHEDULE_SOURCE, BRIDGING_DAY3, BRIDGING_REVIEWS, BRIDGING_REVIEWS_RULE,
     BRIDGING_REVIEWS_SOURCE,
-    BRIDGING_SUBLOCADE_WARNING, BRIDGING_SUBLOCADE_SOURCE, TRANSFER_EVIDENCE
+    BRIDGING_SUBLOCADE_WARNING, BRIDGING_SUBLOCADE_SOURCE, TRANSFER_EVIDENCE,
+    MICRODOSING_EXTENDED_SOURCE, MICRODOSING_EXTENDED_NOTES, MICRODOSING_VERDICTS, microdosingPlan
 } from './data/otp-transfers.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 
@@ -1401,6 +1402,70 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             + `<p>${BRIDGING_REVIEWS_RULE}</p><p>${BRIDGING_REVIEWS_SOURCE}</p>`;
     });
+
+    // --- MICRO-DOSING SCHEDULE CALCULATOR --- //
+    // The buprenorphine column is fixed and the methadone column is the one
+    // that gets worked out by hand at the end of a clinic, so this does that
+    // arithmetic and nothing else clever: the same eight rungs as the table
+    // above, with the day numbers and milligrams as they would be written on
+    // the script.
+    const mdDoseEl = document.getElementById('microdosing-dose');
+    const mdWeeksEl = document.getElementById('microdosing-weeks');
+    const mdResultEl = document.getElementById('microdosing-result');
+
+    if (mdDoseEl && mdWeeksEl && mdResultEl) {
+        const mg = (n) => `${Number(n.toFixed(1))}mg`;
+
+        const updateMicrodosing = () => {
+            const plan = microdosingPlan(parseFloat(mdDoseEl.value), parseInt(mdWeeksEl.value, 10));
+            if (!plan) {
+                mdResultEl.innerHTML = '';
+                return;
+            }
+
+            const verdict = MICRODOSING_VERDICTS[plan.verdict];
+            mdResultEl.innerHTML =
+                `<div class="otp-result-card ${verdict.tone}"><strong>${verdict.title}</strong>`
+                + verdict.body + `</div>`
+                + renderClinicalTable({
+                    caption: `Micro-dosing from ${mg(plan.dailyMethadoneMg)} of methadone, over `
+                        + `${plan.weeks === 2 ? 'two weeks' : 'one week'} - finishing on day ${plan.lastDay}`,
+                    headers: ['Day', 'Methadone', 'Sublingual buprenorphine', ''],
+                    rows: plan.rows.map(r => [
+                        `<strong>${r.dayLabel}</strong>`,
+                        // The fraction is shown next to the milligrams so the
+                        // number can be checked against the published table
+                        // rather than taken on trust from a calculator.
+                        r.fraction === 1
+                            ? `<strong>${mg(r.methadoneMg)}</strong>`
+                            : `<strong>${mg(r.methadoneMg)}</strong> `
+                              + `<small>(${r.fraction === 0.5 ? 'half' : 'a quarter'} of `
+                              + `${mg(plan.dailyMethadoneMg)})</small>`,
+                        `<strong>${r.bup}</strong>`,
+                        r.note
+                    ])
+                })
+                + `<p><strong>Methadone is never stopped on this schedule</strong> - the last day is a `
+                + `quarter of the usual dose, ${mg(plan.rows[plan.rows.length - 1].methadoneMg)}. Round to `
+                + `what the dosing point can measure, and the prescriber writes the dose.</p>`
+                + (plan.weeks === 2
+                    ? `<ul>` + MICRODOSING_EXTENDED_NOTES.map(n => `<li>${n}</li>`).join('') + `</ul>`
+                      + `<p>${MICRODOSING_EXTENDED_SOURCE}</p>`
+                    : `<p>${MICRODOSING_SOURCE}</p>`);
+        };
+
+        [mdDoseEl, mdWeeksEl].forEach(el => {
+            el.addEventListener('input', updateMicrodosing);
+            el.addEventListener('change', updateMicrodosing);
+        });
+
+        document.getElementById('reset-microdosing-btn')?.addEventListener('click', () => {
+            mdDoseEl.value = '';
+            mdWeeksEl.selectedIndex = 0;
+            mdResultEl.innerHTML = '';
+            mdDoseEl.focus();
+        });
+    }
 
     document.querySelectorAll('[data-transfer-evidence]').forEach(host => {
         host.innerHTML = `<ul>` + TRANSFER_EVIDENCE.map(e => `<li>${e}</li>`).join('') + `</ul>`;

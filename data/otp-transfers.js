@@ -130,19 +130,33 @@ export const MICRODOSING_SUITABILITY = {
 // halved and then quartered, not stopped. Held as data with the methadone
 // column written as a fraction of X so the page cannot quietly turn it into a
 // cessation.
-export const MICRODOSING_SCHEDULE = [
-    { day: '0', methadone: 'X', bup: 'Nil', note: 'Baseline COWS and SOWS. Symptomatic relief, support.' },
-    { day: '1', methadone: 'X', bup: '0.2mg BD <em>or</em> 0.4mg mane', note: '' },
-    { day: '2', methadone: 'X', bup: '0.4mg BD', note: '' },
-    { day: '3', methadone: 'X', bup: '2mg', note: '' },
-    { day: '4', methadone: 'X', bup: '4mg', note: '' },
-    { day: '5', methadone: 'X', bup: '8mg', note: '' },
-    { day: '6', methadone: '&frac12;X', bup: '16mg', note: 'Methadone halved.' },
+// The eight rungs of the schedule, held once so the printed table, the
+// calculator and the two-week variant cannot say different things. `fraction`
+// is what the methadone dose is multiplied by on that rung; `bup` is a label
+// rather than a number because two of the rungs are not single doses.
+const MICRODOSING_STEPS = [
+    { fraction: 1, bup: 'Nil', note: 'Baseline COWS and SOWS. Symptomatic relief, support.' },
+    { fraction: 1, bup: '0.2mg BD <em>or</em> 0.4mg mane', note: '' },
+    { fraction: 1, bup: '0.4mg BD', note: '' },
+    { fraction: 1, bup: '2mg', note: '' },
+    { fraction: 1, bup: '4mg', note: '' },
+    { fraction: 1, bup: '8mg', note: '' },
+    { fraction: 0.5, bup: '16mg', note: 'Methadone halved.' },
     {
-        day: '7', methadone: '&frac14;X', bup: '16-32mg',
+        fraction: 0.25, bup: '16-32mg',
         note: 'Buvidal Weekly may be started here instead, if the patient is transferring to depot.'
     }
 ];
+
+const FRACTION_LABEL = { 1: 'X', 0.5: '&frac12;X', 0.25: '&frac14;X' };
+
+// NSW interim guidance, Table 2: one rung a day, day 0 to day 7.
+export const MICRODOSING_SCHEDULE = MICRODOSING_STEPS.map((step, i) => ({
+    day: String(i),
+    methadone: FRACTION_LABEL[step.fraction],
+    bup: step.bup,
+    note: step.note
+}));
 
 export const MICRODOSING_NOTES = [
     '<strong>X is the usual daily methadone dose, and it does not change until day 6.</strong> That is the '
@@ -156,6 +170,116 @@ export const MICRODOSING_NOTES = [
 ];
 
 export const MICRODOSING_SOURCE = SRC_INTERIM_2023('Table 2, p5');
+
+// --- The two-week option ------------------------------------------------------
+//
+// NSW publishes one schedule and it runs over a week. Holding each rung for two
+// days instead of one is a common ambulatory adaptation for patients on high
+// doses or those who find the daily change hard to manage, and it is the
+// smallest possible departure: every dose on it is a NSW dose, and the
+// methadone reductions still land on the rungs the guidance puts them on. What
+// changes is how long each step is held, and nothing else.
+//
+// It is offered because the alternative in practice is not the published
+// schedule - it is a clinician inventing a longer one on the spot - but it is
+// tagged as a local extension rather than presented as guidance.
+export const MICRODOSING_EXTENDED_SOURCE =
+    '<span class="src-tag src-local">LOCAL - rationale: NSW publishes only the seven-day schedule, and '
+    + 'gives no guidance on lengthening it. The two-week option holds each of its rungs for two days '
+    + 'instead of one, so every buprenorphine dose and every methadone reduction is a published one and '
+    + 'only the duration changes. It is offered because a slower transfer is often what is wanted for a '
+    + 'high dose or an anxious patient, and the realistic alternative is a schedule improvised at the '
+    + 'bedside rather than the published one.</span>';
+
+export const MICRODOSING_EXTENDED_NOTES = [
+    '<strong>This is not the NSW schedule.</strong> It is the NSW schedule with each step held for two '
+        + 'days. Discuss it with the addiction medicine specialist before starting, and record which '
+        + 'schedule the patient is on.',
+    '<strong>The methadone authority has to cover the longer transfer.</strong> The authority grants '
+        + 'methadone for a specified time - make sure that time is the length of the schedule you are '
+        + 'actually running.',
+    '<strong>The dose changes on the odd days.</strong> On a two-week schedule the patient takes the same '
+        + 'buprenorphine dose on two consecutive days, which is easier to dispense but easier to lose '
+        + 'count of - the day numbers in the table above are the ones to write on the script.'
+];
+
+// The bands micro-dosing itself is bounded by. Anything the guidance does not
+// cover gets said as such rather than answered - the 30-40mg gap in particular,
+// which is neither a direct transfer nor a micro-dose in the published text.
+export const MICRODOSING_VERDICTS = {
+    direct: {
+        tone: 'resume',
+        title: 'Direct transfer is the published route at this dose',
+        body: '<p>At <strong>30mg or less</strong>, NSW guidance transfers directly: stop methadone, and '
+            + 'induct once there is mild withdrawal with objective signs. Micro-dosing is for higher doses. '
+            + 'The schedule below is shown because it can still be used, but it is not the route the '
+            + 'guidance selects here.</p>'
+    },
+    gap: {
+        tone: 'reduced',
+        title: 'The guidance does not cover this dose',
+        body: '<p>Direct transfer is the published route <strong>at 30mg or less</strong>, and micro-dosing '
+            + 'is offered <strong>above 40mg</strong>. Between the two, NSW states neither. <strong>Seek '
+            + 'specialist advice on which route to take</strong> rather than reading the gap as a choice '
+            + 'that has been left open.</p>'
+    },
+    standard: {
+        tone: 'resume',
+        title: 'Micro-dosing is an option at this dose',
+        body: '<p>NSW offers micro-dosing above 40mg, as an outpatient with daily review, subject to the '
+            + 'suitability criteria above.</p>'
+    },
+    specialist: {
+        tone: 'review',
+        title: 'Above 150mg - specialist advice, and consider admission',
+        body: '<p><strong>There are no reported cases of ambulatory micro-dose transfer above '
+            + '150mg.</strong> Seek specialist advice before starting, and consider doing the transfer as '
+            + 'an inpatient. The schedule below is unchanged by the dose, but the setting should not be.</p>'
+    }
+};
+
+// Turns a methadone dose and a schedule length into the days as they would be
+// written on a script. The buprenorphine column is fixed; the only arithmetic
+// is the methadone one, which is the half of it that gets done wrong by hand at
+// the end of a clinic.
+//
+// Returns null for a dose that is not a dose, so a blank field renders nothing
+// rather than a schedule of NaN.
+export function microdosingPlan(dailyMethadoneMg, weeks = 1) {
+    if (!Number.isFinite(dailyMethadoneMg) || dailyMethadoneMg <= 0) return null;
+    const daysPerStep = weeks === 2 ? 2 : 1;
+
+    let day = 0;
+    const rows = MICRODOSING_STEPS.map((step, i) => {
+        // Day 0 is the baseline day and is not part of the ramp, so it is never
+        // doubled - two days of no buprenorphine is a delay, not a gentler start.
+        const span = i === 0 ? 1 : daysPerStep;
+        const first = day;
+        day += span;
+        return {
+            dayLabel: span === 1 ? `Day ${first}` : `Days ${first}-${day - 1}`,
+            fraction: step.fraction,
+            methadoneMg: dailyMethadoneMg * step.fraction,
+            bup: step.bup,
+            note: step.note
+        };
+    });
+
+    return {
+        dailyMethadoneMg,
+        weeks: daysPerStep === 2 ? 2 : 1,
+        lastDay: day - 1,
+        verdict: verdictFor(dailyMethadoneMg),
+        rows
+    };
+}
+
+function verdictFor(dailyMethadoneMg) {
+    if (dailyMethadoneMg <= 30) return 'direct';
+    if (dailyMethadoneMg <= 40) return 'gap';
+    if (dailyMethadoneMg <= 150) return 'standard';
+    return 'specialist';
+}
 
 // Table 3. These are days on which the patient missed *both* drugs, which is
 // why the answer is a COWS score rather than a step of the schedule: after a

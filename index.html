@@ -2724,6 +2724,25 @@ textarea {
                     No washout, and the patient is not asked to be in withdrawal at any point.</p>
                 <div data-microdosing></div>
 
+                <h5>Work out the schedule for this patient</h5>
+                <p>Enter the usual daily methadone dose. The buprenorphine column is fixed; what this works
+                    out is the methadone column and the day numbers, as they would be written on the
+                    script.</p>
+                <div class="form-grid otp-missed-grid">
+                    <label for="microdosing-dose">Usual daily methadone dose (mg)</label>
+                    <input type="number" id="microdosing-dose" min="0" step="0.5" inputmode="decimal"
+                        placeholder="e.g. 60">
+                    <label for="microdosing-weeks">Over</label>
+                    <select id="microdosing-weeks">
+                        <option value="1">One week - the NSW schedule</option>
+                        <option value="2">Two weeks - each step held for two days</option>
+                    </select>
+                </div>
+                <div id="microdosing-result" role="status" aria-live="polite"></div>
+                <div class="button-group">
+                    <button id="reset-microdosing-btn" type="button">Reset</button>
+                </div>
+
                 <h5>Missed doses during micro-dosing</h5>
                 <div data-microdosing-missed></div>
                 </div>
@@ -3870,6 +3889,22 @@ textarea {
                         5, is halved on day 6 and quartered on day 7. <strong>Methadone is not stopped on
                             day 7</strong> - the page says so, because that is the usual misreading of the
                         table. Buvidal Weekly may be started on day 7 instead.</li>
+                    <li><strong>A calculator works out the schedule for the patient in front of you.</strong>
+                        Enter the usual daily methadone dose and it prints the days as they would be written
+                        on the script - the fixed buprenorphine column beside the methadone one worked out,
+                        with each reduced figure shown as the fraction it is so it can be checked against
+                        the published table. It also says which route the dose selects: direct transfer at
+                        30mg or less, micro-dosing above 40, specialist advice above 150 - and, between 30
+                        and 40mg, that NSW states neither, which is a gap in the guidance rather than a
+                        choice left open.</li>
+                    <li><strong>The schedule can be run over one week or two.</strong> One week is the NSW
+                        schedule. Two weeks holds each of its steps for two days - every buprenorphine dose
+                        and every methadone reduction is still a published one, and only the duration
+                        changes. It is offered because a slower transfer is often what is wanted for a high
+                        dose or an anxious patient, and the realistic alternative is a schedule improvised at
+                        the bedside. <strong>It is not the NSW schedule, is tagged as a local extension, and
+                            says so on screen</strong> - along with the reminder that the methadone authority
+                        has to cover however long the transfer actually runs.</li>
                     <li><strong>Missed doses during micro-dosing are answered by COWS, not by where the
                             patient was up to.</strong> One day missed resumes the schedule; two to three
                         days is a COWS above 24 to induct outright; four to five days is a COWS above 13, and

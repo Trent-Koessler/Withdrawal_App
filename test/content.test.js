@@ -21,7 +21,8 @@ import { PHARMACOTHERAPY, CASE_FLAGGING, PRESCRIBER_CAPS, SL_TO_BUVIDAL, buvidal
     DIRECT_INITIATION } from '../data/otp-treatment.js';
 import {
     TRANSFER_ROUTES, MICRODOSING_SCHEDULE, MICRODOSING_MISSED, BRIDGING_SCHEDULE, BRIDGING_DAY3,
-    BRIDGING_ELIGIBILITY, TRANSFER_STOPS, BRIDGING_REVIEWS_RULE
+    BRIDGING_ELIGIBILITY, TRANSFER_STOPS, BRIDGING_REVIEWS_RULE, microdosingPlan,
+    MICRODOSING_VERDICTS, MICRODOSING_EXTENDED_SOURCE, MICRODOSING_EXTENDED_NOTES
 } from '../data/otp-transfers.js';
 import { EMR_SAFETY_LINES } from '../data/regimens.js';
 
@@ -1282,6 +1283,85 @@ describe('the methadone to buprenorphine transfers page', () => {
             .test(BRIDGING_REVIEWS_RULE), 'the escalation route has gone from the review schedule');
         assert.ok(/[Ii]ntoxication/.test(BRIDGING_REVIEWS_RULE),
             'intoxication is the source table\'s named trigger for that call, and is no longer stated');
+    });
+
+    // The calculator's only job is the methadone column. Everything it prints
+    // has to be a row of the published table with the arithmetic done, which is
+    // what these assert - starting with the day count.
+    test('the one-week plan is the published schedule, with the milligrams worked out', () => {
+        const plan = microdosingPlan(60, 1);
+        assert.equal(plan.lastDay, 7, 'a one-week schedule that does not end on day 7');
+        assert.deepEqual(plan.rows.map((r) => r.dayLabel),
+            ['Day 0', 'Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']);
+        assert.deepEqual(plan.rows.map((r) => r.methadoneMg), [60, 60, 60, 60, 60, 60, 30, 15]);
+        assert.deepEqual(plan.rows.map((r) => r.bup), MICRODOSING_SCHEDULE.map((d) => d.bup),
+            'the calculator and the printed table disagree about the buprenorphine doses');
+    });
+
+    // Two weeks is the same rungs held twice as long. Every dose on it must
+    // still be a dose the guidance publishes - a schedule with a new dose level
+    // on it would be an invented protocol rather than a lengthened one.
+    test('the two-week plan holds each rung for two days and invents no new dose', () => {
+        const plan = microdosingPlan(90, 2);
+        assert.equal(plan.lastDay, 14, 'a two-week schedule that does not end on day 14');
+        assert.deepEqual(plan.rows.map((r) => r.dayLabel),
+            ['Day 0', 'Days 1-2', 'Days 3-4', 'Days 5-6', 'Days 7-8', 'Days 9-10', 'Days 11-12',
+                'Days 13-14']);
+        assert.deepEqual(plan.rows.map((r) => r.bup), MICRODOSING_SCHEDULE.map((d) => d.bup),
+            'the two-week schedule carries a buprenorphine dose the guidance does not publish');
+        assert.deepEqual(plan.rows.map((r) => r.fraction),
+            MICRODOSING_SCHEDULE.map((_, i) => microdosingPlan(90, 1).rows[i].fraction),
+            'the methadone reductions land on different rungs than the published schedule');
+    });
+
+    // Doubling day 0 would be two days of no buprenorphine at the start, which
+    // is a delay rather than a gentler ramp.
+    test('the baseline day is never doubled', () => {
+        assert.equal(microdosingPlan(60, 2).rows[0].dayLabel, 'Day 0');
+    });
+
+    test('methadone is never taken to zero by the calculator', () => {
+        for (const weeks of [1, 2]) {
+            for (const dose of [45, 60, 90, 120, 150]) {
+                const last = microdosingPlan(dose, weeks).rows.at(-1);
+                assert.equal(last.methadoneMg, dose / 4,
+                    `${dose}mg over ${weeks} week(s): the last day is not a quarter of the usual dose`);
+                assert.ok(last.methadoneMg > 0, 'the calculator has stopped methadone on the last day');
+            }
+        }
+    });
+
+    // The dose bands the method itself is bounded by. The 30-40mg one is the
+    // band the guidance does not answer, and saying so is the answer.
+    test('the dose decides the verdict, and the unstated band is named as unstated', () => {
+        assert.equal(microdosingPlan(25, 1).verdict, 'direct');
+        assert.equal(microdosingPlan(35, 1).verdict, 'gap');
+        assert.equal(microdosingPlan(60, 1).verdict, 'standard');
+        assert.equal(microdosingPlan(180, 1).verdict, 'specialist');
+        assert.ok(/NSW states neither/.test(MICRODOSING_VERDICTS.gap.body),
+            'the 30-40mg gap is being answered rather than named');
+    });
+
+    test('a blank or impossible dose produces no schedule at all', () => {
+        for (const bad of [NaN, 0, -10, undefined]) {
+            assert.equal(microdosingPlan(bad, 1), null, `${bad} produced a schedule`);
+        }
+    });
+
+    // A local extension of a published schedule is exactly what the provenance
+    // system exists to mark, and the page must not present it as guidance.
+    test('the two-week option is tagged as a local extension', () => {
+        assert.ok(/src-local/.test(MICRODOSING_EXTENDED_SOURCE),
+            'the two-week schedule is presented as though NSW published it');
+        assert.ok(/This is not the NSW schedule/.test(MICRODOSING_EXTENDED_NOTES.join(' ')),
+            'the two-week schedule no longer says on the page that it is not the published one');
+    });
+
+    test('the calculator controls are on the page', () => {
+        for (const id of ['microdosing-dose', 'microdosing-weeks', 'microdosing-result',
+            'reset-microdosing-btn']) {
+            assert.ok(new RegExp(`id="${id}"`).test(flat), `calculator element "${id}" is missing`);
+        }
     });
 
     test('the offline precache carries the module', () => {

@@ -27,6 +27,31 @@ The user-facing version of this lives at `#changelog-page` in the app.
   stopped on day 7**, and the page says so in its own note: it is the row people
   reconstruct wrongly from memory, and stopping a day early is a day of
   uncovered withdrawal. Buvidal Weekly may be started on day 7 instead.
+- **A calculator prints the schedule for a given patient.** The buprenorphine
+  column is fixed and the methadone column is the one worked out by hand at the
+  end of a clinic, so that is what it does: enter the usual daily dose and it
+  gives the days as they would go on the script, each reduced figure labelled
+  with the fraction it is - "45mg (half of 90mg)" - so the number can be checked
+  against the published table rather than taken on trust. It also names the
+  route the dose selects, including the band NSW does not answer: direct
+  transfer is published at 30mg or less and micro-dosing above 40, and between
+  the two the calculator says the guidance states neither and to seek specialist
+  advice, rather than treating the gap as a choice left open. A blank or
+  impossible dose prints nothing.
+- **The schedule can be run over one week or two.** One week is the NSW
+  schedule. Two weeks holds each of its rungs for two days instead of one, so
+  every buprenorphine dose and every methadone reduction is still a published
+  one and only the duration changes; day 0 is not doubled, because two days of
+  no buprenorphine is a delay rather than a gentler start. It is offered because
+  a slower transfer is often what is wanted for a high dose or an anxious
+  patient and the realistic alternative is a schedule improvised at the bedside,
+  but **it is not the NSW schedule**: it carries a LOCAL provenance chip, says
+  so on screen, and reminds the prescriber that the methadone authority has to
+  cover however long the transfer actually runs. Tests assert that no dose
+  appears on it that is not on the published schedule.
+- **The printed table and the calculator come out of the same eight rungs**, so
+  a change to one is a change to both - the same reason the missed-dose bands
+  and their calculator share a module.
 - **Missed doses during micro-dosing are answered by a COWS score**, not by the
   step the patient had reached, because after a gap the question has changed.
   One day resumes the schedule. Two to three days: COWS above 24 inducts,
