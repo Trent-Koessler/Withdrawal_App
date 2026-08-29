@@ -5,6 +5,120 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.0 - August 2026
+
+### Clinical
+
+- **Urine drug screen interpretation has a page**, reached from Other
+  Substances. The app already tells a clinician how to manage a withdrawal; this
+  is about the test that often starts the conversation, and how far it can
+  actually be trusted.
+- **The page opens on the point everything else depends on:** an immunoassay
+  point-of-care screen is presumptive. Any result that would change management,
+  or that conflicts with the history, is confirmed by mass spectrometry before it
+  is acted on clinically, legally or for employment. LC-MS/MS has largely
+  replaced GC-MS as the reference method - broader analyte range, less
+  derivatisation, and it separates delta-9- from delta-8-THC.
+- **Detection windows are tabulated**, with the caveat that makes them safe to
+  use: they move with dose, chronicity, hepatic and renal function, body fat,
+  hydration and urine pH. **A positive cannabis metabolite does not indicate
+  recent use and cannot date it** - in biochemically verified abstinence the
+  estimated window averaged 10 days but ranged to 80, and 19% of adolescents and
+  young adults were still positive by federal criteria after more than 25
+  abstinent days.
+- **False positives are listed by assay.** Amphetamine is the least specific
+  screen in the panel, because the antibody targets a phenethylamine shape shared
+  by bupropion, trazodone, aripiprazole, atomoxetine, quetiapine, pseudoephedrine
+  and a long tail of others; a six-year review found 3.9% of in-house and 9.9% of
+  referred positive amphetamine screens were false. Opiate assays cross-react
+  with fluoroquinolones - levofloxacin reaches the positive threshold at
+  concentrations achievable on standard therapeutic dosing. Interference is
+  concentration-dependent and platform-specific, so the page says to check the
+  package insert for the device in front of you rather than to reason from a
+  table.
+- **What the panel cannot see is stated as plainly as what it can**, because the
+  false negative is the one less often considered. Standard opiate assays detect
+  morphine and codeine only; oxycodone, hydrocodone, methadone, buprenorphine,
+  tramadol and **fentanyl do not reliably cross-react and are not on a
+  conventional panel**. Clonazepam and lorazepam are poorly detected by
+  benzodiazepine assays. Negative predictive values run as low as 25% for some
+  common analytes.
+- **A true positive is not the same as illicit use**: poppy seed ingestion
+  produces genuine morphine and codeine, and prescribed stimulants and
+  l-methamphetamine nasal inhalers confirm on GC-MS, needing stereospecific
+  chromatography to separate from illicit d-methamphetamine.
+- **Specimen validity testing has its own section**, with the numeric definitions
+  of dilute, substituted, adulterated and invalid, and a table of common
+  adulterants against how each one shows on the validity panel - including
+  synthetic urine, which usually passes routine testing and is better caught by
+  GGT and amylase. **None of it proves intentional tampering**: dilution is most
+  often water loading but also diuretics, a vegetarian diet, hot-weather fluid
+  intake or diabetes insipidus, and a dilute specimen can still confirm positive
+  in 19-27% of cases at lower cutoffs. What to do instead - repeat collection
+  under stricter conditions, ask about medications, consider oral fluid - is
+  given.
+- **PEth and EtG are compared side by side**, since they are what gets ordered
+  when the question is alcohol rather than drugs. EtG answers use in the last day
+  or two and correlates poorly with amount. PEth gives a four-week window,
+  correlates with amount, and is formed in red cell membranes so it is not
+  confounded by liver disease as GGT and carbohydrate-deficient transferrin are -
+  which is why transplant services rely on it. Interpretive thresholds are given,
+  along with the USPSTF and APA positions, which differ.
+- **The page closes on how to raise a discordant result.** A biomarker that
+  contradicts the history is a clinical finding, not proof of dishonesty; up to
+  35% of patients reporting abstinence in one transplant cohort had a positive
+  PEth, and the discussion is the intervention.
+
+- **Where NSW does speak, the page cites NSW.** NSWCG §11 says a urine drug
+  screen is an engagement tool and not a basis for punitive measures, and that
+  is now the first line of the discordant-result section rather than a US
+  transplant cohort. The same section supplies two things the analytical
+  literature does not: **temazepam and oxazepam are metabolites of diazepam**,
+  so they appear during treatment and are read as illicit use - the assay is
+  right and the inference is wrong - and etizolam and similar are not reported
+  unless specifically requested.
+- **Interferents can be looked up from the drug, not only from the assay**,
+  which is the direction the question arrives in: the patient is already on
+  something and the screen has just come back. The reverse table is limited to
+  what is prescribed in this population. **Quetiapine is called out** - it is on
+  this app's own symptomatic lists, so one admission can prescribe it and then
+  screen the patient, and it reads on two assays at once.
+- **Pregabalin and gabapentin are on no panel at all**, which no amount of
+  screening will reveal.
+- **Ranitidine is gone from the interferent rows.** It was withdrawn worldwide
+  in 2020, and listing it as a current cause dates the page.
+- **The consequences named are the ones that exist here** - takeaway doses,
+  child protection, fitness to drive, a court or corrections report - rather
+  than the US workplace-testing framing the source literature is written in.
+  DASAS is named for the clinical decision that follows a discordant result,
+  as elsewhere in the app.
+- **Fentanyl is marked in the detection window table as not being on a standard
+  panel.** A window listed without that reads as a promise the panel does not
+  make.
+
+- **The page is about 250 words shorter** without losing a fact. Hedging and
+  restatement went; every number, table row, citation and cross-link stayed. The
+  amphetamine interferent row also lost the agents that are not marketed here or
+  are vanishingly rare - thioridazine, phenylpropanolamine, procainamide,
+  bisoprolol, solriamfetol - which is a relevance cut as much as a length one,
+  for the same reason ranitidine went. Two cautions in the specimen validity
+  section that said the same thing are now one.
+
+### Housekeeping
+
+- A provenance test written with the page asserted that *every* chip on it was
+  an OTHER chip. That was true when written and then wrong: NSWCG §11 does speak
+  to urine drug screening, and the guard was blocking the most relevant citation
+  available. It now asserts what actually matters - that the page declares its
+  non-NSWCG basis, and that most of it remains OTHER-tagged.
+- The page carries its own review metadata and source list. It is the fourth
+  distinct source set in the app and none of it is NSW material: urine drug
+  screen interpretation is an analytical toxicology question, so it is built on
+  SAMHSA TAP 32, the ASAM drug testing guidance, the ACMT position statements,
+  and the primary literature on immunoassay interference. Every clinical
+  statement carries an OTHER provenance chip naming the study or guideline behind
+  it.
+
 ## 0.4.9 - August 2026
 
 ### Clinical

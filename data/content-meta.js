@@ -50,6 +50,15 @@ const INTERIM_TRANSFER_2023 = 'NSW Health, Interim Clinical Guidance: Outpatient
     + 'to Buprenorphine Using the Micro-dosing or Bridging Methods (April 2023)';
 const TRANSFERS_ADDED = '2026-08-27';
 
+// Drug screening is a fourth source set again, and none of it is NSW material:
+// urine drug screen interpretation is an analytical toxicology question, so the
+// page is built on the SAMHSA and ASAM testing guidance, the ACMT position
+// statements, and the primary literature on immunoassay interference.
+const UDS_SOURCES = 'SAMHSA TAP 32, Clinical Drug Testing in Primary Care (2012); ASAM, Appropriate Use of '
+    + 'Drug Testing in Clinical Addiction Medicine (2017); ACMT position statements on urine opiate/opioid '
+    + 'and THC metabolite interpretation; analytical toxicology literature on immunoassay interference';
+const DRUG_SCREENING_ADDED = '2026-08-29';
+
 export const CONTENT_META = {
     'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: SELECTOR_REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
@@ -78,6 +87,10 @@ export const CONTENT_META = {
     'nicotine-withdrawal-page': {
         source: 'NSW Health tobacco and nicotine guidance; RACGP; local practice',
         lastReviewed: REVISED
+    },
+    'drug-screening-page': {
+        source: UDS_SOURCES,
+        lastReviewed: DRUG_SCREENING_ADDED
     },
     'volatile-withdrawal-page': {
         source: 'Local practice; not covered by NSWCG',
