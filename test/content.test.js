@@ -185,8 +185,7 @@ describe('drug screening — urine drug screen interpretation', () => {
     test('the screen is called presumptive before anything else is said', () => {
         assert.ok(/presumptive test, not a diagnosis/.test(flat),
             'the page does not open by saying the screen is presumptive');
-        assert.ok(/GC-MS or LC-MS\/MS before acting on\s*it clinically/.test(flat)
-            || /GC-MS or LC-MS\/MS before acting on it clinically/.test(flat),
+        assert.ok(/GC-MS or LC-MS\/MS before acting on it/.test(flat),
             'the instruction to confirm before acting is missing');
         assert.ok(flat.indexOf('presumptive test, not a diagnosis') < flat.indexOf('Detection windows'),
             'the presumptive warning must come before the detection window table');

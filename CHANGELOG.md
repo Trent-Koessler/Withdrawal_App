@@ -96,6 +96,14 @@ The user-facing version of this lives at `#changelog-page` in the app.
   panel.** A window listed without that reads as a promise the panel does not
   make.
 
+- **The page is about 250 words shorter** without losing a fact. Hedging and
+  restatement went; every number, table row, citation and cross-link stayed. The
+  amphetamine interferent row also lost the agents that are not marketed here or
+  are vanishingly rare - thioridazine, phenylpropanolamine, procainamide,
+  bisoprolol, solriamfetol - which is a relevance cut as much as a length one,
+  for the same reason ranitidine went. Two cautions in the specimen validity
+  section that said the same thing are now one.
+
 ### Housekeeping
 
 - A provenance test written with the page asserted that *every* chip on it was
