@@ -165,6 +165,146 @@ describe('P2-06 — shared harm reduction', () => {
     });
 });
 
+describe('drug screening — urine drug screen interpretation', () => {
+    const html = read('index.html');
+    const page = html.slice(html.indexOf('id="drug-screening-page"'),
+        html.indexOf('<!-- Capacity, Consent and Involuntary Pathways (scaffold) -->'));
+    const flat = page.replace(/\s+/g, ' ');
+
+    test('the page exists and is reachable from Other Substances', () => {
+        assert.ok(page.length > 2000, 'the drug screening page is missing or empty');
+        const list = html.slice(html.indexOf('id="other-syndromes-page"'),
+            html.indexOf('<!-- Opioid Withdrawal Page -->'));
+        assert.ok(/data-page="drug-screening-page"/.test(list),
+            'the drug screening page is not on the Other Substances list');
+    });
+
+    // The whole page is downstream of this one claim. If it stops being the
+    // first thing on the page, every table below it reads as a result rather
+    // than a presumption.
+    test('the screen is called presumptive before anything else is said', () => {
+        assert.ok(/presumptive test, not a diagnosis/.test(flat),
+            'the page does not open by saying the screen is presumptive');
+        assert.ok(/GC-MS or LC-MS\/MS before acting on\s*it clinically/.test(flat)
+            || /GC-MS or LC-MS\/MS before acting on it clinically/.test(flat),
+            'the instruction to confirm before acting is missing');
+        assert.ok(flat.indexOf('presumptive test, not a diagnosis') < flat.indexOf('Detection windows'),
+            'the presumptive warning must come before the detection window table');
+    });
+
+    test('detection windows carry the caveat that makes them usable', () => {
+        assert.ok(/Approximations only/.test(flat), 'the windows are stated as though they were fixed');
+        for (const row of [/Fentanyl/, /Ketamine/, /benzoylecgonine/, /Benzodiazepines, barbiturates/]) {
+            assert.ok(row.test(flat), `detection window row missing: ${row}`);
+        }
+        assert.ok(/&ge; 3 weeks, up to 30-36 days/.test(flat),
+            'the chronic heavy cannabis window is missing');
+    });
+
+    // The single most common misreading of a screen in this population.
+    test('a positive cannabis metabolite is not treated as evidence of recent use', () => {
+        assert.ok(/A positive THC-COOH does not mean recent use, and cannot be used to\s*date it/.test(flat)
+            || /does not mean recent use/.test(flat),
+            'the page does not say a positive cannabis result cannot date use');
+        assert.ok(/ranged\s*to 80/.test(flat) || /to 80,/.test(flat),
+            'the 80-day outer range from the abstinence study is missing');
+    });
+
+    test('the false-positive table covers every class the panel reports', () => {
+        for (const assay of [/Amphetamine \/ methamphetamine/, /Opiates/, /Benzodiazepines/,
+            /Cannabinoids/, /PCP/, /Tricyclic antidepressants/, /Barbiturates/]) {
+            assert.ok(assay.test(flat), `false-positive row missing: ${assay}`);
+        }
+        assert.ok(/[Bb]upropion/.test(flat) && /trazodone/.test(flat) && /[Ff]luoroquinolones/.test(flat),
+            'the best-characterised interferents are missing');
+        assert.ok(/3.9% of in-house and 9.9% of\s*referred/.test(flat) || /3.9%/.test(flat),
+            'the measured false-positive rate for amphetamine is missing');
+    });
+
+    // A table of interferents read as universal would be worse than no table.
+    test('interference is qualified as platform-specific', () => {
+        assert.ok(/concentration-dependent and platform-specific/.test(flat),
+            'the page presents interferents as though they applied to every device');
+        assert.ok(/package insert/.test(flat), 'the reader is not sent to the device package insert');
+    });
+
+    test('the false negatives are stated, not only the false positives', () => {
+        assert.ok(/detect morphine and codeine only/.test(flat),
+            'the limit of a standard opiate panel is not stated');
+        assert.ok(/fentanyl is not on a conventional\s*panel/.test(flat) || /not on a conventional/.test(flat),
+            'the page does not say fentanyl is missed by a standard panel');
+        assert.ok(/[Cc]lonazepam and lorazepam/.test(flat),
+            'the poorly detected benzodiazepines are missing');
+    });
+
+    test('a true positive is distinguished from illicit use', () => {
+        assert.ok(/Poppy seed/.test(flat), 'poppy seed ingestion is missing');
+        assert.ok(/stereospecific chromatography/.test(flat),
+            'the l- versus d-methamphetamine distinction is missing');
+    });
+
+    test('confirmation names the current reference method and when to use it', () => {
+        assert.ok(/LC-MS\/MS is now the reference method/.test(flat),
+            'LC-MS/MS is not identified as the reference method');
+        assert.ok(/57-78%/.test(flat), 'the classes with the worst PPV are not quantified');
+        assert.ok(/[Rr]ing the laboratory/.test(flat),
+            'the page does not say to involve the laboratory on a discordant result');
+    });
+
+    test('specimen validity is defined numerically and not treated as proof of tampering', () => {
+        assert.ok(/&ge; 2 but &lt; 20 mg\/dL/.test(flat), 'the dilute definition is missing');
+        assert.ok(/pH &lt; 3.0 or &gt; 11.0/.test(flat), 'the adulteration pH range is missing');
+        assert.ok(/None of it proves intentional\s*tampering/.test(flat) || /proves intentional/.test(flat),
+            'the page does not disclaim that validity testing proves tampering');
+        assert.ok(/diabetes insipidus/.test(flat),
+            'the innocent causes of a dilute specimen are missing');
+    });
+
+    test('the adulterant table says how each one is caught', () => {
+        for (const a of [/Nitrite/, /[Pp]yridinium chlorochromate/, /Glutaraldehyde/, /Synthetic urine/]) {
+            assert.ok(a.test(flat), `adulterant missing: ${a}`);
+        }
+        assert.ok(/GGT and amylase/.test(flat),
+            'the biomarkers that catch synthetic urine are missing');
+    });
+
+    test('PEth and EtG are compared on the axes that decide which to order', () => {
+        assert.ok(/Up to about 4 weeks/.test(flat) && /~48 hours to a few days/.test(flat),
+            'the two detection windows are not contrasted');
+        assert.ok(/unaffected by liver\s*disease/.test(flat) || /unaffected by liver/.test(flat),
+            'the reason PEth is used in liver disease is missing');
+        assert.ok(/0.05 micromol\/L/.test(flat) && /0.30 micromol\/L/.test(flat),
+            'the PEth interpretive thresholds are missing');
+    });
+
+    // Micrograms and micromoles are spelled out rather than set with the micro
+    // sign, which has no ASCII_FOLD rule and would vanish from an EMR paste.
+    test('units are spelled out rather than set with a symbol', () => {
+        assert.ok(!/\u00B5|\u03BC/.test(page), 'a micro sign has crept into the page');
+        assert.ok(/microgram\/L/.test(flat) && /micromol\/L/.test(flat),
+            'the spelled-out units are missing');
+    });
+
+    test('a discordant result is framed as a clinical finding, not a breach', () => {
+        assert.ok(/not proof of dishonesty/.test(flat),
+            'the page does not say a discordant result is not proof of dishonesty');
+        assert.ok(/the discussion is the intervention/.test(flat),
+            'the closing clinical point is missing');
+    });
+
+    // Nothing here comes from the NSW guidance, and a chip claiming otherwise
+    // would be the one kind of error this page cannot afford.
+    test('every provenance chip on the page is an OTHER chip naming its source', () => {
+        const chips = [...page.matchAll(/<span class="src-tag ([^"]*)">([\s\S]*?)<\/span>/g)];
+        assert.ok(chips.length >= 10, `only ${chips.length} source tags on a page built entirely on citations`);
+        for (const [, classes, body] of chips) {
+            assert.ok(classes.split(/\s+/).includes('src-other'),
+                `drug screening chip "${body.replace(/\s+/g, ' ').trim()}" is not an OTHER chip - `
+                + 'no statement on this page comes from the NSW Clinical Guidance');
+        }
+    });
+});
+
 describe('P2-01 — gabapentinoids', () => {
     const html = read('index.html');
     const page = html.slice(html.indexOf('id="gabapentinoid-withdrawal-page"'),

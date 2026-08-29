@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.4.9" />
+    <meta name="app-build" content="0.5.0" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -2249,6 +2249,7 @@ textarea[id$="-quickstart-summary"] {
                     <button class="big-button" data-page="ghb-withdrawal-page">GHB Withdrawal</button>
                     <button class="big-button" data-page="nicotine-withdrawal-page">Nicotine Withdrawal</button>
                     <button class="big-button" data-page="volatile-withdrawal-page">Volatile Substances Withdrawal</button>
+                    <button class="big-button" data-page="drug-screening-page">Drug Screening (Urine Drug Screen Interpretation)</button>
                 </div>
             </div>
 
@@ -3403,6 +3404,300 @@ textarea[id$="-quickstart-summary"] {
                 </div>
             </div>
 
+            <!-- Drug Screening (urine drug screen interpretation) -->
+            <div id="drug-screening-page" class="page sectioned-page" data-title="Drug Screening">
+                <button data-page="other-syndromes-page" class="back-to-selection-btn">Other Substances</button>
+                <h3>Drug Screening: Interpreting a Urine Drug Screen</h3>
+                <span class="src-tag src-other src-block">OTHER - this page is not NSWCG material. It is
+                    drawn from SAMHSA TAP 32 (2012), ASAM Appropriate Use of Drug Testing in Clinical Addiction
+                    Medicine (2017), the ACMT position statements on urine opiate/opioid and THC metabolite
+                    interpretation, and the analytical toxicology literature on immunoassay
+                    interference.</span>
+
+                <div class="warning-box">
+                    <strong>&#9888; A point-of-care immunoassay screen (SureScreen and similar) is a
+                        presumptive test, not a diagnosis.</strong> Cross-reactivity with unrelated compounds
+                    produces documented false positives in nearly every drug class, and class-based antibodies
+                    miss drugs they were never designed to detect. <b>Confirm any result that would change
+                        management, or that conflicts with the history, by GC-MS or LC-MS/MS before acting on
+                        it clinically, legally or for employment.</b>
+                    <span class="src-tag src-other">OTHER - Saitman et al., J Anal Toxicol 2014 &amp; 2026;
+                        Tamama, Clin Chim Acta 2021</span>
+                </div>
+
+                <div class="clinical-block">
+                <h4>1. Detection windows in urine</h4>
+                <p>Approximations only. Dose, chronicity, hepatic and renal function, body fat, hydration and
+                    urine pH all shift them.
+                    <span class="src-tag src-other">OTHER - SAMHSA TAP 32 (2012); ASAM (2017); NCCN Adult
+                        Cancer Pain PAIN-G-10</span></p>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Drug / class</th>
+                                <th scope="col">Typical urine window</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Alcohol (ethanol)</td><td>&lt; 1 day</td></tr>
+                            <tr><td>Heroin</td><td>&lt; 1 day</td></tr>
+                            <tr><td>Amphetamine, methamphetamine, MDMA</td><td>1-5 days (MDMA 1-3)</td></tr>
+                            <tr><td>Cocaine (as benzoylecgonine)</td><td>1-5 days; longer with heavy daily use</td></tr>
+                            <tr><td>Fentanyl</td><td>3-5 days</td></tr>
+                            <tr><td>Ketamine</td><td>&lt; 3 days</td></tr>
+                            <tr><td>Kratom, nicotine, synthetic cannabinoids, cathinones</td><td>1-7 days</td></tr>
+                            <tr><td>Benzodiazepines, barbiturates</td><td>1-10 days; up to 30 days if chronic</td></tr>
+                            <tr><td>Cannabis - single or light use</td><td>1-3 days</td></tr>
+                            <tr><td>Cannabis - moderate use</td><td>4-10 days</td></tr>
+                            <tr><td>Cannabis - chronic heavy use</td><td>&ge; 3 weeks, up to 30-36 days</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Cannabis is the trap.</strong> THC-COOH is lipid-soluble and re-releases from fat.
+                    In abstinent adolescents and young adults the estimated window averaged 10 days but ranged
+                    to 80, and 19% were still positive by federal criteria after more than 25 verified
+                    abstinent days. <b>A positive THC-COOH does not mean recent use, and cannot be used to
+                        date it.</b>
+                    <span class="src-tag src-other">OTHER - Schuster et al., J Psychopharmacol 2020; ACMT
+                        position statement on urine THC metabolites (2020)</span></p>
+                <p>Smoked or injected drugs appear almost immediately; oral drugs peak around 6 hours. A
+                    negative screen after a few days of abstinence does not exclude recent use.
+                    <span class="src-tag src-other">OTHER - SAMHSA TAP 32 (2012)</span></p>
+                </div>
+
+                <div class="clinical-block">
+                <h4>2. False positives by class</h4>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Assay</th>
+                                <th scope="col">Reported interferents</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Amphetamine / methamphetamine</td>
+                                <td>Bupropion, trazodone (via mCPP), aripiprazole, atomoxetine, quetiapine,
+                                    chlorpromazine, thioridazine, pseudoephedrine/ephedrine,
+                                    phenylpropanolamine, phentermine, ranitidine, labetalol (on MDMA assays),
+                                    procainamide, bisoprolol, solriamfetol, methylphenidate, nasal
+                                    inhalers</td></tr>
+                            <tr><td>Opiates</td><td>Fluoroquinolones (levofloxacin, ofloxacin, gatifloxacin),
+                                rifampin, high-concentration ranitidine, rarely naloxone</td></tr>
+                            <tr><td>Benzodiazepines</td><td>Sertraline, oxaprozin, some NSAIDs</td></tr>
+                            <tr><td>Cannabinoids</td><td>Efavirenz, proton pump inhibitors (e.g.
+                                pantoprazole), NSAIDs, dronabinol</td></tr>
+                            <tr><td>PCP</td><td>Dextromethorphan, diphenhydramine, venlafaxine, tramadol,
+                                ketamine</td></tr>
+                            <tr><td>Tricyclic antidepressants</td><td>Cyclobenzaprine, carbamazepine,
+                                quetiapine, diphenhydramine</td></tr>
+                            <tr><td>Barbiturates</td><td>NSAIDs</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><b>Amphetamine is the least specific screen</b> - the antibody targets a phenethylamine
+                    shape shared by many unrelated drugs. A six-year review found 3.9% of in-house and 9.9% of
+                    referred positive amphetamine screens were false positives.
+                    <span class="src-tag src-other">OTHER - Pope et al., J Anal Toxicol 2023; Saitman et al.,
+                        J Anal Toxicol 2014; Brahm et al., Am J Health Syst Pharm 2010</span></p>
+                <p>Interference is <b>concentration-dependent and platform-specific</b>: an interferent listed
+                    for one manufacturer may not apply to the assay in front of you. Check the package insert
+                    for the actual device before attributing a result to cross-reactivity.
+                    <span class="src-tag src-other">OTHER - Ayala-Lopez et al., J Anal Toxicol 2022</span></p>
+                </div>
+
+                <div class="clinical-block">
+                <h4>3. What the screen does not detect</h4>
+                <p>False <em>negatives</em> matter as much as false positives, and are less often
+                    considered.</p>
+                <ul>
+                    <li><strong>Opiate panels detect morphine and codeine only</strong> (and heroin via
+                        6-MAM). <b>Oxycodone, hydrocodone, methadone, buprenorphine, tramadol and fentanyl do
+                            not reliably cross-react</b> and need their own assays - a negative opiate screen
+                        does not exclude synthetic opioid use, and fentanyl is not on a conventional
+                        panel.</li>
+                    <li><strong>Not all benzodiazepines are seen equally.</strong> Clonazepam and lorazepam
+                        are often poorly detected because of low cross-reactivity with the assay
+                        antibody.</li>
+                    <li><strong>Novel substances</strong> - designer benzodiazepines, synthetic opioids - are
+                        routinely missed.</li>
+                    <li>Negative predictive value is poor for several common analytes (25-83% for THC-COOH,
+                        EDDP, benzoylecgonine, amphetamine and opiates). In children screened
+                        direct-to-definitive LC-MS/MS, 4-11% of "negative" specimens in fact contained a
+                        target drug.</li>
+                </ul>
+                <p><span class="src-tag src-other">OTHER - ACMT position statement on urine opiate and opioid
+                        tests (2022); Abou El Hassan et al., Clin Biochem 2021; Lin et al., Clin Chim Acta
+                        2026</span></p>
+                <p><strong>A true positive is not the same as illicit use.</strong> Poppy seed ingestion
+                    produces genuine morphine/codeine, generally under workplace cutoffs but potentially
+                    positive at lower clinical ones; prescribed stimulants and l-methamphetamine nasal
+                    inhalers confirm positive on GC-MS and need stereospecific chromatography to separate
+                    from illicit d-methamphetamine.
+                    <span class="src-tag src-other">OTHER - ASAM (2017); SAMHSA TAP 32 (2012)</span></p>
+                </div>
+
+                <div class="clinical-block">
+                <h4>4. Confirmatory testing</h4>
+                <p><strong>LC-MS/MS is now the reference method</strong>, having largely replaced GC-MS: it
+                    covers a broader range of analytes, needs less derivatisation, and resolves closely
+                    related compounds - including delta-9- from delta-8-THC, which cross-react on most
+                    immunoassays. GC-MS remains useful for non-targeted comprehensive screening.
+                    <span class="src-tag src-other">OTHER - Tamama, Clin Chim Acta 2021; Thomas et al., Nat
+                        Rev Methods Primers 2022</span></p>
+                <p><strong>Confirm when:</strong> the result is unexpected either way, or would change
+                    management, employment or legal standing. Positive predictive value is worst for
+                    <b>oxycodone and amphetamine (57-78% on some platforms)</b>, so an unexpected positive
+                    there is the one least safe to act on. Conversely, when suspicion of use or exposure is
+                    high - overdose, paediatric presentations, fentanyl or novel benzodiazepines - a negative
+                    screen may still warrant definitive testing.
+                    <span class="src-tag src-other">OTHER - Abou El Hassan et al., Clin Biochem 2021; Lin et
+                        al., Clin Chim Acta 2026</span></p>
+                <p><strong>Ring the laboratory when the result and the history disagree.</strong>
+                    Distinguishing prescribed use, cross-reactivity and a true metabolite pattern usually
+                    needs a laboratorian, not a reference table.
+                    <span class="src-tag src-other">OTHER - Saitman et al., J Anal Toxicol 2026</span></p>
+                </div>
+
+                <div class="clinical-block">
+                <h4>5. Dilute and adulterated specimens</h4>
+                <p>Specimen validity testing - creatinine, specific gravity, pH, oxidants/nitrite - separates
+                    dilute, substituted, adulterated and invalid samples. <b>None of it proves intentional
+                        tampering</b>, and no single marker is sufficient alone.
+                    <span class="src-tag src-other">OTHER - SAMHSA TAP 32 (2012); Bozdayi et al., Clin Chim
+                        Acta 2026</span></p>
+                <h5>Reading the validity panel</h5>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Category</th>
+                                <th scope="col">Signature</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Dilute</td><td>Creatinine &ge; 2 but &lt; 20 mg/dL, <em>and</em> specific
+                                gravity &gt; 1.0010 but &lt; 1.0030</td></tr>
+                            <tr><td>Substituted</td><td>Creatinine &lt; 2 mg/dL with specific gravity &lt;
+                                1.0010 or &ge; 1.0200 - not physiologically human</td></tr>
+                            <tr><td>Adulterated</td><td>pH &lt; 3.0 or &gt; 11.0; a substance not normally in
+                                urine, or a normal one at an abnormal concentration</td></tr>
+                            <tr><td>Invalid</td><td>Creatinine and specific gravity inconsistent with each
+                                other; pH 3.0-4.5 or 9.0-11.0; nitrite 200 to &lt; 500 microgram/mL; possible
+                                chromium(VI), halogen or surfactant; assay interference</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Dilute is not automatically deliberate.</strong> Water loading is the commonest
+                    cause, but so are diuretics, a strict vegetarian diet, hot-weather occupational fluid
+                    intake and, rarely, diabetes insipidus. A dilute specimen can still be reported positive -
+                    around 19-27% confirm positive when lower cutoffs are applied. Manage by discussing the
+                    finding, repeating on a first-void or fluid-restricted specimen, or moving to another
+                    matrix; investigate a medical cause only if the pattern persists.
+                    <span class="src-tag src-other">OTHER - SAMHSA TAP 32 (2012); Fraser &amp; Zamecnik, Ther
+                        Drug Monit 2003</span></p>
+                <h5>Adulterants and how they show</h5>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Adulterant</th>
+                                <th scope="col">Effect and detection</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Nitrite ("Klear", "Whizzies")</td><td>Masks the cannabis metabolite on
+                                both screen and confirmation; nitrite assay or oxidants panel</td></tr>
+                            <tr><td>Pyridinium chlorochromate ("Urine Luck")</td><td>Oxidises THC-COOH, may
+                                affect morphine by pH; oxidants assay</td></tr>
+                            <tr><td>Glutaraldehyde ("Clean X")</td><td>Distorts immunoassay absorbance across
+                                THC, opioids, cocaine metabolite, amphetamine, PCP</td></tr>
+                            <tr><td>Peroxide / peroxidase ("Stealth")</td><td>Oxidises THC-COOH and LSD;
+                                degrades with time, so may be missed on a non-fresh sample</td></tr>
+                            <tr><td>Iodate</td><td>Reduces THC-COOH by ~65% and opioid metabolites by 6-27%;
+                                positive oxidant screen</td></tr>
+                            <tr><td>Household products (bleach, soap, ammonia, vinegar, eye drops)</td>
+                                <td>Alters pH or adds surfactant/oxidant; pH and oxidants testing</td></tr>
+                            <tr><td>Synthetic urine</td><td>Often passes routine validity testing; urea, uric
+                                acid and especially GGT and amylase (absent in synthetic urine) improve
+                                detection</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><span class="src-tag src-other">OTHER - SAMHSA TAP 32 (2012); Vikingsson et al., J Anal
+                        Toxicol 2022; Joubert et al., J Anal Toxicol 2026</span></p>
+                <p><strong>If validity testing flags a specimen:</strong> repeat under stricter and ideally
+                    observed conditions (no personal items or outside water, bluing agent in the toilet, taps
+                    off), review the collection procedure, ask about medications and medical conditions that
+                    could explain it, and consider oral fluid - the matrix least easily adulterated. Dilute
+                    and non-valid results are uncommon in practice (about 0.5% each) and the testing context
+                    itself shifts dilution rates without any manipulation.
+                    <span class="src-tag src-other">OTHER - SAMHSA TAP 32 (2012); Bozdayi et al., Clin Chim
+                        Acta 2026</span></p>
+                </div>
+
+                <div class="clinical-block">
+                <h4>6. Alcohol biomarkers: PEth and EtG</h4>
+                <p>Neither is on a urine drug screen panel, but both are what gets ordered when the question
+                    is alcohol rather than drugs.</p>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">PEth (blood)</th>
+                                <th scope="col">EtG (urine)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Window</td><td>Up to about 4 weeks</td><td>~48 hours to a few days</td></tr>
+                            <tr><td>Dose relationship</td><td>Correlates with amount consumed</td>
+                                <td>Correlates poorly</td></tr>
+                            <tr><td>Formed</td><td>In red cell membranes - <b>unaffected by liver
+                                disease</b></td><td>Hepatic conjugate of ethanol</td></tr>
+                            <tr><td>Sensitivity (use in past week, liver cohort)</td><td>75% (specificity
+                                93%)</td><td>28% (specificity 100%)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Interpretive thresholds (PEth):</strong> &lt; 0.05 micromol/L (~35 microgram/L) is
+                    the usual lower reporting limit, consistent with abstinence or low occasional intake;
+                    &gt; 0.30 micromol/L (~210 microgram/L) suggests regular harmful intake, with 0.10
+                    micromol/L proposed to flag moderate harmful drinking (roughly 2-3 drinks/day). Other
+                    cited operating points include 20 ng/mL for moderate-to-heavy use, 18.5 ng/mL validated
+                    against transdermal monitoring, and 300 / 600 microgram/L for heavy / very heavy drinking
+                    in a transplant cohort.
+                    <span class="src-tag src-other">OTHER - Afshar et al., Ann Surg 2022; Helander &amp;
+                        Hansson, Scand J Clin Lab Invest 2023; Hahn et al., JAMA Netw Open 2023</span></p>
+                <p><strong>Which to use.</strong> EtG when the question is <em>recent</em> use in the last
+                    couple of days. PEth when the question is sustained abstinence, a longer window, or how
+                    much - particularly in liver disease and transplant assessment, where it is not confounded
+                    by hepatic dysfunction as GGT and carbohydrate-deficient transferrin are. PEth is less
+                    sensitive to light or single-occasion drinking. Longer-term use is best assessed by GGT,
+                    carbohydrate-deficient transferrin or PEth; recent use by EtG or blood ethanol.
+                    <span class="src-tag src-other">OTHER - Haber PS, N Engl J Med 2025;392(3):258-266;
+                        Snozek et al., J Anal Toxicol 2026</span></p>
+                <p>The USPSTF does not recommend PEth for alcohol screening, preferring validated
+                    questionnaires; the American Psychiatric Association suggests PEth or another biomarker
+                    for evaluation and ongoing monitoring in alcohol use disorder.
+                    <span class="src-tag src-other">OTHER - Williams &amp; Chang, Am Fam Physician 2023</span></p>
+                </div>
+
+                <div class="clinical-block">
+                <h4>7. Discussing a discordant result</h4>
+                <div class="warning-box">
+                    A biomarker or screen result that contradicts what the patient has told you is a clinical
+                    finding, not proof of dishonesty. Review the result properly - assay, cutoff, medications,
+                    confirmation status - then discuss it openly and use it to engage the patient in
+                    treatment, rather than treating it as a breach. In one transplant cohort up to 35% of
+                    patients reporting abstinence had a positive PEth; the discussion is the intervention.
+                    <span class="src-tag src-other">OTHER - Haber PS, N Engl J Med 2025;392(3):258-266;
+                        Afshar et al., Ann Surg 2022</span>
+                </div>
+                </div>
+            </div>
+
             <!-- Capacity, Consent and Involuntary Pathways (scaffold) -->
             <div id="capacity-page" class="page" data-title="Capacity, Consent & Involuntary Pathways">
                 <h3>Capacity, Consent and Involuntary Pathways</h3>
@@ -3878,6 +4173,46 @@ textarea[id$="-quickstart-summary"] {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.5.0 - August 2026</h4>
+                <p><em>Interpreting a urine drug screen. New page under Other Substances, covering
+                        detection windows, false positives, what a screen cannot see, confirmation,
+                        specimen validity, and the alcohol biomarkers.</em></p>
+                <ul>
+                    <li><strong>The screen is a presumptive test and the page opens by saying so.</strong>
+                        Anything that would change management, or that conflicts with the history, is
+                        confirmed by GC-MS or LC-MS/MS before it is acted on. LC-MS/MS is now the reference
+                        method.</li>
+                    <li><strong>Detection windows are tabulated with the caveat that makes them
+                            usable</strong> - they move with dose, chronicity, organ function, body fat and
+                        hydration. <strong>A positive cannabis metabolite does not mean recent use:</strong>
+                        in verified abstinence the window ranged to 80 days, and 19% of young people were
+                        still positive after 25 abstinent days.</li>
+                    <li><strong>False positives are listed by assay</strong>, amphetamine being the least
+                        specific screen of all - bupropion, trazodone, aripiprazole, quetiapine,
+                        pseudoephedrine and others, with 3.9-9.9% of positive amphetamine screens false in a
+                        six-year review. Interference is concentration-dependent and varies by manufacturer,
+                        so the device's own package insert decides.</li>
+                    <li><strong>What the panel cannot see is stated as plainly as what it can.</strong>
+                        Opiate assays detect morphine and codeine only - oxycodone, methadone,
+                        buprenorphine, tramadol and <strong>fentanyl are not on a conventional panel</strong>
+                        - and clonazepam and lorazepam are poorly detected by benzodiazepine assays. A true
+                        positive is also not the same as illicit use: poppy seeds and l-methamphetamine
+                        inhalers confirm on GC-MS.</li>
+                    <li><strong>Specimen validity has its own section</strong>, with the numeric definitions
+                        of dilute, substituted, adulterated and invalid, the common adulterants and how each
+                        shows, and the point that <strong>none of it proves intentional tampering</strong> -
+                        dilution has medical and occupational causes, and a dilute sample can still confirm
+                        positive.</li>
+                    <li><strong>PEth and EtG are compared</strong>, since they are what gets ordered when
+                        the question is alcohol: EtG for use in the last day or two, PEth for a four-week
+                        window, dose correlation and confirmed abstinence, and unaffected by liver disease
+                        where GGT and CDT are not. PEth thresholds are given.</li>
+                    <li><strong>A discordant result is a clinical finding, not proof of dishonesty.</strong>
+                        The page closes on how to raise one - up to 35% of patients reporting abstinence in
+                        a transplant cohort had a positive PEth, and the conversation is the
+                        intervention.</li>
+                </ul>
 
                 <h4>0.4.9 - August 2026</h4>
                 <p><em>Transferring a patient from methadone to buprenorphine - micro-dosing and bridging
@@ -4375,6 +4710,26 @@ textarea[id$="-quickstart-summary"] {
                     <li><strong>Austroads</strong> - <em>Assessing Fitness to Drive</em>.</li>
                     <li><strong>RACGP</strong> - <em>Supporting Smoking Cessation: A Guide for Health
                             Professionals</em> (2nd edition, rev. 2021); NRT initial dosage selection.</li>
+                    <li><strong>SAMHSA</strong> - <em>TAP 32: Clinical Drug Testing in Primary Care</em>
+                        (2012). The source for the detection windows, the specimen validity definitions and
+                        the adulterant table on the Drug Screening page.</li>
+                    <li><strong>American Society of Addiction Medicine (ASAM)</strong> - <em>Appropriate Use
+                            of Drug Testing in Clinical Addiction Medicine</em> (2017). Used on the Drug
+                        Screening page for the clinical framing of testing, and for the true-positive
+                        exceptions such as poppy seed ingestion.</li>
+                    <li><strong>American College of Medical Toxicology (ACMT)</strong> - position statements
+                        on the <em>Interpretation of Urine Opiate and Opioid Tests</em> (2022) and the
+                        <em>Interpretation of Urine for Tetrahydrocannabinol Metabolites</em> (2020). The
+                        source for what an opiate panel does and does not detect, and for the statement that
+                        a positive cannabis metabolite cannot date use.</li>
+                    <li><strong>Analytical toxicology literature</strong> - the immunoassay interference,
+                        confirmatory testing and alcohol biomarker statements on the Drug Screening page are
+                        cited individually on that page to the study behind each, rather than to a single
+                        guideline. Principal among them are Saitman et al. (<em>J Anal Toxicol</em> 2014 and
+                        2026) on false-positive interferences, Pope et al. (<em>J Anal Toxicol</em> 2023) on
+                        false-positive amphetamine rates, Tamama (<em>Clin Chim Acta</em> 2021) on
+                        confirmatory methods, and Haber PS (<em>N Engl J Med</em> 2025;392(3):258-266) on the
+                        alcohol biomarkers.</li>
                 </ul>
                 <p>Links to these documents are on the <button class="link-button"
                         data-page="contacts-page">Helpful Contacts</button> page.</p>

@@ -30,7 +30,7 @@ import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.4.9';
+const APP_VERSION = '0.5.0';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
