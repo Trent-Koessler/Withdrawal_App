@@ -247,8 +247,10 @@ describe('drug screening — urine drug screen interpretation', () => {
         assert.ok(/LC-MS\/MS is now the reference method/.test(flat),
             'LC-MS/MS is not identified as the reference method');
         assert.ok(/57-78%/.test(flat), 'the classes with the worst PPV are not quantified');
-        assert.ok(/[Rr]ing the laboratory/.test(flat),
+        assert.ok(/needs the laboratory/.test(flat),
             'the page does not say to involve the laboratory on a discordant result');
+        assert.ok(/DASAS/.test(flat),
+            'the page does not name the advice line the rest of the app points to');
     });
 
     test('specimen validity is defined numerically and not treated as proof of tampering', () => {
@@ -285,6 +287,44 @@ describe('drug screening — urine drug screen interpretation', () => {
             'the spelled-out units are missing');
     });
 
+    // The metabolite trap is the misread this population actually produces, and
+    // unlike everything else in section 3 it is NSW-sourced.
+    test('the diazepam metabolite trap is stated and attributed to NSWCG', () => {
+        assert.ok(/Temazepam and oxazepam are metabolites of diazepam/.test(flat),
+            'the diazepam metabolite trap is missing');
+        assert.ok(/not cross-reactivity - the assay is right, and the inference is wrong/.test(flat),
+            'the page does not distinguish a metabolite result from cross-reactivity');
+        assert.ok(/Temazepam[\s\S]{0,400}NSWCG §11/.test(page),
+            'the metabolite trap does not carry its NSWCG citation');
+    });
+
+    test('the gabapentinoid blind spot is stated', () => {
+        assert.ok(/Pregabalin and gabapentin are on no panel at all/.test(flat),
+            'the page does not say gabapentinoids are undetected');
+        assert.ok(/data-page="gabapentinoid-withdrawal-page"/.test(page),
+            'the gabapentinoid blind spot does not link to that page');
+    });
+
+    // Read drug-in-hand, which is how the question actually arrives.
+    test('interferents can be looked up from the drug, not only from the assay', () => {
+        assert.ok(/If your patient is already on/.test(flat), 'the reverse lookup table is missing');
+        assert.ok(/Quetiapine is the one to watch/.test(flat),
+            'quetiapine is not called out despite being on the app\'s own symptomatic lists');
+    });
+
+    // Withdrawn worldwide in 2020; listing it as a live interferent dates the page.
+    test('no withdrawn medicine is listed as a current interferent', () => {
+        assert.ok(!/ranitidine/i.test(page),
+            'ranitidine was withdrawn in 2020 and should not be listed as a current interferent');
+    });
+
+    test('the consequences named are the ones that exist in NSW', () => {
+        assert.ok(/takeaway doses, child protection/.test(flat),
+            'the page still frames consequences in US workplace-testing terms');
+        assert.ok(!/for employment\./.test(flat) || /takeaway doses/.test(flat),
+            'employment framing has not been replaced');
+    });
+
     test('a discordant result is framed as a clinical finding, not a breach', () => {
         assert.ok(/not proof of dishonesty/.test(flat),
             'the page does not say a discordant result is not proof of dishonesty');
@@ -292,16 +332,22 @@ describe('drug screening — urine drug screen interpretation', () => {
             'the closing clinical point is missing');
     });
 
-    // Nothing here comes from the NSW guidance, and a chip claiming otherwise
-    // would be the one kind of error this page cannot afford.
-    test('every provenance chip on the page is an OTHER chip naming its source', () => {
+    // The page is built on the analytical toxicology sources, not the NSW
+    // guidance, and its opening block has to say so - otherwise a reader who
+    // trusts the rest of the app will assume NSWCG behind these numbers too.
+    // The earlier version of this test demanded that *every* chip be an OTHER
+    // chip, which was true when it was written and then wrong: NSWCG §11 does
+    // speak to urine drug screening, and the guard was blocking the most
+    // relevant citation on the page. What matters is the declaration and the
+    // citation density, not the absence of any particular kind.
+    test('the page declares its non-NSWCG basis and cites throughout', () => {
+        assert.ok(/this page is not NSWCG material/.test(flat),
+            'the page does not declare that it is not built on the NSW Clinical Guidance');
         const chips = [...page.matchAll(/<span class="src-tag ([^"]*)">([\s\S]*?)<\/span>/g)];
         assert.ok(chips.length >= 10, `only ${chips.length} source tags on a page built entirely on citations`);
-        for (const [, classes, body] of chips) {
-            assert.ok(classes.split(/\s+/).includes('src-other'),
-                `drug screening chip "${body.replace(/\s+/g, ' ').trim()}" is not an OTHER chip - `
-                + 'no statement on this page comes from the NSW Clinical Guidance');
-        }
+        const other = chips.filter(([, c]) => c.split(/\s+/).includes('src-other'));
+        assert.ok(other.length > chips.length / 2,
+            'most of this page should be OTHER-tagged: it is not guideline-derived material');
     });
 });
 

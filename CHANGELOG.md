@@ -69,8 +69,40 @@ The user-facing version of this lives at `#changelog-page` in the app.
   35% of patients reporting abstinence in one transplant cohort had a positive
   PEth, and the discussion is the intervention.
 
+- **Where NSW does speak, the page cites NSW.** NSWCG §11 says a urine drug
+  screen is an engagement tool and not a basis for punitive measures, and that
+  is now the first line of the discordant-result section rather than a US
+  transplant cohort. The same section supplies two things the analytical
+  literature does not: **temazepam and oxazepam are metabolites of diazepam**,
+  so they appear during treatment and are read as illicit use - the assay is
+  right and the inference is wrong - and etizolam and similar are not reported
+  unless specifically requested.
+- **Interferents can be looked up from the drug, not only from the assay**,
+  which is the direction the question arrives in: the patient is already on
+  something and the screen has just come back. The reverse table is limited to
+  what is prescribed in this population. **Quetiapine is called out** - it is on
+  this app's own symptomatic lists, so one admission can prescribe it and then
+  screen the patient, and it reads on two assays at once.
+- **Pregabalin and gabapentin are on no panel at all**, which no amount of
+  screening will reveal.
+- **Ranitidine is gone from the interferent rows.** It was withdrawn worldwide
+  in 2020, and listing it as a current cause dates the page.
+- **The consequences named are the ones that exist here** - takeaway doses,
+  child protection, fitness to drive, a court or corrections report - rather
+  than the US workplace-testing framing the source literature is written in.
+  DASAS is named for the clinical decision that follows a discordant result,
+  as elsewhere in the app.
+- **Fentanyl is marked in the detection window table as not being on a standard
+  panel.** A window listed without that reads as a promise the panel does not
+  make.
+
 ### Housekeeping
 
+- A provenance test written with the page asserted that *every* chip on it was
+  an OTHER chip. That was true when written and then wrong: NSWCG §11 does speak
+  to urine drug screening, and the guard was blocking the most relevant citation
+  available. It now asserts what actually matters - that the page declares its
+  non-NSWCG basis, and that most of it remains OTHER-tagged.
 - The page carries its own review metadata and source list. It is the fourth
   distinct source set in the app and none of it is NSW material: urine drug
   screen interpretation is an analytical toxicology question, so it is built on

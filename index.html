@@ -3444,7 +3444,8 @@ textarea[id$="-quickstart-summary"] {
                             <tr><td>Heroin</td><td>&lt; 1 day</td></tr>
                             <tr><td>Amphetamine, methamphetamine, MDMA</td><td>1-5 days (MDMA 1-3)</td></tr>
                             <tr><td>Cocaine (as benzoylecgonine)</td><td>1-5 days; longer with heavy daily use</td></tr>
-                            <tr><td>Fentanyl</td><td>3-5 days</td></tr>
+                            <tr><td>Fentanyl <em>(not on a standard panel - request it)</em></td>
+                                <td>3-5 days</td></tr>
                             <tr><td>Ketamine</td><td>&lt; 3 days</td></tr>
                             <tr><td>Kratom, nicotine, synthetic cannabinoids, cathinones</td><td>1-7 days</td></tr>
                             <tr><td>Benzodiazepines, barbiturates</td><td>1-10 days; up to 30 days if chronic</td></tr>
@@ -3461,7 +3462,8 @@ textarea[id$="-quickstart-summary"] {
                         date it.</b>
                     <span class="src-tag src-other">OTHER - Schuster et al., J Psychopharmacol 2020; ACMT
                         position statement on urine THC metabolites (2020)</span></p>
-                <p>Smoked or injected drugs appear almost immediately; oral drugs peak around 6 hours. A
+                <p>A window only means something for a drug the panel reports at all - see section 3.
+                    Smoked or injected drugs appear almost immediately; oral drugs peak around 6 hours. A
                     negative screen after a few days of abstinence does not exclude recent use.
                     <span class="src-tag src-other">OTHER - SAMHSA TAP 32 (2012)</span></p>
                 </div>
@@ -3480,11 +3482,11 @@ textarea[id$="-quickstart-summary"] {
                             <tr><td>Amphetamine / methamphetamine</td>
                                 <td>Bupropion, trazodone (via mCPP), aripiprazole, atomoxetine, quetiapine,
                                     chlorpromazine, thioridazine, pseudoephedrine/ephedrine,
-                                    phenylpropanolamine, phentermine, ranitidine, labetalol (on MDMA assays),
+                                    phenylpropanolamine, phentermine, labetalol (on MDMA assays),
                                     procainamide, bisoprolol, solriamfetol, methylphenidate, nasal
                                     inhalers</td></tr>
                             <tr><td>Opiates</td><td>Fluoroquinolones (levofloxacin, ofloxacin, gatifloxacin),
-                                rifampin, high-concentration ranitidine, rarely naloxone</td></tr>
+                                rifampin, rarely naloxone</td></tr>
                             <tr><td>Benzodiazepines</td><td>Sertraline, oxaprozin, some NSAIDs</td></tr>
                             <tr><td>Cannabinoids</td><td>Efavirenz, proton pump inhibitors (e.g.
                                 pantoprazole), NSAIDs, dronabinol</td></tr>
@@ -3495,6 +3497,38 @@ textarea[id$="-quickstart-summary"] {
                             <tr><td>Barbiturates</td><td>NSAIDs</td></tr>
                         </tbody>
                     </table>
+                </div>
+                <h5>If your patient is already on</h5>
+                <p>The same information read the way it is usually needed - drug in hand, result to expect.
+                    Limited to what is commonly prescribed in this population.</p>
+                <div class="clinical-table-wrap">
+                    <table class="clinical-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Drug</th>
+                                <th scope="col">Screen it can trigger</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Quetiapine</td><td>Amphetamine <em>and</em> tricyclics</td></tr>
+                            <tr><td>Bupropion, trazodone, aripiprazole, atomoxetine</td><td>Amphetamine</td></tr>
+                            <tr><td>Pseudoephedrine (cold and flu preparations)</td><td>Amphetamine</td></tr>
+                            <tr><td>Venlafaxine, tramadol, dextromethorphan</td><td>PCP</td></tr>
+                            <tr><td>Diphenhydramine</td><td>PCP and tricyclics</td></tr>
+                            <tr><td>Sertraline</td><td>Benzodiazepines</td></tr>
+                            <tr><td>Carbamazepine, cyclobenzaprine</td><td>Tricyclics</td></tr>
+                            <tr><td>Ciprofloxacin and other fluoroquinolones</td><td>Opiates</td></tr>
+                            <tr><td>Pantoprazole and other PPIs, NSAIDs</td><td>Cannabinoids</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="warning-box">
+                    <strong>Quetiapine is the one to watch.</strong> It is on this app's own symptomatic
+                    medication lists, so the same admission can prescribe it and then screen the patient -
+                    and it reads on two assays at once.
+                    <span class="src-tag src-local">LOCAL - rationale: the interference is published, but
+                        the collision with the app's own psychostimulant and cannabis symptomatic regimens is
+                        an observation about this app rather than a finding in any guideline.</span>
                 </div>
                 <p><b>Amphetamine is the least specific screen</b> - the antibody targets a phenethylamine
                     shape shared by many unrelated drugs. A six-year review found 3.9% of in-house and 9.9% of
@@ -3521,7 +3555,13 @@ textarea[id$="-quickstart-summary"] {
                         are often poorly detected because of low cross-reactivity with the assay
                         antibody.</li>
                     <li><strong>Novel substances</strong> - designer benzodiazepines, synthetic opioids - are
-                        routinely missed.</li>
+                        routinely missed. Etizolam and similar are not reported unless asked for.
+                        <span class="src-tag src-nswcg">NSWCG §11</span></li>
+                    <li><strong>Pregabalin and gabapentin are on no panel at all.</strong> Neither a
+                        negative screen nor a full panel says anything about gabapentinoid use - it has to
+                        be asked about.
+                        <button class="link-button" data-page="gabapentinoid-withdrawal-page">Gabapentinoid
+                            withdrawal</button></li>
                     <li>Negative predictive value is poor for several common analytes (25-83% for THC-COOH,
                         EDDP, benzoylecgonine, amphetamine and opiates). In children screened
                         direct-to-definitive LC-MS/MS, 4-11% of "negative" specimens in fact contained a
@@ -3530,6 +3570,14 @@ textarea[id$="-quickstart-summary"] {
                 <p><span class="src-tag src-other">OTHER - ACMT position statement on urine opiate and opioid
                         tests (2022); Abou El Hassan et al., Clin Biochem 2021; Lin et al., Clin Chim Acta
                         2026</span></p>
+                <div class="warning-box">
+                    <strong>&#9888; Temazepam and oxazepam are metabolites of diazepam.</strong> In a patient
+                    being treated with diazepam they appear on the screen and are readily misread as illicit
+                    use. This is not cross-reactivity - the assay is right, and the inference is wrong.
+                    <span class="src-tag src-nswcg">NSWCG §11</span>
+                    <button class="link-button" data-page="benzo-withdrawal-page">Benzodiazepine
+                        withdrawal</button>
+                </div>
                 <p><strong>A true positive is not the same as illicit use.</strong> Poppy seed ingestion
                     produces genuine morphine/codeine, generally under workplace cutoffs but potentially
                     positive at lower clinical ones; prescribed stimulants and l-methamphetamine nasal
@@ -3547,17 +3595,23 @@ textarea[id$="-quickstart-summary"] {
                     <span class="src-tag src-other">OTHER - Tamama, Clin Chim Acta 2021; Thomas et al., Nat
                         Rev Methods Primers 2022</span></p>
                 <p><strong>Confirm when:</strong> the result is unexpected either way, or would change
-                    management, employment or legal standing. Positive predictive value is worst for
+                    management or a decision that carries consequences - takeaway doses, child protection,
+                    fitness to drive, a court or corrections report. Positive predictive value is worst for
                     <b>oxycodone and amphetamine (57-78% on some platforms)</b>, so an unexpected positive
                     there is the one least safe to act on. Conversely, when suspicion of use or exposure is
                     high - overdose, paediatric presentations, fentanyl or novel benzodiazepines - a negative
                     screen may still warrant definitive testing.
                     <span class="src-tag src-other">OTHER - Abou El Hassan et al., Clin Biochem 2021; Lin et
                         al., Clin Chim Acta 2026</span></p>
-                <p><strong>Ring the laboratory when the result and the history disagree.</strong>
-                    Distinguishing prescribed use, cross-reactivity and a true metabolite pattern usually
-                    needs a laboratorian, not a reference table.
-                    <span class="src-tag src-other">OTHER - Saitman et al., J Anal Toxicol 2026</span></p>
+                <p><strong>Ring someone when the result and the history disagree.</strong> Distinguishing
+                    prescribed use, cross-reactivity and a true metabolite pattern needs the laboratory, not
+                    a reference table. For the clinical decision that follows, DASAS is on
+                    <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or
+                    <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan).
+                    <span class="src-tag src-other">OTHER - Saitman et al., J Anal Toxicol 2026</span>
+                    <span class="src-tag src-local">LOCAL - rationale: naming DASAS here is this app's
+                        convention for specialist advice rather than a recommendation in any testing
+                        guideline, which would say only to consult a laboratorian.</span></p>
                 </div>
 
                 <div class="clinical-block">
@@ -3687,10 +3741,11 @@ textarea[id$="-quickstart-summary"] {
                 <div class="clinical-block">
                 <h4>7. Discussing a discordant result</h4>
                 <div class="warning-box">
-                    A biomarker or screen result that contradicts what the patient has told you is a clinical
-                    finding, not proof of dishonesty. Review the result properly - assay, cutoff, medications,
-                    confirmation status - then discuss it openly and use it to engage the patient in
-                    treatment, rather than treating it as a breach. In one transplant cohort up to 35% of
+                    <strong>A urine drug screen is an engagement tool, not a basis for punitive
+                        measures.</strong> <span class="src-tag src-nswcg">NSWCG §11</span>
+                    A result contradicting what the patient has told you is a clinical finding, not proof of
+                    dishonesty. Review it properly - assay, cutoff, medications, confirmation status - then
+                    discuss it openly and use it to engage the patient. In one transplant cohort up to 35% of
                     patients reporting abstinence had a positive PEth; the discussion is the intervention.
                     <span class="src-tag src-other">OTHER - Haber PS, N Engl J Med 2025;392(3):258-266;
                         Afshar et al., Ann Surg 2022</span>
@@ -4208,6 +4263,19 @@ textarea[id$="-quickstart-summary"] {
                         the question is alcohol: EtG for use in the last day or two, PEth for a four-week
                         window, dose correlation and confirmed abstinence, and unaffected by liver disease
                         where GGT and CDT are not. PEth thresholds are given.</li>
+                    <li><strong>Where NSW speaks, the page cites NSW.</strong> NSWCG &sect;11 - a urine
+                        drug screen is an engagement tool, not a basis for punitive measures - now opens the
+                        discordant-result section. From the same place: <strong>temazepam and oxazepam are
+                            metabolites of diazepam</strong>, so they appear during treatment and get read as
+                        illicit use, and etizolam is not reported unless asked for.</li>
+                    <li><strong>Interferents can be looked up from the drug</strong>, which is how the
+                        question arrives. <strong>Quetiapine is called out</strong>: it is on this app's own
+                        symptomatic lists, and reads on two assays at once. Pregabalin and gabapentin are on
+                        no panel at all. Ranitidine has been removed - withdrawn worldwide in 2020.</li>
+                    <li><strong>The consequences named are local ones</strong> - takeaway doses, child
+                        protection, fitness to drive, a court report - not US workplace testing, and DASAS is
+                        named for the decision that follows. Fentanyl is marked as not being on a standard
+                        panel.</li>
                     <li><strong>A discordant result is a clinical finding, not proof of dishonesty.</strong>
                         The page closes on how to raise one - up to 35% of patients reporting abstinence in
                         a transplant cohort had a positive PEth, and the conversation is the
