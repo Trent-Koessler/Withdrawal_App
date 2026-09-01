@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.0" />
+    <meta name="app-build" content="0.5.1" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -1010,6 +1010,78 @@ textarea[id$="-quickstart-summary"] {
 
 #disclaimer-modal button.secondary-btn:hover {
     background-color: var(--secondary-btn-hover-bg);
+}
+
+/* --- Access gate: password, role and location -------------------------------
+   Deliberately plainer than the disclaimer text above it. The disclaimer asks
+   the reader to weigh something; these ask them to copy a word off a whiteboard
+   and confirm two dropdowns. */
+.access-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 18px;
+}
+
+.access-field label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+#access-password-input,
+.context-fields select {
+    font-size: 16px; /* A floor, not a preference: anything smaller makes iOS
+                        zoom the viewport on focus, and the modal then opens
+                        scrolled sideways. */
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    width: 100%;
+}
+
+/* Monospace and wide tracking so a transposed character is visible while
+   typing, rather than after the password is rejected. */
+#access-password-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+#access-password-input:focus-visible,
+.context-fields select:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 1px;
+}
+
+/* Side by side where there is room, stacked on a phone. Both labels are short
+   enough that two columns stay readable down to about 520px. */
+.context-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0 18px;
+}
+
+.context-note {
+    font-size: 13px;
+    margin-top: 10px;
+    opacity: 0.85;
+}
+
+#access-error {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-left: 3px solid var(--danger-border);
+    padding: 10px 12px;
+    margin-top: 14px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.access-help {
+    font-size: 14px;
+    margin-top: 18px;
 }
 
 /* Link-style button */
@@ -4208,6 +4280,23 @@ textarea[id$="-quickstart-summary"] {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
+                <h4>0.5.1 - September 2026</h4>
+                <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
+                <ul>
+                    <li><strong>The app asks for a password the first time it is opened on a device.</strong> It is
+                        one shared password for the district. You will only be asked once - after that the app opens
+                        as it always has.</li>
+                    <li><strong>It also asks your role and where you are working.</strong> Both are asked each time,
+                        because a ward computer gets used by more than one person - but your last answers come back
+                        already selected, so most of the time it is one tap. The "I am a qualified health
+                        professional" question is unchanged.</li>
+                    <li><strong>The app records which parts of it get used, so the trial can tell whether it is
+                            actually helping.</strong> What is recorded: your role and setting, which page or
+                        calculator was opened, and when. What is never recorded: your name, any score, any patient
+                        detail, and anything you type into a calculator. Nothing is sent while you are offline - it
+                        waits and goes when you are back on a connection.</li>
+                </ul>
+
                 <h4>0.5.0 - August 2026</h4>
                 <p><em>Interpreting a urine drug screen. New page under Other Substances, covering
                         detection windows, false positives, what a screen cannot see, confirmation,
@@ -4961,6 +5050,37 @@ textarea[id$="-quickstart-summary"] {
     <div id="disclaimer-modal" class="modal" style="display: block;" role="dialog" aria-modal="true"
         aria-labelledby="disclaimer-modal-title">
         <div class="modal-content">
+            <!-- Shown only on a device that has not been unlocked yet, and then
+                 never again: the password establishes that the app was given to
+                 whoever is holding this device, which does not change between
+                 launches. The attestation below it is asked every launch, for
+                 the reason set out above. The two are answering different
+                 questions and must not be collapsed into one. -->
+            <div id="access-gate" hidden>
+                <h3 id="access-gate-title">Access password</h3>
+
+                <p>This app is being trialled within the Western NSW Local Health District. Enter the password your
+                    service was given to set this device up. You will only be asked once.</p>
+
+                <div class="access-field">
+                    <label for="access-password-input">Password</label>
+                    <input id="access-password-input" type="text" autocomplete="off" autocapitalize="characters"
+                        autocorrect="off" spellcheck="false" enterkeyhint="go"
+                        aria-describedby="access-password-help">
+                </div>
+
+                <p id="access-error" role="alert" hidden></p>
+
+                <div class="button-group gate-buttons">
+                    <button id="access-password-btn">Continue</button>
+                </div>
+
+                <p class="access-help" id="access-password-help">The password is shared across the district and is
+                    not a password on patient information &mdash; nothing in this app is patient data. It marks the
+                    app as being for clinicians rather than the public. If you do not have it, ask your NUM or the
+                    person who introduced the app to your team.</p>
+            </div>
+
             <div id="disclaimer-gate">
                 <h3 id="disclaimer-modal-title">Intended use and terms</h3>
 
@@ -4979,6 +5099,32 @@ textarea[id$="-quickstart-summary"] {
 
                 <p>Continuing confirms that you are an appropriately qualified health professional and accept these
                     terms.</p>
+
+                <!-- Asked every launch, alongside the attestation, because both
+                     answers are about the person holding the device right now.
+                     The previous answers come back selected, so a clinician on
+                     their own phone answers nothing; on a shared terminal the
+                     next person sees them sitting there and can correct them.
+                     Storing them silently would attribute a night registrar's
+                     use to whoever first set the device up. -->
+                <div class="context-fields">
+                    <div class="access-field">
+                        <label for="role-select">Your role</label>
+                        <select id="role-select"></select>
+                    </div>
+                    <div class="access-field">
+                        <label for="location-select">Where you are working now</label>
+                        <select id="location-select"></select>
+                    </div>
+                </div>
+                <p class="context-note">Recorded to show which teams and settings the app is used in. It is not
+                    linked to you, and nothing you enter into a calculator is ever recorded.</p>
+
+                <!-- Its own element, not the password panel's: that one is
+                     hidden by the time this message can be needed, so writing
+                     there would produce a rejected click with no explanation. -->
+                <p id="context-error" role="alert" hidden></p>
+
                 <div class="button-group gate-buttons">
                     <button id="accept-disclaimer-btn">I am a qualified health professional - continue</button>
                     <button id="decline-disclaimer-btn" class="secondary-btn">I am not - leave this site</button>
@@ -5010,6 +5156,34 @@ textarea[id$="-quickstart-summary"] {
             </div>
         </div>
     </div>
+
+    <script>
+        // Decide which gate panel is visible before the first paint. Doing this
+        // in script.js instead would show one panel and then swap it: an
+        // already-unlocked device (the common case after week one) would flash
+        // the password prompt on every launch, which reads as "it forgot me".
+        //
+        // Same try/catch discipline as the theme script above — a managed
+        // device that blocks storage falls through to asking for the password,
+        // which is wrong but harmless. Failing the other way would let anyone
+        // past the gate whenever storage happened to be unavailable.
+        (function () {
+            var unlocked = false;
+            try { unlocked = localStorage.getItem('sud.unlocked') === '1'; } catch (e) { }
+            if (unlocked) { return; }
+
+            var access = document.getElementById('access-gate');
+            var disclaimer = document.getElementById('disclaimer-gate');
+            var modal = document.getElementById('disclaimer-modal');
+            if (!access || !disclaimer || !modal) { return; }
+
+            access.hidden = false;
+            disclaimer.hidden = true;
+            // The label has to follow the visible panel or the dialog announces
+            // a heading the user cannot see.
+            modal.setAttribute('aria-labelledby', 'access-gate-title');
+        })();
+    </script>
 
     <script type="module" src="script.js"></script>
 

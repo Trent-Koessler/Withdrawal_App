@@ -979,6 +979,78 @@ textarea[id$="-quickstart-summary"] {
     background-color: var(--secondary-btn-hover-bg);
 }
 
+/* --- Access gate: password, role and location -------------------------------
+   Deliberately plainer than the disclaimer text above it. The disclaimer asks
+   the reader to weigh something; these ask them to copy a word off a whiteboard
+   and confirm two dropdowns. */
+.access-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 18px;
+}
+
+.access-field label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+#access-password-input,
+.context-fields select {
+    font-size: 16px; /* A floor, not a preference: anything smaller makes iOS
+                        zoom the viewport on focus, and the modal then opens
+                        scrolled sideways. */
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    width: 100%;
+}
+
+/* Monospace and wide tracking so a transposed character is visible while
+   typing, rather than after the password is rejected. */
+#access-password-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+#access-password-input:focus-visible,
+.context-fields select:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 1px;
+}
+
+/* Side by side where there is room, stacked on a phone. Both labels are short
+   enough that two columns stay readable down to about 520px. */
+.context-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0 18px;
+}
+
+.context-note {
+    font-size: 13px;
+    margin-top: 10px;
+    opacity: 0.85;
+}
+
+#access-error {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border-left: 3px solid var(--danger-border);
+    padding: 10px 12px;
+    margin-top: 14px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.access-help {
+    font-size: 14px;
+    margin-top: 18px;
+}
+
 /* Link-style button */
 .link-button {
     background: none!important;

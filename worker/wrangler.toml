@@ -1,0 +1,19 @@
+name = "sudtoolkit-metrics"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# The role and location vocabularies are not configured here. They live in
+# src/index.js beside the event names, because all three are lists the app and
+# the endpoint must share exactly, and a deploy-time variable would drift from
+# the release that produces the values. See worker/README.md.
+
+# Created by: npx wrangler d1 create sudtoolkit-metrics
+# Paste the database_id it prints into the line below.
+[[d1_databases]]
+binding = "DB"
+database_name = "sudtoolkit-metrics"
+database_id = "PASTE_DATABASE_ID_HERE"
+
+# EXPORT_TOKEN is a secret, never a var — a var is readable in the dashboard
+# and committed here. Set it with:
+#   npx wrangler secret put EXPORT_TOKEN
