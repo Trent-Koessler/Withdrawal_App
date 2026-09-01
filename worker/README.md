@@ -49,56 +49,90 @@ these two fields are the only grouping variables the study has, and they are
 whatever the clinician selected at that launch. State that as a limitation
 rather than presenting them as verified attributes.
 
-## Deploying it
+## Setting it up
 
-You need a free Cloudflare account. Run everything from this directory.
+**Where you run this: your own computer, not a Claude session.** `wrangler login`
+opens a browser and signs you into your Cloudflare account, which only you can
+do. Everything below is a one-off — about fifteen minutes, once.
+
+You need [Node.js](https://nodejs.org) 20 or later (`node --version` to check)
+and a free Cloudflare account. Then clone this repo and:
+
+```sh
+cd worker
+npm install          # installs wrangler, pinned in package.json
+npm run login        # opens a browser; approve the access request
+```
+
+Everything after this is an npm script, so there is no wrangler syntax to
+remember and no chance of a version change under you.
 
 **1. Create the database.**
 
 ```sh
-npx wrangler d1 create sudtoolkit-metrics
+npm run db:create
 ```
 
-Paste the `database_id` it prints into `wrangler.toml`.
+It prints a block ending in `database_id = "..."`. Copy that id into
+`wrangler.toml`, replacing `PASTE_DATABASE_ID_HERE`.
 
 **2. Create the table.**
 
 ```sh
-npx wrangler d1 execute sudtoolkit-metrics --remote --file=./schema.sql
+npm run db:init
 ```
 
-**3. Set the export password.** Any long random string; you will need it to
-download the data.
+**3. Set the export password.** This is what you will use to download the data
+later. Make it long and random — a password manager's generator is ideal — and
+save it somewhere you will still have in a year.
 
 ```sh
-npx wrangler secret put EXPORT_TOKEN
+npm run secret
 ```
 
-A secret rather than a `[vars]` entry, so it is not committed here and not
-readable from the dashboard.
+It prompts for the value and does not echo it. A secret rather than a
+`[vars]` entry, so it is not committed here and cannot be read back from the
+dashboard.
 
 **4. Deploy.**
 
 ```sh
-npx wrangler deploy
+npm run deploy
 ```
 
 This prints a URL like `https://sudtoolkit-metrics.<your-subdomain>.workers.dev`.
-Check it:
+Check it answers:
 
 ```sh
 curl https://sudtoolkit-metrics.<your-subdomain>.workers.dev/health
 ```
 
-**5. Point the app at it.** Set `ENDPOINT` in `../metrics.js` to that URL plus
-`/e`, then bump the app version and release as usual:
+Expect `ok`. If you get anything else, stop here — the app has nothing to talk
+to yet, which is harmless, but there is no point continuing until this works.
+
+**5. Point the app at it.** In `../metrics.js`, set `ENDPOINT` to that URL plus
+`/e`:
 
 ```js
 const ENDPOINT = 'https://sudtoolkit-metrics.<your-subdomain>.workers.dev/e';
 ```
 
-Until this is set, the app collects nothing. The access-code gate works either
-way, so the gate can go live before collection does.
+Then bump the app version and release as usual.
+
+**This step is the moment collection starts.** Until `ENDPOINT` is set the app
+records nothing at all — not even locally — so the password gate and the
+role/location questions can go live first, and the ethics approval can land
+before any data exists.
+
+**6. Confirm it is working.** Open sudtoolkit.org, go through the gate, use a
+calculator, then:
+
+```sh
+npm run count
+```
+
+You should see a handful of rows. If it says zero, see *When nothing arrives*
+below.
 
 ### Optional: a tidier hostname
 
@@ -110,30 +144,62 @@ and survives changing your workers.dev subdomain. Add to `wrangler.toml`:
 route = { pattern = "metrics.sudtoolkit.org/*", custom_domain = true }
 ```
 
-If DNS is elsewhere, the `workers.dev` URL is fine and changes nothing about
-how it works.
+If DNS is elsewhere, the `workers.dev` URL is fine and changes nothing about how
+it works.
 
 ## Getting the data out
 
+Three ways in, depending on what you are doing.
+
+### The dashboard — no command line at all
+
+This is the one to use for a quick look, and the only one that needs nothing
+installed. At [dash.cloudflare.com](https://dash.cloudflare.com), open
+**Storage & Databases → D1 → sudtoolkit-metrics → Console**, and run SQL
+straight in the browser. Results come back as a table you can read or copy.
+
+Good for "how is it going" checks from any machine, including one where you
+cannot install Node.
+
+### The whole dataset as a CSV — for analysis
+
 ```sh
-curl -H "Authorization: Bearer $EXPORT_TOKEN" \
-  "https://sudtoolkit-metrics.<your-subdomain>.workers.dev/export.csv" \
-  -o events.csv
+export SUDTOOLKIT_METRICS_URL='https://sudtoolkit-metrics.<your-subdomain>.workers.dev'
+export SUDTOOLKIT_EXPORT_TOKEN='the token from step 3'
+./tools/fetch-metrics.sh events.csv
 ```
 
-Opens directly in Excel, SPSS or R. Default page is 10,000 rows; the response
-carries `X-Last-Id` and `X-More` headers, so for a larger dataset pass
-`?after=<X-Last-Id>` and repeat until `X-More` is `false`.
+Opens directly in Excel, SPSS, R or Stata.
 
-You can also query the database directly, which is usually faster for a look:
+**Use this rather than a plain `curl` of `/export.csv`.** The endpoint pages at
+10,000 rows, so a bare curl gives you a truncated file that looks complete —
+a study that silently under-reports is a much worse failure than one that
+errors. The script follows the cursor to the end and stitches the pages into
+one file, printing each page as it goes so you can see the row count.
+
+On Windows, run it from Git Bash or WSL, or use the dashboard route above.
+
+### Ad-hoc queries from the command line
 
 ```sh
-npx wrangler d1 execute sudtoolkit-metrics --remote --command \
-  "SELECT role, location, COUNT(*) events
-     FROM events GROUP BY role, location ORDER BY events DESC"
+cd worker
+npm run summary    # who is using it, and where
+npm run count      # row count, device count, date range
 ```
 
-Some queries the study will want:
+For anything else:
+
+```sh
+npx wrangler d1 execute sudtoolkit-metrics --remote --command "SELECT ..."
+```
+
+`--remote` matters: without it you query an empty local copy and conclude
+nothing is being collected.
+
+## Queries the study will want
+
+Paste any of these into the dashboard Console, or into
+`wrangler d1 execute --remote --command`.
 
 ```sql
 -- Who is using it, and where.
@@ -163,11 +229,38 @@ SELECT SUM(event = 'emr_copy') copies, SUM(event = 'scale_complete') scorings
 -- Offline share — the justification for the offline-first design.
 SELECT ROUND(100.0 * SUM(queued) / COUNT(*), 1) pct_offline FROM events;
 
+-- PWA install uptake: home-screen icon versus browser tab.
+SELECT ROUND(100.0 * SUM(standalone) / COUNT(*), 1) pct_installed FROM events;
+
 -- Usability signal: scales pages opened without a score being produced.
 SELECT COUNT(*) FILTER (WHERE event = 'page_view' AND detail = 'scales-page') opens,
        COUNT(*) FILTER (WHERE event = 'scale_complete') scorings
   FROM events;
 ```
+
+## When nothing arrives
+
+In rough order of likelihood:
+
+1. **`ENDPOINT` is still empty in `metrics.js`,** or the release carrying it has
+   not shipped. Check the deployed `metrics.js` in the browser, not your local
+   copy.
+2. **A device is still serving an older release.** The service worker is
+   cache-first (see IMPLEMENTATION_NOTES §1.7), so a device that installed
+   before this release keeps serving it until `sw.js` changes. Hard-reload, or
+   check `app_version` in the data.
+3. **You queried the local database.** `wrangler d1 execute` without `--remote`
+   reads an empty local copy.
+4. **The origin is wrong.** The worker only accepts requests from
+   sudtoolkit.org. Testing from `localhost` or a `github.io` preview is refused
+   with a 403 unless that origin is in `ALLOWED_ORIGINS`.
+5. **A hospital proxy is blocking the workers.dev hostname.** Events queue on
+   the device rather than being lost, so they arrive if the app is later opened
+   somewhere the endpoint is reachable. This is worth testing on a ward device
+   early — it is the one failure that looks like "nobody is using it".
+
+`npx wrangler tail` (or `npm run tail`) streams live requests to the worker,
+which settles quickly whether anything is arriving at all.
 
 ## Changing the password
 

@@ -1,0 +1,19 @@
+{
+  "name": "sudtoolkit-metrics",
+  "version": "0.5.1",
+  "private": true,
+  "description": "Cloudflare Worker that receives usage events from sudtoolkit.org. Separate from the app, which ships no dependencies and stays on GitHub Pages.",
+  "scripts": {
+    "login": "wrangler login",
+    "db:create": "wrangler d1 create sudtoolkit-metrics",
+    "db:init": "wrangler d1 execute sudtoolkit-metrics --remote --file=./schema.sql",
+    "secret": "wrangler secret put EXPORT_TOKEN",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "summary": "wrangler d1 execute sudtoolkit-metrics --remote --command \"SELECT role, location, COUNT(DISTINCT device_id) devices, COUNT(*) events FROM events GROUP BY role, location ORDER BY events DESC\"",
+    "count": "wrangler d1 execute sudtoolkit-metrics --remote --command \"SELECT COUNT(*) rows, COUNT(DISTINCT device_id) devices, MIN(received_at) first, MAX(received_at) latest FROM events\""
+  },
+  "devDependencies": {
+    "wrangler": "4.127.1"
+  }
+}
