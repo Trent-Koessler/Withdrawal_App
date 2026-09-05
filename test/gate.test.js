@@ -16,7 +16,7 @@ import {
     verifyToken,
     readCookie,
     safeNext,
-} from '../worker/gate.js';
+} from '../worker-gate/gate.js';
 
 const SECRET = 'test-signing-secret';
 const NOW = 1_700_000_000;

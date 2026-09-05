@@ -5,6 +5,46 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.1 - September 2026
+
+### Housekeeping
+
+- **A shared access password now sits in front of the disclaimer, and the app
+  asks your role and where you are working.** Both exist for the trial: the
+  password marks the app as being for clinicians rather than the public, and the
+  role and setting are what let the project report who is using it and where,
+  rather than asserting it.
+
+  The password is asked once per device and then remembered, because it is a
+  fact about the device. Role and location are asked every launch, because they
+  are facts about the person holding it and a ward terminal has more than one
+  of those - but the previous answers come back selected, so a clinician on
+  their own phone taps Continue and answers nothing. The professional-use
+  attestation is unchanged and still asked every launch.
+
+  `data/access-config.js` carries a SHA-256 of the password, not the password.
+  Be clear about what that buys: a shared word falls to a dictionary in seconds
+  and will be on a ward whiteboard within a week. It keeps the app out of a
+  search result and makes entry deliberate. It is not protecting anything -
+  nothing in this app is patient data.
+
+  Because the password is shared district-wide it identifies no site, so role
+  and location are self-reported. That is a limitation of the data, not a bug,
+  and belongs in the write-up.
+
+- **Usage events are queued on the device and sent when a connection appears.**
+  The app is offline-first and a real share of ward use happens with no signal.
+  Sending directly would have produced a dataset showing only the clinicians who
+  happened to be standing near an access point, which is the opposite of the
+  finding the project is trying to test. Events carry a random per-install
+  identifier, the selected role and location, and which feature was used - never
+  a score, a patient detail, or anything typed into a calculator. `worker/` holds
+  the Cloudflare endpoint that receives them and enforces the same lists again
+  on arrival.
+
+  Collection is off until the endpoint is deployed and `ENDPOINT` in `metrics.js`
+  is set. Until then the gate works and nothing is recorded at all.
+
 ## 0.5.0 - August 2026
 
 ### Clinical

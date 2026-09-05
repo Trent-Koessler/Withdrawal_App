@@ -1,22 +1,19 @@
-# Deploy with:  cd worker && npx wrangler deploy
-# See docs/PASSWORD-GATE.md for the full setup, including the two secrets this
-# Worker will not start without.
+name = "sudtoolkit-metrics"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
 
-name = "sudtoolkit-gate"
-main = "gate.js"
-compatibility_date = "2025-09-01"
+# The role and location vocabularies are not configured here. They live in
+# src/index.js beside the event names, because all three are lists the app and
+# the endpoint must share exactly, and a deploy-time variable would drift from
+# the release that produces the values. See worker/README.md.
 
-# The route has to cover every path, not just the root: the app pulls
-# script.js, the data/*.js modules, sw.js and the icons as separate requests,
-# and a gate that only guards "/" guards nothing.
-#
-# A Worker on a zone route reaches the origin (GitHub Pages) with a plain
-# fetch(request); the request does not re-enter this Worker, so there is no
-# loop to break.
-routes = [
-  { pattern = "sudtoolkit.org/*", zone_name = "sudtoolkit.org" },
-  { pattern = "www.sudtoolkit.org/*", zone_name = "sudtoolkit.org" }
-]
+# Created by: npx wrangler d1 create sudtoolkit-metrics
+# Paste the database_id it prints into the line below.
+[[d1_databases]]
+binding = "DB"
+database_name = "sudtoolkit-metrics"
+database_id = "PASTE_DATABASE_ID_HERE"
 
-# SITE_PASSWORD and GATE_SIGNING_SECRET are deliberately absent. They are set
-# with `wrangler secret put`, never in this file — this file is in git.
+# EXPORT_TOKEN is a secret, never a var — a var is readable in the dashboard
+# and committed here. Set it with:
+#   npx wrangler secret put EXPORT_TOKEN

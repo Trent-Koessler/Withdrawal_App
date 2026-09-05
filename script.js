@@ -25,12 +25,17 @@ import {
     MICRODOSING_EXTENDED_SOURCE, MICRODOSING_EXTENDED_NOTES, MICRODOSING_VERDICTS, microdosingPlan
 } from './data/otp-transfers.js';
 import { CONTENT_META, formatReviewMonth } from './data/content-meta.js';
+import { ROLES, CONSULT_LOCATIONS } from './data/access-config.js';
+import {
+    isUnlocked, verifyPassword, rememberUnlock, lastRole, lastLocation, rememberContext
+} from './access.js';
+import { startMetrics, record } from './metrics.js';
 
 // Published before anything else runs, and outside the DOMContentLoaded
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.0';
+const APP_VERSION = '0.5.1';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -47,17 +52,140 @@ document.addEventListener('DOMContentLoaded', () => {
     const disclaimerModal = document.getElementById('disclaimer-modal');
     const acceptDisclaimerBtn = document.getElementById('accept-disclaimer-btn');
 
+    // --- ACCESS PASSWORD --- //
+    // The inline script in index.html has already chosen which panel is
+    // showing; this wires up whichever one that is. See access.js for why the
+    // password is remembered and the attestation is not.
+    const accessGate = document.getElementById('access-gate');
+    const disclaimerGate = document.getElementById('disclaimer-gate');
+    const passwordInput = document.getElementById('access-password-input');
+    const passwordBtn = document.getElementById('access-password-btn');
+    const accessError = document.getElementById('access-error');
+    const roleSelect = document.getElementById('role-select');
+    const locationSelect = document.getElementById('location-select');
+
+    // --- ROLE AND LOCATION --- //
+    // Built from the data rather than written into the markup, so the two lists
+    // have one definition that both the app and the endpoint check against.
+    function fillSelect(select, options, previous) {
+        // A blank first option, so an unanswered dropdown is visibly unanswered
+        // rather than silently defaulting to whatever happens to be first.
+        const blank = document.createElement('option');
+        blank.value = '';
+        blank.textContent = 'Select…';
+        select.appendChild(blank);
+
+        for (const option of options) {
+            const el = document.createElement('option');
+            el.value = option.id;
+            el.textContent = option.label;
+            select.appendChild(el);
+        }
+        select.value = previous || '';
+    }
+
+    if (roleSelect && locationSelect) {
+        fillSelect(roleSelect, ROLES, lastRole());
+        fillSelect(locationSelect, CONSULT_LOCATIONS, lastLocation());
+    }
+
+    const contextError = document.getElementById('context-error');
+
+    function showError(el, message) {
+        el.textContent = message;
+        el.hidden = false;
+    }
+
+    // Hands over from the password panel to the attestation, which then runs
+    // exactly as it always has.
+    function revealDisclaimer() {
+        accessGate.hidden = true;
+        disclaimerGate.hidden = false;
+        disclaimerModal.setAttribute('aria-labelledby', 'disclaimer-modal-title');
+        acceptDisclaimerBtn.focus();
+    }
+
+    if (accessGate && !accessGate.hidden) {
+        const submitPassword = async () => {
+            accessError.hidden = true;
+            passwordBtn.disabled = true;
+            try {
+                if (!(await verifyPassword(passwordInput.value))) {
+                    showError(accessError, 'That password was not recognised. Check for a mistyped character, '
+                        + 'or ask whoever introduced the app to your team.');
+                    passwordInput.focus();
+                    passwordInput.select();
+                    return;
+                }
+                // Storage being blocked means it cannot be remembered and will
+                // be asked for again next launch. Annoying, but the clinician
+                // gets in, which is the part that matters.
+                rememberUnlock();
+                revealDisclaimer();
+            } catch (err) {
+                // verifyPassword only throws when SubtleCrypto is unavailable,
+                // which means the page is not on a secure origin.
+                showError(accessError, 'This page cannot check the password because it was not opened over a '
+                    + 'secure connection. Open https://sudtoolkit.org directly.');
+            } finally {
+                passwordBtn.disabled = false;
+            }
+        };
+
+        passwordBtn.addEventListener('click', submitPassword);
+        passwordInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitPassword();
+            }
+        });
+    } else if (accessGate && !isUnlocked()) {
+        // Storage said unlocked at paint time but no longer does — cleared
+        // mid-session, or a managed device discarding it. Ask again rather than
+        // letting the gate be skipped by an inconsistency.
+        accessGate.hidden = false;
+        disclaimerGate.hidden = true;
+        disclaimerModal.setAttribute('aria-labelledby', 'access-gate-title');
+    }
+
     // Deferred: focus set during DOMContentLoaded is discarded when the browser
     // finishes loading the document and resets focus to <body>.
     requestAnimationFrame(() => {
-        if (disclaimerModal.style.display !== 'none') {
+        if (disclaimerModal.style.display === 'none') {
+            return;
+        }
+        if (accessGate && !accessGate.hidden) {
+            passwordInput.focus();
+        } else {
             acceptDisclaimerBtn.focus();
         }
     });
 
     acceptDisclaimerBtn.addEventListener('click', () => {
+        // Both answers are required. Asking after the fact would mean either
+        // guessing, or a column that is empty for exactly the launches where
+        // someone was in a hurry — which is the use the study most wants.
+        if (roleSelect && locationSelect && (!roleSelect.value || !locationSelect.value)) {
+            const missing = !roleSelect.value ? roleSelect : locationSelect;
+            showError(contextError, 'Please answer both — your role, and where you are working now.');
+            missing.focus();
+            return;
+        }
+
+        contextError.hidden = true;
         disclaimerModal.style.display = 'none';
         document.body.classList.remove('modal-open');
+
+        if (roleSelect && locationSelect) {
+            // Remembered as next launch's pre-selection only. This launch's
+            // events carry what was actually answered just now.
+            rememberContext(roleSelect.value, locationSelect.value);
+            startMetrics({ role: roleSelect.value, location: locationSelect.value }, APP_VERSION);
+            // Counted here rather than at launch: this is the first moment a
+            // qualified person has actually reached the app, which is what a
+            // session is supposed to mean.
+            record('session');
+        }
     });
 
     // Answering "I am not a health professional" swaps the gate for the
@@ -204,6 +332,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title = newPage.dataset.title || 'Withdrawal Assistant';
         }
         pageTitle.textContent = title;
+
+        // The page id, never the title: titles are prose and get reworded
+        // between releases, which would split one page's data across two labels
+        // halfway through the study.
+        record('page_view', pageId);
         document.title = title + ' - SUD Toolkit';
 
         if (pageId === 'alcohol-withdrawal-page') {
@@ -386,6 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 copyButton.addEventListener('click', () => {
                     emrOutput.select();
                     navigator.clipboard.writeText(emrOutput.value);
+                    record('emr_copy', 'flowchart');
                 });
                 optionsContainer.appendChild(emrTitle);
                 optionsContainer.appendChild(emrOutput);
@@ -1107,6 +1241,9 @@ document.addEventListener('DOMContentLoaded', () => {
             planSummaryEl.value = buildRegimenSummary();
             planSummaryEl.select();
             navigator.clipboard.writeText(planSummaryEl.value);
+            // The closest thing to evidence that the app reached a patient
+            // record, which is the outcome the study is really asking about.
+            record('emr_copy', 'regimen-plan');
             const original = copyPlanBtn.textContent;
             copyPlanBtn.textContent = 'Copied!';
             setTimeout(() => { copyPlanBtn.textContent = original; }, 2000);
@@ -1131,6 +1268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             opioidQuickStartEl.value = buildOpioidQuickStart();
             opioidQuickStartEl.select();
             navigator.clipboard.writeText(opioidQuickStartEl.value);
+            record('emr_copy', 'opioid-quickstart');
             const original = copyOpioidQuickStartBtn.textContent;
             copyOpioidQuickStartBtn.textContent = 'Copied!';
             setTimeout(() => { copyOpioidQuickStartBtn.textContent = original; }, 2000);
@@ -1179,6 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
             textarea.value = text;
             textarea.select();
             navigator.clipboard.writeText(text);
+            record('emr_copy', page.id);
             const original = btn.textContent;
             btn.textContent = 'Copied!';
             setTimeout(() => { btn.textContent = original; }, 2000);
@@ -1358,11 +1497,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 6. Add event listeners
-        itemsContainer.addEventListener('change', updateCalculatorState);
+        //
+        // `scale_complete` fires on the first scoring interaction with this
+        // calculator, once per launch — not on every radio change, which would
+        // bury the signal, and not on "all items answered", which is not
+        // detectable here because every fieldset starts with its zero option
+        // selected. Read it as "this clinician scored this patient on this
+        // scale". Abandonment is then derivable in analysis: a page_view for a
+        // scales page with no scale_complete behind it.
+        let scoredOnce = false;
+        itemsContainer.addEventListener('change', () => {
+            updateCalculatorState();
+            if (!scoredOnce) {
+                scoredOnce = true;
+                record('scale_complete', config.id);
+            }
+        });
 
         copyBtn.addEventListener('click', (e) => {
             emrSummaryEl.select();
             navigator.clipboard.writeText(emrSummaryEl.value);
+            record('emr_copy', config.id);
             const btn = e.target;
             const originalText = btn.textContent;
             btn.textContent = 'Copied!';

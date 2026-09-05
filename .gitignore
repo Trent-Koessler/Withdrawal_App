@@ -10,3 +10,11 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Wrangler state from deploying worker/
+worker/.wrangler/
+worker/node_modules/
+
+# Python bytecode from tools/
+__pycache__/
+*.pyc

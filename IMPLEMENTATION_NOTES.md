@@ -444,3 +444,129 @@ every load was a single consistent release. And by serving 0.4.2's HTML with
 
 Four tests now pin this: the four version strings agree, the build is published
 before startup, and the fetch path contains no `cache.put`.
+
+## 8. 0.5.1 — the access gate and the usage log
+
+The trial needs two things the app did not have: a boundary saying the app is
+for clinicians, and a record of how it is actually used. Both shipped together
+because they share a decision.
+
+### 8.1 Why the gate is inside the app, not in front of it
+
+The obvious answer was Cloudflare Access, and it was wrong twice over.
+
+Its free tier is 50 seats, and a seat is consumed on any authentication and
+held until manually removed — so the meter counts everyone who has *ever*
+logged in. Past 50 the choice is blocking the 51st clinician or $7 per user per
+month with no cap. For an audience meant to grow across an LHD, both are the
+wrong failure.
+
+The second reason survives any pricing change. `sw.js` is cache-first and
+answers every navigation from the cached shell (§1.7). After the first install
+the app never asks the network for permission again, so **any gate at the edge
+runs exactly once per device and then goes quiet** — and reports no logins at
+all, which defeats the other half of the purpose. Netlify, Vercel and a Worker
+sitting in front of the site all have this same shape.
+
+So the gate is in the app: it re-checks on launch, works with no signal, and is
+the only place that can emit a countable event.
+
+### 8.2 Three questions, remembered for three different lengths of time
+
+| | Asks about | Remembered? |
+| --- | --- | --- |
+| Password | the **device** — was the app given to it | once, in `localStorage` |
+| Attestation | the **person** holding it — are they qualified | never, every launch |
+| Role and location | the person **and the moment** — who, where, now | asked every launch, last answers pre-selected |
+
+The attestation's per-launch behaviour predates this release and the comment
+above `#disclaimer-modal` explains why: a ward terminal has more than one user,
+and a stored attestation would speak for people who never gave it. This release
+added storage right next to it, so `access.test.js` asserts the acceptance
+handler still persists nothing of the attestation itself.
+
+Role and location sit in the middle, and the pre-selection is the whole design.
+Ask them fresh every time and a clinician on their own phone pays a tax for
+data they already gave; store them silently and a night registrar's ED session
+is filed under whoever set the device up. Pre-selected but visible costs the
+common case one glance and lets the uncommon case correct itself.
+
+The panel to show is chosen by an inline script before first paint, next to the
+theme script. Deciding it in `script.js` would flash the password prompt on
+every launch for a device that is already set up, which reads as "it forgot me".
+
+### 8.3 What the password is, and what it is not
+
+One shared password for the district, stored as a SHA-256 in
+`data/access-config.js` and set by `tools/set-password.py`.
+
+Be exact about what the hash buys. A shared word falls to a dictionary attack
+immediately, and it will be on a ward whiteboard within a week. It keeps the app
+out of a search result and makes entry a deliberate act. It is **not** protecting
+anything — nothing in this app is patient data, and the content is
+guideline-derived reference material. Anyone describing this as securing
+something has misread it.
+
+It also identifies no site, which is why role and location are asked at all: with
+a shared credential they are the only grouping variables the study has, and they
+are self-reported. That is a limitation for the write-up, not a defect.
+
+Normalisation (fold case, drop spaces and punctuation) exists in two languages,
+so a test runs the Python and the JavaScript over the same inputs and compares.
+Divergence would break the password for everyone at once with no symptom beyond
+"it says my password is wrong".
+
+Changing the password does not re-prompt devices already unlocked: the stored
+flag is "unlocked", not the password. That is deliberate — a password rotation
+should not lock out the whole district mid-shift — but it does mean a rotation
+only affects new devices.
+
+### 8.4 Why events are queued rather than sent
+
+A real share of ward use happens with no signal. Sending directly would produce
+a dataset showing only the clinicians who happened to be near an access point —
+the opposite of the finding the project exists to test. So `metrics.js` writes to
+a bounded `localStorage` queue and drains it on reconnect, and the `queued` flag
+survives to the database because the online/offline split is itself a result.
+
+Three consequences that each cost a bug before they were understood:
+
+1. **Role and location belong on the event, not the upload.** The queue is in
+   `localStorage`, so it is shared by every tab and outlives the launch that
+   wrote it. An event recorded by a registrar in ED is routinely uploaded by
+   whoever opens the app next. Stamping at flush time reassigned it to them —
+   silently, on exactly the shared ward terminal this design exists for. Each
+   event now carries the context it happened in, and the worker validates per
+   event.
+2. **Resends are normal, not exceptional.** A flush that succeeded on the server
+   but died before the response arrived is the ordinary case on hospital wifi.
+   Every event carries a `crypto.randomUUID()` and the worker uses
+   `INSERT OR IGNORE` against a `UNIQUE` column, so a resend lands as zero rows
+   rather than a second copy. Without that the denominator is a guess.
+3. **Nothing is recorded until `ENDPOINT` is set.** Not sent — *recorded*. An
+   empty endpoint makes `record()` return immediately rather than queue. If it
+   queued, the day collection was switched on would upload a backlog from before
+   anyone was told the app was being monitored.
+
+`scale_complete` fires on the first scoring interaction per calculator per
+launch. "All items answered" is not detectable — every fieldset starts with its
+zero option selected — so the operational definition is "this clinician scored
+this patient on this scale". Abandonment is derived in analysis (a scales
+`page_view` with no `scale_complete`) rather than instrumented.
+
+### 8.5 What is deliberately not collected
+
+No IP addresses, no user agents, no names, no emails, no scores, nothing typed
+into a calculator. `detail` is a fixed vocabulary of page and scale ids, and the
+worker drops anything not matching it — enforcement in two places, so widening
+what is collected takes a deliberate change in both. `device_id` is a random
+per-install identifier: pseudonymous, not anonymous, and the ethics application
+should say so rather than calling it anonymous.
+
+Verified end to end rather than by reasoning: the app served locally against the
+real worker code and driven through first unlock, a wrong password, a correct one
+typed in lower case with spaces, both dropdowns left unanswered, a relaunch with
+the answers pre-selected and then corrected, going offline mid-session, and
+reconnecting — checking at each step what reached the database and what the queue
+still held. Both bugs in §8.4.1 and the invisible validation message were found
+that way, not by review.

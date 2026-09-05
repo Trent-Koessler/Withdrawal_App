@@ -17,6 +17,41 @@ If a per-clinician login with an audit trail is ever wanted instead, Access with
 One-time PIN does that with no code, and this Worker should be removed rather
 than stacked underneath it.
 
+## Relationship to the in-app access code
+
+`access.js` already asks for a password, and this Worker is a **second,
+separate** layer rather than a replacement. They are not interchangeable:
+
+| | `access.js` | `worker-gate/gate.js` |
+| --- | --- | --- |
+| Runs | in the browser, after the files load | at Cloudflare's edge, before they load |
+| Password lives | as a SHA-256 hash in `data/access-config.js`, shipped to every visitor | as a Worker secret, never sent to the browser |
+| Stops | the app being *used* | the app being *served* |
+| Works offline | yes — that is the point of storing the unlock flag | no, and does not need to |
+| Knows about roles, locations, the `unlock` event | yes | no |
+
+The in-app gate cannot keep anyone from reading the content: the files are
+already on the device by the time it asks, and the password's hash is in them.
+That is a reasonable trade for something that must work offline on a ward
+phone, and it is what makes the edge gate a complement rather than a duplicate
+— the edge gate is the one that stops an anonymous visitor obtaining the files
+at all.
+
+**Running both means two prompts on a new device** — Cloudflare's, then the
+app's — even if the password is the same in each. Before deploying this, decide
+which of the following is wanted:
+
+- **Both.** Strongest, and the app's role/location/telemetry flow is untouched.
+  Costs a second prompt at first install only; installed devices see neither.
+- **Edge gate only.** One prompt, but `access.js` also collects role and
+  location and emits the `unlock` event the study depends on, so removing it
+  means reworking that flow. Not a small change.
+- **In-app gate only.** What `main` does today. Leave this Worker undeployed;
+  the code can stay in the tree unused.
+
+Nothing in the app needs to change either way — the Worker is transparent to a
+request that carries a valid session cookie.
+
 ## Prerequisites
 
 1. `sudtoolkit.org` uses Cloudflare nameservers.
@@ -29,7 +64,7 @@ than stacked underneath it.
 ## Setup
 
 ```sh
-cd worker
+cd worker-gate
 npx wrangler login
 
 # The password clinicians will type. Choose a long one — see "No rate limiting".
@@ -44,6 +79,11 @@ npx wrangler deploy
 
 Both secrets are set with `wrangler secret put`, not in `wrangler.toml` —
 that file is in git.
+
+Note the directory: `worker-gate/`, not `worker/`. `worker/` is the telemetry
+endpoint, a different Worker with its own secrets and its own deploy. A
+`wrangler.toml` describes exactly one Worker, which is why they are separate
+directories.
 
 To change the password later, run `wrangler secret put SITE_PASSWORD` again.
 Existing sessions survive that, because they are signed with the *other*
