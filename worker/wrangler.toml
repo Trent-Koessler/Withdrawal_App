@@ -1,0 +1,22 @@
+# Deploy with:  cd worker && npx wrangler deploy
+# See docs/PASSWORD-GATE.md for the full setup, including the two secrets this
+# Worker will not start without.
+
+name = "sudtoolkit-gate"
+main = "gate.js"
+compatibility_date = "2025-09-01"
+
+# The route has to cover every path, not just the root: the app pulls
+# script.js, the data/*.js modules, sw.js and the icons as separate requests,
+# and a gate that only guards "/" guards nothing.
+#
+# A Worker on a zone route reaches the origin (GitHub Pages) with a plain
+# fetch(request); the request does not re-enter this Worker, so there is no
+# loop to break.
+routes = [
+  { pattern = "sudtoolkit.org/*", zone_name = "sudtoolkit.org" },
+  { pattern = "www.sudtoolkit.org/*", zone_name = "sudtoolkit.org" }
+]
+
+# SITE_PASSWORD and GATE_SIGNING_SECRET are deliberately absent. They are set
+# with `wrangler secret put`, never in this file — this file is in git.
