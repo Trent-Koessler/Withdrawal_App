@@ -457,14 +457,16 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResults.hidden = false;
     }
 
-    // The menu entry, so search is reachable from any page: it goes home and
-    // puts the cursor in the box, with any earlier query selected so typing
-    // replaces it.
-    document.getElementById('search-button')?.addEventListener('click', () => {
+    // The header icon and the menu entry, so search is reachable from any page:
+    // both go home and put the cursor in the box, with any earlier query
+    // selected so typing replaces it.
+    const openSearch = () => {
         showPage('home-page');
         searchInput?.focus();
         searchInput?.select();
-    });
+    };
+    document.getElementById('search-icon-btn')?.addEventListener('click', openSearch);
+    document.getElementById('search-button')?.addEventListener('click', openSearch);
 
     if (searchInput && searchResults && homeNav) {
         searchInput.addEventListener('input', renderSearch);

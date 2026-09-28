@@ -104,9 +104,26 @@ body.modal-open > #app-container {
     flex-shrink: 0; /* Prevent this group from shrinking */
 }
 
-/* Hide hamburger on desktop and show regular controls */
+/* Search icon, beside the hamburger. Transparent like the hamburger, and
+   coloured from the theme text so it matches those lines in both themes. */
+.header-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+    background: transparent !important;
+    color: var(--text-color);
+}
+
+/* Hide hamburger on desktop and show regular controls. The icon already sits
+   in the top bar there, so the menu's text Search button would repeat it; on a
+   phone that button stays, inside the hamburger. */
 @media (min-width: 769px) {
     .hamburger { display: none !important; }
+    #search-button { display: none; }
 }
 
 /* Hamburger Menu Styles */
@@ -121,6 +138,8 @@ body.modal-open > #app-container {
     cursor: pointer;
     padding: 0;
     z-index: 10;
+    /* Never squeezed by a long page title or the search icon beside it. */
+    flex-shrink: 0;
 }
 
 .hamburger span {
@@ -1559,6 +1578,15 @@ textarea[id$="-quickstart-summary"] {
         <header class="app-header">
             <button id="global-back-btn" class="header-back-btn" aria-label="Go back" title="Go back">←</button>
             <h1 id="page-title">Substance Use Disorder (SUD) Toolkit</h1>
+            <!-- Always on screen, so search is one tap from any page. Drawn in the
+                 same weight as the hamburger lines so the two read as a pair. -->
+            <button id="search-icon-btn" class="header-icon-btn" aria-label="Search" title="Search">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
+                    stroke-width="2.6" stroke-linecap="round" aria-hidden="true" focusable="false">
+                    <circle cx="10.5" cy="10.5" r="6.5" />
+                    <line x1="15.5" y1="15.5" x2="21" y2="21" />
+                </svg>
+            </button>
             <button class="hamburger" id="hamburger-menu" aria-label="Toggle menu">
                 <span></span>
                 <span></span>
@@ -1582,7 +1610,7 @@ textarea[id$="-quickstart-summary"] {
                      content by search.js; nothing typed here is recorded. -->
                 <div class="home-search" role="search">
                     <label for="app-search" class="visually-hidden">Search the toolkit</label>
-                    <input type="search" id="app-search" placeholder="Search - e.g. CIWA, methadone, GHB"
+                    <input type="search" id="app-search" placeholder="Search, e.g. CIWA or GHB"
                         autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
                     <ul id="search-results" class="search-results" aria-label="Search results" hidden></ul>
                     <p id="search-empty" class="search-empty" hidden>No matches. Try a drug name, a scale
@@ -4444,8 +4472,8 @@ textarea[id$="-quickstart-summary"] {
                     <li><strong>There is a search box on the home page.</strong> Type a drug, a scale or a topic -
                         "COWS", "methadone", "thiamine" - and tap a result to go straight to that section. What you
                         type is not recorded and does not leave the device.</li>
-                    <li><strong>Search is also in the menu</strong> (the three-line menu button on a phone, the top bar on a
-                        computer), so it can be reached from any page.</li>
+                    <li><strong>A magnifying glass at the top of every page opens search</strong>, so it is one
+                        tap from anywhere. On a phone, Search is also in the menu.</li>
                     <li><strong>The Clinical Scales page shows every scale at once.</strong> The tabs now wrap onto
                         a second line on a phone instead of running off the edge of the screen. Standard Drinks is
                         still first.</li>
