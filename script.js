@@ -30,12 +30,13 @@ import {
     isUnlocked, verifyPassword, rememberUnlock, lastRole, lastLocation, rememberContext
 } from './access.js';
 import { startMetrics, record } from './metrics.js';
+import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 
 // Published before anything else runs, and outside the DOMContentLoaded
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.1';
+const APP_VERSION = '0.5.2';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -313,6 +314,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    // The header title for a page: the label of the button that opens it, so
+    // the title always matches what was tapped. Search uses the same wording.
+    function pageTitleFor(pageId) {
+        if (pageId === 'home-page') return 'Substance Use Disorder (SUD) Toolkit';
+        const button = document.querySelector(`[data-page='${pageId}']`);
+        if (button) return button.textContent.replace(/\s+/g, ' ').trim();
+        return document.getElementById(pageId)?.dataset.title || 'Withdrawal Assistant';
+    }
+
     // `push` adds a history entry so the device Back button steps through the
     // app instead of leaving it. Route reads (hash on load, popstate) pass false.
     function showPage(pageId, { push = true, tabId = null } = {}) {
@@ -324,13 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         newPage.classList.add('active-page');
 
-        const button = document.querySelector(`[data-page='${pageId}']`);
-        let title = 'Substance Use Disorder (SUD) Toolkit'; // Default title
-        if (button) {
-            title = button.textContent.replace(/\n/g, ' ');
-        } else if (pageId !== 'home-page') {
-            title = newPage.dataset.title || 'Withdrawal Assistant';
-        }
+        const title = pageTitleFor(pageId);
         pageTitle.textContent = title;
 
         // The page id, never the title: titles are prose and get reworded
@@ -386,6 +390,97 @@ document.addEventListener('DOMContentLoaded', () => {
 
     homeButton.addEventListener('click', () => showPage('home-page'));
     aboutButton.addEventListener('click', () => showPage('about-page'));
+
+    // --- SEARCH --- //
+    // The box on the home page. The index is built on first use rather than at
+    // start-up, so it sees the calculators and regimen tables script.js has
+    // rendered by then, and costs nothing for a launch that never searches.
+    // What is typed is never recorded; see search.js.
+    const searchInput = document.getElementById('app-search');
+    const searchResults = document.getElementById('search-results');
+    const searchEmpty = document.getElementById('search-empty');
+    const homeNav = document.querySelector('#home-page .button-container');
+    let searchIndex = null;
+
+    function openResult(result) {
+        // A scale opens through its own deep link (#scales-page/cows), so the
+        // address matches the one the "Go to scale" buttons produce.
+        const scaleTab = result.target?.closest('#scales-page > .tab-container > .tab-content');
+        showPage(result.pageId, { tabId: scaleTab?.id ?? null });
+        if (result.target) revealElement(result.target);
+    }
+
+    function renderSearch() {
+        const query = searchInput.value;
+        const searching = query.trim().length > 0;
+        homeNav.hidden = searching;
+        searchResults.replaceChildren();
+        searchResults.hidden = true;
+        searchEmpty.hidden = true;
+        if (!searching) return;
+
+        searchIndex ??= buildSearchIndex(pageTitleFor);
+        const results = searchEntries(searchIndex, query);
+        if (!results.length) {
+            searchEmpty.hidden = false;
+            return;
+        }
+
+        for (const result of results) {
+            const item = document.createElement('li');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'search-result';
+
+            const heading = document.createElement('span');
+            heading.className = 'search-result-heading';
+            heading.textContent = result.heading;
+            button.append(heading);
+
+            if (!result.isPage) {
+                const where = document.createElement('span');
+                where.className = 'search-result-page';
+                where.textContent = result.pageTitle;
+                button.append(where);
+            }
+            if (result.snippet) {
+                const snippet = document.createElement('span');
+                snippet.className = 'search-result-snippet';
+                snippet.textContent = result.snippet;
+                button.append(snippet);
+            }
+
+            button.addEventListener('click', () => openResult(result));
+            item.append(button);
+            searchResults.append(item);
+        }
+        searchResults.hidden = false;
+    }
+
+    // The header icon and the menu entry, so search is reachable from any page:
+    // both go home and put the cursor in the box, with any earlier query
+    // selected so typing replaces it.
+    const openSearch = () => {
+        showPage('home-page');
+        searchInput?.focus();
+        searchInput?.select();
+    };
+    document.getElementById('search-icon-btn')?.addEventListener('click', openSearch);
+    document.getElementById('search-button')?.addEventListener('click', openSearch);
+
+    if (searchInput && searchResults && homeNav) {
+        searchInput.addEventListener('input', renderSearch);
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                // Enter opens the top result, so "cows" + Enter is the whole trip.
+                event.preventDefault();
+                searchResults.querySelector('.search-result')?.click();
+            } else if (event.key === 'Escape') {
+                searchInput.value = '';
+                renderSearch();
+            }
+        });
+    }
 
     if (globalBackBtn) {
         globalBackBtn.addEventListener('click', () => {
