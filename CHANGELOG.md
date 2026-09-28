@@ -20,6 +20,11 @@ The user-facing version of this lives at `#changelog-page` in the app.
   who can read it (the author and the project team), how long it is kept (until
   the trial's evaluation period ends), and everything kept on the device, including the password marker and saved
   role and setting that 0.5.1 added without updating this list.
+- **Paramedic and Aboriginal Health Worker or Practitioner are no longer role
+  options**, in both `data/access-config.js` and the worker's allow-list.
+  Removing ids is safe only because nothing has been collected yet; once data
+  exists, ids are added, never removed. A device that had one of them saved is
+  asked to choose again.
 
 ## 0.5.3 - September 2026
 

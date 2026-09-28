@@ -42,8 +42,7 @@ const ALLOWED_EVENTS = new Set([
 // would drift from the release that produces the values.
 const ALLOWED_ROLES = new Set([
     'nurse', 'nurse-senior', 'rmo', 'registrar', 'consultant', 'gp',
-    'pharmacist', 'allied-health', 'aboriginal-health', 'midwife',
-    'paramedic', 'student', 'other',
+    'pharmacist', 'allied-health', 'midwife', 'student', 'other',
 ]);
 
 const ALLOWED_LOCATIONS = new Set([

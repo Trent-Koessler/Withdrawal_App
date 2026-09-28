@@ -40,9 +40,7 @@ export const ROLES = [
     { id: 'gp', label: 'General practitioner' },
     { id: 'pharmacist', label: 'Pharmacist' },
     { id: 'allied-health', label: 'Allied health or AOD worker' },
-    { id: 'aboriginal-health', label: 'Aboriginal Health Worker or Practitioner' },
     { id: 'midwife', label: 'Midwife' },
-    { id: 'paramedic', label: 'Paramedic' },
     { id: 'student', label: 'Student' },
     { id: 'other', label: 'Other' },
 ];
