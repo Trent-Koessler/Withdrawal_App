@@ -18,6 +18,9 @@ The user-facing version of this lives at `#changelog-page` in the app.
   still behind `.pending-publish` are left out. Nothing typed into the box is
   recorded or sent; tapping a result sends the same `page_view` a menu button
   does.
+- **Search is also in the header menu** (inside the hamburger on a phone, in
+  the top bar on a wider screen), so it can be reached from any page. It opens
+  home with the cursor in the search box and any earlier query selected.
 - **The Clinical Scales tab strips wrap instead of scrolling sideways.** On a
   phone most of the nine scales were off the edge of the screen behind a faint
   fade. Every scale is now visible at once. The order is unchanged and Standard

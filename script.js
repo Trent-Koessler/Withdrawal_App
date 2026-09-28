@@ -457,6 +457,15 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResults.hidden = false;
     }
 
+    // The menu entry, so search is reachable from any page: it goes home and
+    // puts the cursor in the box, with any earlier query selected so typing
+    // replaces it.
+    document.getElementById('search-button')?.addEventListener('click', () => {
+        showPage('home-page');
+        searchInput?.focus();
+        searchInput?.select();
+    });
+
     if (searchInput && searchResults && homeNav) {
         searchInput.addEventListener('input', renderSearch);
         searchInput.addEventListener('keydown', (event) => {
