@@ -5,6 +5,20 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.5 - September 2026
+
+### Housekeeping
+
+- **Search opens as a full-screen panel over the current page.** The
+  magnifying glass used to go to the home page and focus the box there, which
+  lost the reader's place. It now covers whatever page is showing; tapping a
+  result closes it and goes to that section, and the close button returns to
+  the page underneath untouched. The page behind is `inert` while covered, and
+  the device Back button closes the panel along with stepping back a page.
+- **The search box is no longer on the home page.** The header icon is the one
+  way in, on every page. The panel opens empty each time, so an earlier query
+  is never left on screen.
+
 ## 0.5.4 - September 2026
 
 ### Housekeeping

@@ -36,7 +36,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.4';
+const APP_VERSION = '0.5.5';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -392,17 +392,42 @@ document.addEventListener('DOMContentLoaded', () => {
     aboutButton.addEventListener('click', () => showPage('about-page'));
 
     // --- SEARCH --- //
-    // The box on the home page. The index is built on first use rather than at
-    // start-up, so it sees the calculators and regimen tables script.js has
-    // rendered by then, and costs nothing for a launch that never searches.
-    // What is typed is never recorded; see search.js.
+    // A full-screen panel opened by the header icon, over whatever page is
+    // showing, so closing it without picking anything leaves the reader where
+    // they were. The index is built on first use rather than at start-up, so
+    // it sees the calculators and regimen tables script.js has rendered by
+    // then, and costs nothing for a launch that never searches. What is typed
+    // is never recorded; see search.js.
+    const searchPanel = document.getElementById('search-panel');
+    const searchIconBtn = document.getElementById('search-icon-btn');
+    const searchCloseBtn = document.getElementById('search-close-btn');
     const searchInput = document.getElementById('app-search');
     const searchResults = document.getElementById('search-results');
     const searchEmpty = document.getElementById('search-empty');
-    const homeNav = document.querySelector('#home-page .button-container');
+    const appContainer = document.getElementById('app-container');
     let searchIndex = null;
 
+    // Opens empty every time, so an earlier query is never left on screen.
+    function openSearch() {
+        searchInput.value = '';
+        renderSearch();
+        searchPanel.hidden = false;
+        // The page underneath cannot be tabbed into or read out while covered.
+        appContainer.inert = true;
+        searchInput.focus();
+    }
+
+    function closeSearch({ restoreFocus = true } = {}) {
+        if (searchPanel.hidden) return;
+        searchPanel.hidden = true;
+        appContainer.inert = false;
+        searchInput.value = '';
+        renderSearch();
+        if (restoreFocus) searchIconBtn.focus();
+    }
+
     function openResult(result) {
+        closeSearch({ restoreFocus: false });
         // A scale opens through its own deep link (#scales-page/cows), so the
         // address matches the one the "Go to scale" buttons produce.
         const scaleTab = result.target?.closest('#scales-page > .tab-container > .tab-content');
@@ -413,7 +438,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSearch() {
         const query = searchInput.value;
         const searching = query.trim().length > 0;
-        homeNav.hidden = searching;
         searchResults.replaceChildren();
         searchResults.hidden = true;
         searchEmpty.hidden = true;
@@ -457,17 +481,12 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResults.hidden = false;
     }
 
-    // The header icon, so search is reachable from any page: it goes home and
-    // puts the cursor in the box, with any earlier query selected so typing
-    // replaces it.
-    const openSearch = () => {
-        showPage('home-page');
-        searchInput?.focus();
-        searchInput?.select();
-    };
-    document.getElementById('search-icon-btn')?.addEventListener('click', openSearch);
-
-    if (searchInput && searchResults && homeNav) {
+    if (searchPanel && searchIconBtn && searchCloseBtn && searchInput && searchResults && searchEmpty) {
+        searchIconBtn.addEventListener('click', openSearch);
+        searchCloseBtn.addEventListener('click', () => closeSearch());
+        // The device Back button still steps back through pages as usual; the
+        // panel closes with it rather than staying over the page it lands on.
+        window.addEventListener('popstate', () => closeSearch({ restoreFocus: false }));
         searchInput.addEventListener('input', renderSearch);
         searchInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
