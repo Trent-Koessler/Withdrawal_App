@@ -1386,7 +1386,7 @@ textarea[id$="-quickstart-summary"] {
     letter-spacing: 0.03em;
 }
 
-/* --- Search (home page) --- */
+/* --- Search (full-screen panel from the header icon) --- */
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -1399,14 +1399,33 @@ textarea[id$="-quickstart-summary"] {
     border: 0;
 }
 
-.home-search {
-    width: 80%;
-    max-width: 400px;
-    margin: 0 auto 20px;
+/* Covers the whole screen, header included, over whichever page is showing.
+   The page underneath is left alone, so closing search returns to it. */
+.search-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 900; /* Under .modal, so the disclaimer always wins. */
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
-.home-search input[type="search"] {
-    width: 100%;
+.search-panel[hidden] {
+    display: none;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ced4da;
+}
+
+.search-bar input[type="search"] {
+    flex: 1;
+    min-width: 0;
     box-sizing: border-box;
     padding: 12px 14px;
     /* 16px or more, or iOS zooms the page in on focus. */
@@ -1417,9 +1436,44 @@ textarea[id$="-quickstart-summary"] {
     border-radius: 8px;
 }
 
-/* The home buttons are display: flex, which would otherwise beat the hidden
-   attribute the search sets while results are showing. */
-.button-container[hidden],
+/* The browser's own clear button would sit right next to the close button
+   as a second, different cross. Escape or backspace still clears the box. */
+.search-bar input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* A real <button> for keyboard access, so it opts out of the global button
+   styling to stay a bare glyph, like the hamburger beside it in the header. */
+.search-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: 32px;
+    line-height: 1;
+    background: transparent !important;
+    color: var(--text-color);
+    border: none;
+}
+
+/* Only the results scroll; the box stays at the top. Centred in a column on
+   a wide screen so the results are not stretched across it. */
+.search-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 15px 20px;
+}
+
+.search-body > * {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .search-results[hidden] {
     display: none;
 }

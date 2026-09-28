@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.4" />
+    <meta name="app-build" content="0.5.5" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -1419,7 +1419,7 @@ textarea[id$="-quickstart-summary"] {
     letter-spacing: 0.03em;
 }
 
-/* --- Search (home page) --- */
+/* --- Search (full-screen panel from the header icon) --- */
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -1432,14 +1432,33 @@ textarea[id$="-quickstart-summary"] {
     border: 0;
 }
 
-.home-search {
-    width: 80%;
-    max-width: 400px;
-    margin: 0 auto 20px;
+/* Covers the whole screen, header included, over whichever page is showing.
+   The page underneath is left alone, so closing search returns to it. */
+.search-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 900; /* Under .modal, so the disclaimer always wins. */
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
-.home-search input[type="search"] {
-    width: 100%;
+.search-panel[hidden] {
+    display: none;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ced4da;
+}
+
+.search-bar input[type="search"] {
+    flex: 1;
+    min-width: 0;
     box-sizing: border-box;
     padding: 12px 14px;
     /* 16px or more, or iOS zooms the page in on focus. */
@@ -1450,9 +1469,44 @@ textarea[id$="-quickstart-summary"] {
     border-radius: 8px;
 }
 
-/* The home buttons are display: flex, which would otherwise beat the hidden
-   attribute the search sets while results are showing. */
-.button-container[hidden],
+/* The browser's own clear button would sit right next to the close button
+   as a second, different cross. Escape or backspace still clears the box. */
+.search-bar input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* A real <button> for keyboard access, so it opts out of the global button
+   styling to stay a bare glyph, like the hamburger beside it in the header. */
+.search-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: 32px;
+    line-height: 1;
+    background: transparent !important;
+    color: var(--text-color);
+    border: none;
+}
+
+/* Only the results scroll; the box stays at the top. Centred in a column on
+   a wide screen so the results are not stretched across it. */
+.search-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 15px 20px;
+}
+
+.search-body > * {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .search-results[hidden] {
     display: none;
 }
@@ -1602,16 +1656,6 @@ textarea[id$="-quickstart-summary"] {
 
             <!-- Home Page -->
             <div id="home-page" class="page active-page">
-                <!-- Search across every published page. Built from the page
-                     content by search.js; nothing typed here is recorded. -->
-                <div class="home-search" role="search">
-                    <label for="app-search" class="visually-hidden">Search the toolkit</label>
-                    <input type="search" id="app-search" placeholder="Search, e.g. CIWA or GHB"
-                        autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
-                    <ul id="search-results" class="search-results" aria-label="Search results" hidden></ul>
-                    <p id="search-empty" class="search-empty" hidden>No matches. Try a drug name, a scale
-                        (CIWA-Ar, COWS) or a topic such as thiamine.</p>
-                </div>
                 <nav class="button-container">
                     <button class="big-button" data-page="alcohol-withdrawal-page">Alcohol Withdrawal Decision Flowchart</button>
                     <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
@@ -4462,6 +4506,15 @@ textarea[id$="-quickstart-summary"] {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
+                <h4>0.5.5 - September 2026</h4>
+                <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
+                <ul>
+                    <li><strong>Search opens where you are.</strong> The magnifying glass now opens search full screen
+                        over the page you are on, instead of taking you back to the home page. Tap a result to go
+                        there, or tap the cross to close search and carry on from where you were. The search box
+                        has come off the home page, and search starts empty each time it is opened.</li>
+                </ul>
+
                 <h4>0.5.4 - September 2026</h4>
                 <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
                 <ul>
@@ -5219,6 +5272,25 @@ textarea[id$="-quickstart-summary"] {
         </footer>
 
     </div> <!-- End of #app-container -->
+
+    <!-- Search across every published page, opened by the magnifying glass in
+         the header. Full screen over whatever page is showing, so closing it
+         leaves the reader exactly where they were. Built from the page content
+         by search.js; nothing typed here is recorded. -->
+    <div id="search-panel" class="search-panel" role="dialog" aria-modal="true" aria-label="Search the toolkit" hidden>
+        <div class="search-bar" role="search">
+            <label for="app-search" class="visually-hidden">Search the toolkit</label>
+            <input type="search" id="app-search" placeholder="Search, e.g. CIWA or GHB"
+                autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+            <button type="button" id="search-close-btn" class="search-close-btn" aria-label="Close search"
+                title="Close search">&times;</button>
+        </div>
+        <div class="search-body">
+            <ul id="search-results" class="search-results" aria-label="Search results" hidden></ul>
+            <p id="search-empty" class="search-empty" hidden>No matches. Try a drug name, a scale
+                (CIWA-Ar, COWS) or a topic such as thiamine.</p>
+        </div>
+    </div>
 
     <!-- Criteria Modal -->
     <div id="criteria-modal" class="modal" role="dialog" aria-modal="true"
