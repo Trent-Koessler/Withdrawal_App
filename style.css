@@ -85,12 +85,9 @@ body.modal-open > #app-container {
     color: var(--text-color);
 }
 
-/* Hide hamburger on desktop and show regular controls. The icon already sits
-   in the top bar there, so the menu's text Search button would repeat it; on a
-   phone that button stays, inside the hamburger. */
+/* Hide hamburger on desktop and show regular controls */
 @media (min-width: 769px) {
     .hamburger { display: none !important; }
-    #search-button { display: none; }
 }
 
 /* Hamburger Menu Styles */
