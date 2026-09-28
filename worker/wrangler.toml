@@ -2,6 +2,12 @@ name = "sudtoolkit-metrics"
 main = "src/index.js"
 compatibility_date = "2026-08-01"
 
+# sudtoolkit.org's DNS is on Cloudflare, so the worker takes its own subdomain.
+# Deploying creates the DNS record and certificate; nothing to add by hand.
+routes = [
+    { pattern = "metrics.sudtoolkit.org", custom_domain = true },
+]
+
 # The role and location vocabularies are not configured here. They live in
 # src/index.js beside the event names, because all three are lists the app and
 # the endpoint must share exactly, and a deploy-time variable would drift from
@@ -12,7 +18,7 @@ compatibility_date = "2026-08-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "sudtoolkit-metrics"
-database_id = "PASTE_DATABASE_ID_HERE"
+database_id = "a14d73e5-7750-43a6-84ec-4877c5e31f16"
 
 # EXPORT_TOKEN is a secret, never a var — a var is readable in the dashboard
 # and committed here. Set it with:

@@ -5,6 +5,27 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.4 - September 2026
+
+### Housekeeping
+
+- **Usage collection is switched on.** The worker is deployed at
+  `metrics.sudtoolkit.org` and `ENDPOINT` in `metrics.js` points at it, so the
+  events built in 0.5.1 are now queued and sent. Nothing recorded before this
+  release is uploaded, because an empty endpoint meant nothing was queued.
+- **The privacy statement on the About page is rewritten to match.** It said
+  the site had no analytics and no database, and listed only the theme as
+  stored on the device, which stopped being true with this release. It now
+  lists what the usage record contains, what it never contains, where it goes,
+  who can read it (the author and the project team), how long it is kept (until
+  the trial's evaluation period ends), and everything kept on the device, including the password marker and saved
+  role and setting that 0.5.1 added without updating this list.
+- **Paramedic and Aboriginal Health Worker or Practitioner are no longer role
+  options**, in both `data/access-config.js` and the worker's allow-list.
+  Removing ids is safe only because nothing has been collected yet; once data
+  exists, ids are added, never removed. A device that had one of them saved is
+  asked to choose again.
+
 ## 0.5.3 - September 2026
 
 ### Housekeeping
