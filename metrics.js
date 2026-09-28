@@ -16,10 +16,11 @@
 const QUEUE_KEY = 'sud.queue';
 const DEVICE_KEY = 'sud.device';
 
-// Set this to the deployed worker once it exists — see worker/README.md. While
-// it is empty every function here is a no-op, so the access-code gate can ship
-// and be used before any collection is switched on.
-const ENDPOINT = '';
+// The deployed worker — see worker/README.md. Setting this to '' switches
+// collection off completely: every function here becomes a no-op and nothing is
+// even queued. The privacy statement on the About page describes collection as
+// on, so it has to change in the same release as this line.
+const ENDPOINT = 'https://metrics.sudtoolkit.org/e';
 
 // Roughly a fortnight of heavy single-device use. Past this the oldest events
 // are dropped: a device that has been offline for a month is a device whose

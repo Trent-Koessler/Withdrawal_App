@@ -36,7 +36,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.3';
+const APP_VERSION = '0.5.4';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
