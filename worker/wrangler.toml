@@ -18,7 +18,7 @@ routes = [
 [[d1_databases]]
 binding = "DB"
 database_name = "sudtoolkit-metrics"
-database_id = "PASTE_DATABASE_ID_HERE"
+database_id = "a14d73e5-7750-43a6-84ec-4877c5e31f16"
 
 # EXPORT_TOKEN is a secret, never a var — a var is readable in the dashboard
 # and committed here. Set it with:
