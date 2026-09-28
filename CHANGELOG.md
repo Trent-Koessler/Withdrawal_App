@@ -5,6 +5,27 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.2 - September 2026
+
+### Housekeeping
+
+- **Search on the home page.** Twenty-odd pages, most of them two or three taps
+  deep, is a menu to remember at 3am. The box searches page titles, section
+  headings and the text under them, and a tapped result opens the page, selects
+  whichever tabs the section sits inside, and scrolls to it. Enter opens the top
+  result. The index is built from the rendered page (`search.js`), so a heading
+  added to `index.html` is searchable with nothing else to update, and pages
+  still behind `.pending-publish` are left out. Nothing typed into the box is
+  recorded or sent; tapping a result sends the same `page_view` a menu button
+  does.
+- **The Clinical Scales tab strips wrap instead of scrolling sideways.** On a
+  phone most of the nine scales were off the edge of the screen behind a faint
+  fade. Every scale is now visible at once. The order is unchanged and Standard
+  Drinks is still first.
+- **Fixed a sideways scroll on phones.** The collapsed footer disclaimer sized
+  itself to its unwrapped line, which is wider than a 390px screen, so every page
+  could be dragged about 20px to the side and the ellipsis never appeared.
+
 ## 0.5.1 - September 2026
 
 ### Housekeeping
