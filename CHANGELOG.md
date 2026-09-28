@@ -5,6 +5,14 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.3 - September 2026
+
+### Housekeeping
+
+- **Search is no longer an item in the hamburger menu.** The magnifying glass
+  in the header is on every page at every screen width, so the menu entry only
+  repeated it. The menu is back to Home, About, Feedback and the theme toggle.
+
 ## 0.5.2 - September 2026
 
 ### Housekeeping

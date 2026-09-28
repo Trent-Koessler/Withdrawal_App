@@ -36,7 +36,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.2';
+const APP_VERSION = '0.5.3';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -457,16 +457,15 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResults.hidden = false;
     }
 
-    // The header icon and the menu entry, so search is reachable from any page:
-    // both go home and put the cursor in the box, with any earlier query
-    // selected so typing replaces it.
+    // The header icon, so search is reachable from any page: it goes home and
+    // puts the cursor in the box, with any earlier query selected so typing
+    // replaces it.
     const openSearch = () => {
         showPage('home-page');
         searchInput?.focus();
         searchInput?.select();
     };
     document.getElementById('search-icon-btn')?.addEventListener('click', openSearch);
-    document.getElementById('search-button')?.addEventListener('click', openSearch);
 
     if (searchInput && searchResults && homeNav) {
         searchInput.addEventListener('input', renderSearch);

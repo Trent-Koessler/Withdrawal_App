@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.2" />
+    <meta name="app-build" content="0.5.3" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -118,12 +118,9 @@ body.modal-open > #app-container {
     color: var(--text-color);
 }
 
-/* Hide hamburger on desktop and show regular controls. The icon already sits
-   in the top bar there, so the menu's text Search button would repeat it; on a
-   phone that button stays, inside the hamburger. */
+/* Hide hamburger on desktop and show regular controls */
 @media (min-width: 769px) {
     .hamburger { display: none !important; }
-    #search-button { display: none; }
 }
 
 /* Hamburger Menu Styles */
@@ -1593,7 +1590,6 @@ textarea[id$="-quickstart-summary"] {
                 <span></span>
             </button>
             <div class="header-controls" id="header-controls">
-                <button id="search-button" aria-label="Search">🔍 Search</button>
                 <button id="home-button">Home</button>
                 <button id="about-button">About</button>
                 <button id="feedback-button">Feedback</button>
@@ -4465,6 +4461,13 @@ textarea[id$="-quickstart-summary"] {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.5.3 - September 2026</h4>
+                <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
+                <ul>
+                    <li><strong>Search has come out of the menu.</strong> The magnifying glass at the top of every
+                        page does the same job, so the menu is back to Home, About, Feedback and Dark Mode.</li>
+                </ul>
 
                 <h4>0.5.2 - September 2026</h4>
                 <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
