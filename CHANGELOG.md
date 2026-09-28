@@ -17,7 +17,8 @@ The user-facing version of this lives at `#changelog-page` in the app.
   the site had no analytics and no database, and listed only the theme as
   stored on the device, which stopped being true with this release. It now
   lists what the usage record contains, what it never contains, where it goes,
-  and everything kept on the device, including the password marker and saved
+  who can read it (the author and the project team), how long it is kept (until
+  the trial's evaluation period ends), and everything kept on the device, including the password marker and saved
   role and setting that 0.5.1 added without updating this list.
 
 ## 0.5.3 - September 2026

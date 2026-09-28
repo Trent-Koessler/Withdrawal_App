@@ -169,6 +169,21 @@ SELECT COUNT(*) FILTER (WHERE event = 'page_view' AND detail = 'scales-page') op
   FROM events;
 ```
 
+## When the evaluation period ends
+
+The privacy statement on the About page promises the data is kept only until
+the trial's evaluation period ends. Keeping that promise is a manual step:
+
+1. Set `ENDPOINT` in `../metrics.js` back to `''`, update the privacy
+   statement to say collection has stopped, and release the app.
+2. Take a final export (above) and store it wherever the study's ethics
+   approval says research data lives.
+3. Delete the database, which removes every row:
+
+   ```sh
+   npx wrangler d1 delete sudtoolkit-metrics
+   ```
+
 ## Changing the password
 
 ```sh
