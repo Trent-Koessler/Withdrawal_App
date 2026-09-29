@@ -1579,3 +1579,15 @@ textarea[id$="-quickstart-summary"] {
     border-color: var(--primary-btn-bg);
     color: white;
 }
+
+/* Loading's Day 2+ doses, quoted from the Moderate-Severe schedule. A plain
+   stack of day rows inside the step's list, not a second level of bullets. */
+.step-schedule {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.25em 0;
+}
+
+.regimen-step .link-button {
+    margin-top: 0.25em;
+}

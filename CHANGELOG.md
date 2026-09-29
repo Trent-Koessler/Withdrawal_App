@@ -5,6 +5,27 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.6 - September 2026
+
+### Clinical
+
+- **The Loading regimen reads as three steps, in the order they happen.**
+  Step 1 is Day 1 loading (20mg 2-hourly to light sedation or 80mg, medical
+  review at 80mg). Step 2 is the rest of Day 1: 10-20mg 2-hourly PRN to a
+  maximum of 120mg in 24 hours. Step 3 is Day 2 onward: the Moderate-Severe
+  schedule from its Day 2 row. The PRN rung used to sit in its own section
+  below the Day 2 handover, which read as though it came after Day 2.
+- **The 120mg maximum now says it includes the 80mg load**, so no more than
+  40mg is given as PRN on Day 1.
+- **The Day 2-6 doses are listed inside the handover step**, quoted from the
+  Moderate-Severe schedule so the two cannot drift, with a button to open that
+  schedule. The two overlapping Day 2 bullets are merged into one.
+- **The delirium tremens hourly-loading note moves below the steps** into a
+  collapsible box, so it no longer interrupts the Day 1 to Day 2 sequence.
+- **The EMR paste follows the same Step 1 / 2 / 3 order** as the screen.
+- **The setting line reads "Ensure the setting is appropriate for the
+  regimen"**, replacing "Decide the setting before the drug chart".
+
 ## 0.5.5 - September 2026
 
 ### Housekeeping

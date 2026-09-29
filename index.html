@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.5" />
+    <meta name="app-build" content="0.5.6" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -1611,6 +1611,18 @@ textarea[id$="-quickstart-summary"] {
     background-color: var(--primary-btn-bg);
     border-color: var(--primary-btn-bg);
     color: white;
+}
+
+/* Loading's Day 2+ doses, quoted from the Moderate-Severe schedule. A plain
+   stack of day rows inside the step's list, not a second level of bullets. */
+.step-schedule {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.25em 0;
+}
+
+.regimen-step .link-button {
+    margin-top: 0.25em;
 }
     </style>
     <!-- END style.css -->
@@ -4505,6 +4517,23 @@ textarea[id$="-quickstart-summary"] {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.5.6 - September 2026</h4>
+                <p><em>The Loading regimen is laid out as three steps in the order they happen, and says
+                        plainly that the 120mg maximum includes the 80mg load.</em></p>
+                <ul>
+                    <li><strong>Loading now reads Step 1, Step 2, Step 3.</strong> Step 1 is Day 1 loading. Step 2 is
+                        the rest of Day 1: PRN up to 120mg in 24 hours. Step 3 is Day 2 onward: the Moderate-Severe
+                        schedule from its Day 2 row. The PRN doses used to sit below the Day 2 handover, which made
+                        them look like a Day 2 instruction.</li>
+                    <li><strong>The 120mg maximum includes the 80mg load</strong>, so no more than 40mg is given as
+                        PRN on Day 1. This is now said in the regimen.</li>
+                    <li><strong>The Day 2-6 doses are listed in Step 3</strong>, with a button to open the
+                        Moderate-Severe schedule. The delirium tremens hourly-loading note has moved below the steps,
+                        and the EMR copy follows the same order.</li>
+                    <li><strong>The setting line now reads "Ensure the setting is appropriate for the
+                            regimen".</strong></li>
+                </ul>
 
                 <h4>0.5.5 - September 2026</h4>
                 <p><em>Housekeeping only. Nothing on this release changes a dose, a band or a threshold.</em></p>
