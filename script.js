@@ -36,7 +36,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.5';
+const APP_VERSION = '0.5.6';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -971,7 +971,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // the cell's own source tags rather than asserted for all of them.
     const cellHasLocalContent = (cell) => [
         ...(cell.caveat || []), ...(cell.schedule || []), ...(cell.prn || []),
-        ...(cell.routing || []), ...(cell.setting || [])
+        ...(cell.routing || []), ...(cell.setting || []),
+        ...(cell.steps || []).flatMap(st => st.items), ...(cell.stepNotes || [])
     ].some(s => typeof s === 'string' && /src-local|src-nswcg-adapted/.test(s));
 
     // Under AWS, the two PRN triggers on a fixed schedule collapse into one band
@@ -1011,6 +1012,23 @@ document.addEventListener('DOMContentLoaded', () => {
             data.bands.forEach((b) => {
                 out.push(`  - ${plainLine(bandLabel(b))}: ${plainLine(b.dose)}, rescore ${b.monitoring}`);
             });
+        } else if (data.steps) {
+            // Loading: the steps in the order they happen, so the paste reads
+            // Day 1 load, Day 1 PRN, Day 2 handover exactly as the screen does.
+            data.steps.forEach((st, i) => {
+                if (i > 0) out.push('');
+                out.push(`${plainLine(st.heading)}:`);
+                st.items.forEach((item) => {
+                    if (typeof item === 'string') {
+                        out.push(`  - ${plainLine(item)}`);
+                    } else {
+                        item.schedule.forEach((row, r) => {
+                            out.push(`  - Day ${item.firstDay + r}: ${drug} ${row.dose}mg ${row.freq}`);
+                        });
+                    }
+                });
+            });
+            (data.stepNotes || []).forEach((note) => out.push('', `Note: ${plainLine(note)}`));
         } else if (typeof data.schedule[0] === 'string') {
             data.schedule.forEach((item) => out.push(`- ${plainLine(item)}`));
         } else {
@@ -1128,6 +1146,20 @@ document.addEventListener('DOMContentLoaded', () => {
             + `<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
     }
 
+    // Collapsed by default so caveats don't stack into a wall of text above
+    // the doses — but every caveat opens with its own bold lead-in sentence
+    // (e.g. "Conversion caveat."), which becomes the <summary>, so the
+    // substance is visible without expanding it. Only the elaboration and
+    // source-tag rationale are hidden behind the toggle.
+    function renderCaveats(list) {
+        return (list || []).map(caveat => {
+            const leadIn = caveat.match(/^<b>(.*?)<\/b>\s*/);
+            return leadIn
+                ? `<details class="warning-box"><summary>${leadIn[1]}</summary>${caveat.slice(leadIn[0].length)}</details>`
+                : `<div class="warning-box">${caveat}</div>`;
+        }).join('');
+    }
+
     // One renderer, two callers: the Regimens panel and the test-dose protocol on
     // the Assessment tab. They render the same shape of cell out of the same
     // config, so a second copy of this markup would be a second thing to keep
@@ -1159,19 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // schedule is useless underneath it.
         // An array: a cell can carry more than one (an oxazepam symptom-triggered
         // regimen is both converted and conditional on the care setting).
-        // Collapsed by default so caveats don't stack into a wall of text above
-        // the doses — but every caveat opens with its own bold lead-in sentence
-        // (e.g. "Conversion caveat."), which becomes the <summary>, so the
-        // substance is visible without expanding it. Only the elaboration and
-        // source-tag rationale are hidden behind the toggle.
-        (data.caveat || []).forEach(caveat => {
-            const leadIn = caveat.match(/^<b>(.*?)<\/b>\s*/);
-            if (leadIn) {
-                displayHTML += `<details class="warning-box"><summary>${leadIn[1]}</summary>${caveat.slice(leadIn[0].length)}</details>`;
-            } else {
-                displayHTML += `<div class="warning-box">${caveat}</div>`;
-            }
-        });
+        displayHTML += renderCaveats(data.caveat);
 
         // Score-banded dosing (symptom-triggered). A list, not a table: this is
         // the block clinicians paste into the EMR, where a table degrades into
@@ -1184,6 +1204,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 + data.bands.map(b => `<li><b>${bandLabel(b)}</b> &rarr; ${b.dose}`
                     + ` <span class="band-monitoring">(rescore ${b.monitoring})</span></li>`).join('')
                 + `</ul>`;
+        }
+
+        // Loading is a sequence rather than a schedule plus extras: Day 1 load,
+        // the rest of Day 1 as PRN, then the Day 2 handover. Each step is its
+        // own block so the day it belongs to is the first thing read.
+        if (data.steps) {
+            displayHTML += data.steps.map(st => `<div class="clinical-block regimen-step"><h4>${st.heading}</h4><ul>`
+                + st.items.map(item => (typeof item === 'string'
+                    ? `<li>${item}</li>`
+                    : `<li><ul class="step-schedule">` + item.schedule.map((row, r) =>
+                        `<li><b>Day ${item.firstDay + r}:</b> ${b_name} ${row.dose}mg ${row.freq}`
+                        + (row.note ? ` <i>(${row.note})</i>` : '') + `</li>`).join('') + `</ul></li>`)).join('')
+                + `</ul>`
+                + (st.link ? `<button class="link-button" data-select-severity="${st.link.severity}">${st.link.label}</button>` : '')
+                + `</div>`).join('');
+            return displayHTML + renderCaveats(data.stepNotes);
         }
 
         // "Scheduled Dosing" is wrong for a cell that is not a schedule - the
@@ -1336,12 +1372,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // The Severe intensity holds no schedule - it explains that severe
-    // withdrawal is loaded, and offers the switch. Delegated because the card
+    // withdrawal is loaded, and offers the switch. Loading offers the way back
+    // to the Moderate-Severe schedule it hands over to. Delegated because the card
     // is re-rendered on every change.
     if (regimenDisplayDiv) {
         regimenDisplayDiv.addEventListener('click', (event) => {
             const target = event.target.closest('[data-select-type]');
             if (target) selectRegimenType(target.dataset.selectType);
+            // Loading's Day 2 handover links to the schedule it hands over to.
+            const band = event.target.closest('[data-select-severity]');
+            if (band) {
+                selectedSeverity = band.dataset.selectSeverity;
+                selectedType = 'fixed';
+                syncSelectorButtons();
+                updateRegimenDisplay();
+            }
         });
     }
 

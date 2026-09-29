@@ -163,7 +163,7 @@ describe('benzodiazepine regimens', () => {
     // are exactly as capable of rendering nothing.
     const SEVERITIES = ['submild', 'mild', 'symptom', 'moderate', 'severe', 'loading', 'unknown'];
 
-    // A cell renders either a schedule or a `routing` card. The routing shape
+    // A cell renders either a schedule (or loading's steps) or a `routing` card. The routing shape
     // exists so a combination that must not produce doses (severe withdrawal on
     // oxazepam) can say so, instead of rendering an empty schedule — see P0-05.
     test('every benzo x severity combination resolves to a schedule or a routing card', () => {
@@ -172,7 +172,10 @@ describe('benzodiazepine regimens', () => {
                 const data = REGIMEN_CONFIG[benzo][severity];
                 assert.ok(data, `${benzo}/${severity} missing`);
                 assert.ok(data.name, `${benzo}/${severity} has no name`);
-                const schedule = Array.isArray(data.schedule) && data.schedule.length > 0;
+                // Loading is laid out as steps (load, PRN, handover) rather than
+                // a schedule list, and renders through its own branch.
+                const schedule = (Array.isArray(data.schedule) && data.schedule.length > 0)
+                    || (Array.isArray(data.steps) && data.steps.length > 0);
                 const routing = Array.isArray(data.routing) && data.routing.length > 0;
                 assert.ok(schedule || routing, `${benzo}/${severity} renders nothing`);
                 assert.ok(!(schedule && routing),

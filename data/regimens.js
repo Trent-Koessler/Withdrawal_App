@@ -214,6 +214,12 @@ export const EMR_SAFETY_LINES = {
         + `total ${drug} dose exceeds ${max} in 24 hours.`
 };
 
+// Held outside the config because two cells read it: Moderate-Severe renders it
+// whole, and Loading hands over to it from its Day 2 row. Quoting the rows from
+// here rather than retyping them is what stops the handover drifting from the
+// schedule it names.
+const DIAZEPAM_MOD_SEV_SCHEDULE = [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }];
+
 export const REGIMEN_CONFIG = {
     "Diazepam": {
         name: "Diazepam",
@@ -231,7 +237,7 @@ export const REGIMEN_CONFIG = {
         },
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
-        moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: [{ dose: 20, freq: 'qid' }, { dose: 15, freq: 'qid' }, { dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 5, freq: 'tds' }, { dose: 5, freq: 'bd', note: 'Further doses beyond day 6 are generally not required for diazepam' }], prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }] },
+        moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: DIAZEPAM_MOD_SEV_SCHEDULE, prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }] },
         severe: severeRoutesToLoading(),
         loading: {
             name: 'Loading',
@@ -240,20 +246,42 @@ export const REGIMEN_CONFIG = {
             // Setting is a first-order decision — it was previously buried under
             // PRN dosing, where it read as an afterthought to the drug chart.
             setting: [
-                `<b>Decide the setting before the drug chart.</b> Severe withdrawal is managed in <b>HDU</b>. Escalate to <b>ICU</b> for severe withdrawal with major complications, or with severe intercurrent illness. <span class="src-tag src-nswcg">NSWCG §5.4.2, §5.6.2</span>`,
+                `<b>Ensure the setting is appropriate for the regimen.</b> Severe withdrawal is managed in <b>HDU</b>. Escalate to <b>ICU</b> for severe withdrawal with major complications, or with severe intercurrent illness. <span class="src-tag src-nswcg">NSWCG §5.4.2, §5.6.2</span>`,
                 `<b>Indications for specialist inpatient care:</b> predicted moderate-severe withdrawal; a history of alcohol-related delirium or seizures; multiple drug dependencies; significant other medical problems; repeated inability to complete community withdrawal. <span class="src-tag src-nswcg">NSWCG §5.4.2</span>`
             ],
-            schedule: [
-                `<b>Day 1 - loading.</b> Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, or until a total of 80mg is reached. <b>The loading day is Day 1.</b> Medical officer review is required before exceeding 80mg in 24 hours. <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
-                `<b>Delirium tremens - hourly loading, monitored settings only.</b> For withdrawal delirium specifically, diazepam 20mg hourly to a total of 80mg/24h may be used in a monitored setting (HDU, or 1:1 nursing with continuous observation) - see Special Cases &rarr; Alcohol withdrawal delirium. Do not use hourly loading for severe withdrawal without delirium: oral diazepam peaks at around one hour, so hourly dosing outside DT stacks doses whose effect has not yet been observed. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`,
-                `<b>Day 2 onward - do not repeat a loading day.</b> Following loading, no further loading diazepam is generally needed once the patient is settled: diazepam's long-acting active metabolites are the reason loading works, and a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-                `<b>Default handover - the Moderate-Severe schedule from its Day 2 row.</b> Commence diazepam <b>15mg qid</b> and taper from there as written. <b>Do not start that schedule at its Day 1 row</b>: the loading day was Day 1. <span class="src-tag src-local">LOCAL - rationale: NSWCG §5.4.4 names symptom-triggered dosing as its preferred post-loading handover, and this app makes the fixed Moderate-Severe schedule the default instead. A patient who has just required loading has usually declared a history, a complication or a comorbidity - which are the same features that make scale-driven dosing unreliable - so handing them to a schedule that depends on the score is inconsistent with the exclusions stated on the Symptom-Triggered regimen. AGTAP p122 offers a fixed reducing regimen and as-needed dosing as equally acceptable after loading.</span>`,
-                `<b>Alternative handover:</b> symptom-triggered dosing in a reducing regimen, where none of the exclusions on that regimen apply and frequent skilled review is available. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+            // Three steps in the order they happen. The PRN rung used to sit in
+            // its own section below the Day 2 handover, which read as though it
+            // came after Day 2 - it is the rest of Day 1.
+            steps: [
+                {
+                    heading: 'Step 1 · Day 1 (loading)',
+                    items: [
+                        `Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, <b>or</b> until a total of <b>80mg</b> is reached. <b>The loading day is Day 1.</b> <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
+                        `<b>80mg in 24 hours - medical officer review required.</b> This is a review threshold, not a ceiling. Assess for other pathology before giving more (see Special Cases &rarr; alcohol withdrawal delirium is a diagnosis of exclusion). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+                    ]
+                },
+                {
+                    heading: 'Step 2 · Day 1 (PRN) — up to 120mg in 24 hours, including the 80mg load',
+                    items: [
+                        `<b>If no other cause is found and withdrawal persists:</b> diazepam 10-20mg 2-hourly PRN, to a <b>maximum of 120mg in 24 hours</b>. <b>The 120mg includes the 80mg load</b>, so no more than 40mg is given as PRN on Day 1. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+                        `<b>Persistent agitation or hallucinations, or more than 120mg in 24 hours</b> - specialist advice required: DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+                    ]
+                },
+                {
+                    heading: 'Step 3 · Day 2+ — switch to Moderate-Severe, from its Day 2 row',
+                    items: [
+                        `<b>No more loading.</b> Start the Moderate-Severe schedule at its <b>Day 2 row</b> - never its Day 1 row, because the loading day was Day 1. Diazepam's long-acting active metabolites are the reason loading works, so a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span> <span class="src-tag src-local">LOCAL - rationale: NSWCG §5.4.4 names symptom-triggered dosing as its preferred post-loading handover, and this app makes the fixed Moderate-Severe schedule the default instead. A patient who has just required loading has usually declared a history, a complication or a comorbidity - which are the same features that make scale-driven dosing unreliable - so handing them to a schedule that depends on the score is inconsistent with the exclusions stated on the Symptom-Triggered regimen. AGTAP p122 offers a fixed reducing regimen and as-needed dosing as equally acceptable after loading.</span>`,
+                        { schedule: DIAZEPAM_MOD_SEV_SCHEDULE.slice(1), firstDay: 2 },
+                        `<b>Alternative:</b> symptom-triggered dosing in a reducing regimen, where none of the exclusions on that regimen apply and frequent skilled review is available. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+                    ],
+                    // On screen only - a button means nothing in an EMR paste.
+                    link: { severity: 'moderate', label: 'Go to the Moderate-Severe schedule' }
+                }
             ],
-            prn: [
-                `<b>80mg in 24 hours - medical officer review required.</b> This is a review threshold, not a ceiling. Assess for other pathology before giving more (see Special Cases &rarr; alcohol withdrawal delirium is a diagnosis of exclusion). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-                `<b>If no other cause is found and withdrawal persists</b> - consider diazepam 10-20mg 2-hourly PRN, to a <b>maximum of 120mg in 24 hours</b>. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
-                `<b>Persistent agitation or hallucinations, or more than 120mg in 24 hours</b> - specialist advice required: DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
+            // Below the steps rather than between them, so the Day 1 -> Day 2
+            // sequence reads without interruption. Collapsed like a caveat.
+            stepNotes: [
+                `<b>Delirium tremens - hourly loading, monitored settings only.</b> For withdrawal delirium specifically, diazepam 20mg hourly to a total of 80mg/24h may be used in a monitored setting (HDU, or 1:1 nursing with continuous observation) - see Special Cases &rarr; Alcohol withdrawal delirium. Do not use hourly loading for severe withdrawal without delirium: oral diazepam peaks at around one hour, so hourly dosing outside DT stacks doses whose effect has not yet been observed. <span class="src-tag src-nswcg">NSWCG §5.6.2</span>`
             ]
         },
         unknown: testDoseCell('Diazepam', '10mg')

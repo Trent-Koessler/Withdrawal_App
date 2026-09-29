@@ -24,6 +24,9 @@ const textOf = (cell) => [
     ...(cell.prn || []),
     ...(cell.routing || []),
     ...(cell.setting || []),
+    // Loading is laid out as steps; their headings and text are part of the cell.
+    ...(cell.steps || []).flatMap((st) => [st.heading, ...st.items]),
+    ...(cell.stepNotes || []),
 ].filter((s) => typeof s === 'string').join('\n');
 
 // Loading is a diazepam concept in NSWCG. The oxazepam severe cell is not
@@ -513,6 +516,33 @@ describe('P1-05 — band selection carries risk modifiers, not intake alone', ()
         ]) {
             assert.ok(factor.test(regimens), `risk factor missing: ${factor}`);
         }
+    });
+});
+
+describe('loading reads in time order: load, PRN, then Day 2', () => {
+    const { steps } = REGIMEN_CONFIG.Diazepam.loading;
+    const stepText = (st) => [st.heading, ...st.items.filter((i) => typeof i === 'string')].join('\n');
+
+    test('the PRN rung is a Day 1 step, before the Day 2 handover', () => {
+        const prn = steps.findIndex((st) => /10-20mg 2-hourly PRN/.test(stepText(st)));
+        const handover = steps.findIndex((st) => /Day 2 row/.test(stepText(st)));
+        assert.ok(prn >= 0 && handover >= 0, 'the PRN step or the Day 2 handover step is missing');
+        assert.ok(prn < handover, 'the PRN rung is shown after the Day 2 handover, so it reads as a Day 2 instruction');
+        assert.ok(/Day 1/.test(steps[prn].heading), 'the PRN step does not say it belongs to Day 1');
+    });
+
+    test('the 120mg maximum is stated as including the 80mg load', () => {
+        const text = steps.map(stepText).join('\n');
+        assert.ok(/120mg includes the 80mg load/i.test(text),
+            'the 120 mg maximum does not say it includes the loading doses');
+    });
+
+    test('the Day 2+ doses are the Moderate-Severe schedule from its Day 2 row', () => {
+        const rows = steps.flatMap((st) => st.items).find((i) => typeof i === 'object');
+        assert.ok(rows, 'the handover does not list the Day 2+ doses');
+        assert.equal(rows.firstDay, 2);
+        assert.deepEqual(rows.schedule, REGIMEN_CONFIG.Diazepam.moderate.schedule.slice(1),
+            'the handover doses have drifted from the Moderate-Severe schedule');
     });
 });
 
