@@ -16,128 +16,24 @@
 //   3. The endpoint is public — the URL ships inside the app, so anyone can
 //      find it. Everything here assumes hostile input and fails closed.
 
-const ALLOWED_ORIGINS = new Set([
-    'https://sudtoolkit.org',
-    'https://www.sudtoolkit.org',
-    'https://trent-koessler.github.io',
-]);
+import {
+    ALLOWED_ORIGINS, ALLOWED_EVENTS, ALLOWED_ROLES, ALLOWED_LOCATIONS, DETAIL_PATTERN, DETAIL_MAX,
+} from './vocab.js';
+import {
+    EID_PATTERN, MAX_ID_LEN, corsHeaders, json, str, occurredAt, readJson, requireToken, csvCell,
+} from './util.js';
+import { handleRecords } from './records.js';
+import { handleAdmin } from './admin.js';
+import { runDigest } from './digest.js';
 
-// Event names the study collects. Adding one here is a deliberate act; see
-// worker/README.md for what each is for.
-const ALLOWED_EVENTS = new Set([
-    'unlock',         // access code accepted, or a remembered code re-opened the app
-    'session',        // app launched (one per launch, after the attestation)
-    'page_view',      // a tab or page was opened
-    'scale_complete', // a clinician scored a patient on a scale — the utility signal.
-                      // Abandonment is derived in analysis (a scales page_view
-                      // with no scale_complete), not sent as its own event.
-    'emr_copy',       // the copy-to-EMR button was used
-    'survey',         // reserved for the usability questionnaire; not sent yet
-]);
+// The vocabularies (event names, roles, locations, the `detail` shape) live in
+// vocab.js, shared with the feedback and admin routes. See worker/README.md.
 
-// Who is using the app, and where. Mirrors ROLES and CONSULT_LOCATIONS in
-// data/access-config.js — a test asserts the two agree. Hardcoded rather than
-// configured, for the same reason as the event names: these are a vocabulary
-// the app and the endpoint have to share exactly, and a deploy-time variable
-// would drift from the release that produces the values.
-const ALLOWED_ROLES = new Set([
-    'nurse', 'nurse-senior', 'rmo', 'registrar', 'consultant', 'gp',
-    'pharmacist', 'allied-health', 'midwife', 'student', 'other',
-]);
-
-const ALLOWED_LOCATIONS = new Set([
-    'ed', 'inpatient', 'aod-unit', 'mental-health', 'icu', 'maternity',
-    'outpatient', 'primary-care', 'custodial', 'aged-care', 'telehealth',
-    'other',
-]);
-
-// `detail` is a fixed vocabulary, not free text. Anything unrecognised is
-// stored as NULL rather than rejecting the whole event: losing which page was
-// viewed is a smaller loss than losing the fact that a session happened.
-const DETAIL_PATTERN = /^[a-z0-9][a-z0-9-]{0,39}$/;
-
-// crypto.randomUUID() on the client. Pinned to that shape so the uniqueness
-// guarantee the dedupe relies on is the browser's, not the caller's promise.
-const EID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-
-const MAX_BODY_BYTES = 64 * 1024;
 const MAX_EVENTS_PER_BATCH = 100;
-const MAX_ID_LEN = 64;
-
-function corsHeaders(origin) {
-    const headers = {
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Max-Age': '86400',
-        Vary: 'Origin',
-    };
-    if (origin && ALLOWED_ORIGINS.has(origin)) {
-        headers['Access-Control-Allow-Origin'] = origin;
-    }
-    return headers;
-}
-
-function json(body, status, origin) {
-    return new Response(JSON.stringify(body), {
-        status,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
-    });
-}
-
-// Trims to a maximum length and rejects anything that is not a plain string.
-// Every value written to the database passes through here or a pattern test.
-function str(value, maxLen) {
-    if (typeof value !== 'string') return null;
-    const trimmed = value.trim();
-    if (!trimmed || trimmed.length > maxLen) return null;
-    return trimmed;
-}
-
-// An ISO timestamp the client claims the event happened at. A ward device with
-// a wrong clock is common, so this is sanity-bounded rather than trusted: more
-// than a day ahead or a year behind is a broken clock, and the server time is
-// substituted so the row is still usable.
-function occurredAt(value, now) {
-    const raw = str(value, 40);
-    if (!raw) return now.toISOString();
-    const parsed = Date.parse(raw);
-    if (Number.isNaN(parsed)) return now.toISOString();
-    const skewAhead = parsed - now.getTime();
-    const skewBehind = now.getTime() - parsed;
-    if (skewAhead > 86_400_000 || skewBehind > 365 * 86_400_000) {
-        return now.toISOString();
-    }
-    return new Date(parsed).toISOString();
-}
-
-// Constant-time comparison so the export token cannot be recovered by timing
-// repeated requests. Length is compared first and leaks only the length.
-function tokenMatches(provided, expected) {
-    if (typeof provided !== 'string' || typeof expected !== 'string') return false;
-    if (provided.length !== expected.length) return false;
-    let diff = 0;
-    for (let i = 0; i < provided.length; i++) {
-        diff |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
-    }
-    return diff === 0;
-}
 
 async function handleIngest(request, env, origin) {
-    const declared = Number(request.headers.get('content-length') || 0);
-    if (declared > MAX_BODY_BYTES) {
-        return json({ error: 'too_large' }, 413, origin);
-    }
-
-    let payload;
-    try {
-        const body = await request.text();
-        if (body.length > MAX_BODY_BYTES) {
-            return json({ error: 'too_large' }, 413, origin);
-        }
-        payload = JSON.parse(body);
-    } catch {
-        return json({ error: 'bad_json' }, 400, origin);
-    }
+    const { payload, error } = await readJson(request, origin);
+    if (error) return error;
 
     const deviceId = str(payload?.device_id, MAX_ID_LEN);
     const appVersion = str(payload?.app_version, 20);
@@ -192,7 +88,7 @@ async function handleIngest(request, env, origin) {
         if (!role || !location ||
             !ALLOWED_ROLES.has(role) || !ALLOWED_LOCATIONS.has(location)) continue;
 
-        const rawDetail = str(item?.detail, 40);
+        const rawDetail = str(item?.detail, DETAIL_MAX);
         const detail = rawDetail && DETAIL_PATTERN.test(rawDetail) ? rawDetail : null;
 
         statements.push(
@@ -232,29 +128,11 @@ const CSV_COLUMNS = [
     'event', 'detail', 'app_version', 'standalone', 'queued',
 ];
 
-function csvCell(value) {
-    if (value === null || value === undefined) return '';
-    const text = String(value);
-    // Excel and Sheets both treat a leading =, +, - or @ as a formula. None of
-    // our columns can contain one after the validation above, but the export
-    // is the file a researcher opens by double-clicking, so it is neutralised
-    // here rather than trusted not to happen.
-    const guarded = /^[=+\-@]/.test(text) ? `'${text}` : text;
-    return /[",\n\r]/.test(guarded) ? `"${guarded.replace(/"/g, '""')}"` : guarded;
-}
-
 async function handleExport(request, env) {
-    const expected = env.EXPORT_TOKEN;
-    if (!expected) {
-        return new Response('Export not configured.\n', { status: 503 });
-    }
+    const denied = requireToken(request, env, { allowQuery: true });
+    if (denied) return denied;
 
     const url = new URL(request.url);
-    const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-    const provided = bearer || url.searchParams.get('token') || '';
-    if (!tokenMatches(provided, expected)) {
-        return new Response('Unauthorized.\n', { status: 401 });
-    }
 
     // Cursor pagination rather than OFFSET: rows are only ever appended, so
     // `after` is stable across pages even while the app keeps writing.
@@ -310,6 +188,18 @@ export default {
             return handleIngest(request, env, origin);
         }
 
+        // Feedback, survey answers and error reports. Same origin rule.
+        if (url.pathname === '/r' && request.method === 'POST') {
+            if (!origin || !ALLOWED_ORIGINS.has(origin)) {
+                return json({ error: 'forbidden_origin' }, 403, origin);
+            }
+            return handleRecords(request, env, origin);
+        }
+
+        if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
+            return handleAdmin(request, env, url);
+        }
+
         if (url.pathname === '/export.csv' && request.method === 'GET') {
             return handleExport(request, env);
         }
@@ -319,5 +209,12 @@ export default {
         }
 
         return new Response('Not found.\n', { status: 404 });
+    },
+
+    // The daily feedback email. wrangler.toml fires this at two UTC hours so
+    // that one of them is 9am in Sydney whether or not daylight saving is on;
+    // runDigest() works out which.
+    async scheduled(controller, env, ctx) {
+        ctx.waitUntil(runDigest(env, new Date(controller.scheduledTime || Date.now())));
     },
 };

@@ -31,14 +31,20 @@ import {
     isUnlocked, verifyPassword, rememberUnlock, lastRole, lastLocation, rememberContext
 } from './access.js';
 import { startMetrics, record } from './metrics.js';
+import { initFeedback, refreshFeedback, refreshAllFeedback, openFeedbackForm } from './feedback.js';
+import { noteSession, maybeOfferSurvey } from './survey.js';
 import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 
 // Published before anything else runs, and outside the DOMContentLoaded
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.7';
+const APP_VERSION = '0.6.0';
 window.SUD_BUILD = APP_VERSION;
+
+// Where the Feedback button's email goes when in-app feedback is switched off
+// (no metrics endpoint). Already public: it has always been in the mailto link.
+const FEEDBACK_EMAIL = 'trentkoessler@gmail.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.app-version').forEach(el => el.textContent = APP_VERSION);
@@ -187,6 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // qualified person has actually reached the app, which is what a
             // session is supposed to mean.
             record('session');
+            noteSession();
+            // The feedback boxes were drawn before anyone had answered the
+            // gate, when nothing could be sent; now the thumbs and form work.
+            refreshAllFeedback();
         }
     });
 
@@ -329,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showPage(pageId, { push = true, tabId = null } = {}) {
         const newPage = document.getElementById(pageId);
         if (!newPage || !newPage.classList.contains('page')) return false;
+        const previousPageId = document.querySelector('.page.active-page')?.id;
 
         pages.forEach(page => {
             page.classList.remove('active-page');
@@ -368,6 +379,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Long pages otherwise keep the previous page's scroll position.
         mainContent.scrollTop = 0;
+
+        refreshFeedback(newPage);
+
+        // Back on Home from somewhere else is the end of a task, which is the
+        // only moment the usability survey is allowed to interrupt.
+        if (pageId === 'home-page' && previousPageId && previousPageId !== 'home-page') {
+            maybeOfferSurvey();
+        }
         return true;
     }
 
@@ -517,10 +536,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Opens the feedback form at the foot of whichever page is showing, so the
+    // feedback is filed against that page. Falls back to email when in-app
+    // feedback is switched off.
     if (feedbackButton) {
         feedbackButton.addEventListener('click', () => {
-            const feedbackUrl = 'mailto:trentkoessler@gmail.com?subject=SUD Toolkit Feedback';
-            window.open(feedbackUrl, '_blank');
+            if (!openFeedbackForm()) {
+                window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('SUD Toolkit feedback')}`;
+            }
         });
     }
 
@@ -693,6 +716,8 @@ document.addEventListener('DOMContentLoaded', () => {
             tabContents.forEach(content => content.classList.remove('active'));
             const activeContent = container.querySelector(`#${button.dataset.tab}`);
             if (activeContent) activeContent.classList.add('active');
+            // The feedback box files ratings and comments under the open tab.
+            refreshFeedback(container.closest('.page'));
         }
 
         tabButtons.forEach(button => {
@@ -2115,6 +2140,10 @@ document.addEventListener('DOMContentLoaded', () => {
             : `Source: ${meta.source}. Not yet authored - nothing on this page has been reviewed.`;
         page.appendChild(footer);
     });
+
+    // --- PAGE FEEDBACK --- //
+    // After the review footers, so the box can sit just above them.
+    initFeedback({ email: FEEDBACK_EMAIL, version: APP_VERSION });
 
     // --- SETUP ALL CALCULATORS ---
     SCALES.forEach(setupCalculator);

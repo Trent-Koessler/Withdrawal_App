@@ -136,7 +136,7 @@ describe('role and location', () => {
         // the worker refuses loses those events; an id the worker allows but
         // the app cannot send is dead configuration that hides the first
         // problem when someone goes looking.
-        const worker = read('worker/src/index.js');
+        const worker = read('worker/src/vocab.js');
         const parse = name => {
             const block = worker.match(new RegExp(`${name} = new Set\\(\\[([\\s\\S]*?)\\]\\);`))?.[1];
             assert.ok(block, `could not locate ${name} in the worker`);
@@ -214,14 +214,14 @@ describe('the usage log cannot break the app', () => {
     const script = read('script.js');
 
     test('the new modules are precached for offline boot', () => {
-        for (const file of ['access.js', 'metrics.js', 'data/access-config.js']) {
+        for (const file of ['access.js', 'metrics.js', 'feedback.js', 'survey.js', 'data/access-config.js']) {
             assert.ok(sw.includes(`'${file}'`),
                 `${file} is missing from the service worker precache list — the app would not boot offline`);
         }
     });
 
     test('every event name script.js sends is one the worker accepts', () => {
-        const worker = read('worker/src/index.js');
+        const worker = read('worker/src/vocab.js');
         // Scoped to the ALLOWED_EVENTS block. Scanning the whole file also
         // picks up the CSV column names, which would let a typo'd event name
         // pass this test by matching an unrelated string.
@@ -229,11 +229,13 @@ describe('the usage log cannot break the app', () => {
         assert.ok(block, 'could not locate ALLOWED_EVENTS in the worker');
         const allowed = new Set([...block.matchAll(/'([a-z_]+)'/g)].map(m => m[1]));
 
-        const sent = [...script.matchAll(/record\('([a-z_]+)'/g)].map(m => m[1]);
-        assert.ok(sent.length > 0, 'script.js records nothing');
-        for (const name of new Set(sent)) {
-            assert.ok(allowed.has(name),
-                `script.js sends "${name}" but the worker drops it — the column would be silently empty`);
+        for (const file of ['script.js', 'feedback.js', 'survey.js']) {
+            const sent = [...read(file).matchAll(/record\('([a-z_]+)'/g)].map(m => m[1]);
+            assert.ok(sent.length > 0, `${file} records nothing`);
+            for (const name of new Set(sent)) {
+                assert.ok(allowed.has(name),
+                    `${file} sends "${name}" but the worker drops it — the column would be silently empty`);
+            }
         }
     });
 
