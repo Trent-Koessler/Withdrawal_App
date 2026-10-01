@@ -2,6 +2,7 @@ import { FLOWCHART_LOGIC } from './data/flowchart.js';
 import { REGIMEN_CONFIG, EMR_SAFETY_LINES, INITIAL_SCORING_INTERVAL } from './data/regimens.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
+import { RASS_RULE_HTML } from './data/sedation.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
 import {
@@ -36,7 +37,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.6';
+const APP_VERSION = '0.5.7';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1192,6 +1193,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // An array: a cell can carry more than one (an oxazepam symptom-triggered
         // regimen is both converted and conditional on the care setting).
         displayHTML += renderCaveats(data.caveat);
+        // A caveat that only matters to a ward charting AWS (why the
+        // symptom-triggered dose is not split at AWS 7/8).
+        if (selectedScale === 'aws' && data.caveatAws) displayHTML += renderCaveats([data.caveatAws]);
+
+        // The one sedation rule, shown with every schedule that gives doses.
+        // Loading carries its own version inside Step 1 (its endpoint is
+        // RASS -1), the test-dose protocol has its own, and a routing card
+        // gives no dose.
+        const givesDoses = !data.steps && !data.routing && !/Test-Dose/.test(data.name || '');
+        if (givesDoses) displayHTML += `<div class="clinical-block rass-rule"><p>${RASS_RULE_HTML}</p></div>`;
 
         // Score-banded dosing (symptom-triggered). A list, not a table: this is
         // the block clinicians paste into the EMR, where a table degrades into
@@ -1590,7 +1601,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemsHtml += `<p class="calculator-item-instruction">${item.instruction}</p>`;
             }
             item.options.forEach((opt, index) => {
-                const isChecked = index === 0 ? 'checked' : '';
+                const isChecked = index === (item.defaultIndex ?? 0) ? 'checked' : '';
                 itemsHtml += `
                 <div class="radio-option">
                     <label>
@@ -1606,7 +1617,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Caveats sit immediately above the score, not below it and not on a
         // separate page: the calculator's own output is what invites the
         // misreading they exist to prevent.
-        const caveats = [...SCALE_CAVEATS_UNIVERSAL, ...(config.caveats || [])];
+        // RASS is not a withdrawal scale, so the universal withdrawal caveat would
+        // misdescribe it.
+        const universal = config.universalCaveats === false ? [] : SCALE_CAVEATS_UNIVERSAL;
+        const caveats = [...universal, ...(config.caveats || [])];
         const caveatNode = document.createElement('div');
         caveatNode.className = 'scale-caveats';
         caveatNode.innerHTML = `<h4>What this scale can and cannot tell you</h4><ul>`

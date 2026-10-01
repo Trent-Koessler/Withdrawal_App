@@ -28,6 +28,8 @@ const BAND_MONITORING = { submild: '4-6 hourly', mild: '2-4 hourly', moderate: '
 // Stated on the Assessment & Banding tab for every patient commenced on a
 // regimen, and repeated in the EMR export so a fixed schedule never pastes with
 // a band frequency alone.
+import { RASS_RULE_PLAIN, RASS_LOADING_HTML, RASS_STEP_HTML } from './sedation.js';
+
 export const INITIAL_SCORING_INTERVAL = '2-hourly at least initially';
 
 // The AWS bands on the two fixed schedules are a local amalgamation of two
@@ -78,22 +80,21 @@ const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the tw
 <tr><td>&ge; 15</td><td>Severe, hourly</td><td>very severe</td><td>&gt; 14, hourly</td></tr>
 </tbody></table></div>
 <b>Where each boundary comes from.</b> <b>4-7</b> is published as a band in AGTAP Table 8.4, and the break at <b>7/8</b> appears in both Table 8.4 (severe above 7) and p111 (severe 8-14). <b>15</b> is p111's very severe, and matches NSWCG's &gt; 14. NSWCG's own middle band is the union of the two middle rows, so subdividing it does not overturn it. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> ${AGTAP_CITE}<br>
+<b>A score of exactly 4 is Mild-Moderate.</b> AGTAP is inconsistent here - mild in its text (p111), moderate in Table 8.4 - so NSWCG decides it: Table 5.6 puts 4 in its moderate band. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> ${AGTAP_CITE}<br>
+<b>The split chooses a fixed schedule. It does not change symptom-triggered doses.</b> The Symptom-Triggered regimen keeps NSWCG's single AWS 4-14 band and its dose - see the note on that regimen for why. <span class="src-tag src-nswcg">NSWCG Table 5.4</span><br>
 <b>The score is not the whole decision.</b> The bands above are a starting point, not a rule - reported intake, risk factors and clinical assessment select the schedule with the score, exactly as they do on the CIWA-Ar side. <span class="src-tag src-nswcg">NSWCG §5.4.2</span><br>
 <b>Monitoring: this app follows NSWCG, and AGTAP would monitor more closely.</b> The app rescores <b>2-4 hourly</b> across AWS 4-14, per NSWCG. AGTAP Table 8.4 rescores <b>1-2 hourly</b> above AWS 7. If your patient is in the 8-14 band, treat more frequent observation as available and reasonable rather than a departure. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6, with AGTAP Table 8.4 and p111 - rationale: the two documents map the same CIWA-Ar bands to different AWS ranges (NSWCG CIWA 10-20 to AWS 4-14; AGTAP CIWA 10-20 to AWS 4-7), so no crosswalk between them is exact. The band boundaries follow AGTAP because it is the only source that splits the range these two schedules share, and the observation frequency follows NSWCG so the AWS and CIWA-Ar views of the same band cannot disagree about monitoring. AGTAP's more frequent rescoring is stated rather than silently dropped.</span>`;
 
-// TODO(clinical): AGTAP Table 8.4's note expands AWS as "Alcohol Withdrawal
-// Symptoms - Rating Scale", where this app uses the NSW Health (2000) Alcohol
-// Withdrawal Scale - confirm from the source document that these are the same
-// instrument, because the bands above do not transfer if they are not.
-// TODO(clinical): a score of exactly 4 is mild on AGTAP p111 but moderate in
-// AGTAP Table 8.4, and this app follows Table 8.4 by putting 4 in
-// Mild-Moderate - confirm that is the intended reading of the two.
-// TODO(clinical): the AWS calculator on the Scales page bands <=4 mild /
-// <=14 moderate / >14 severe, which disagrees with both AGTAP tables for
-// 8-14 - should the calculator move to AGTAP's bands, or label both schemes?
-// TODO(clinical): the symptom-triggered table keeps NSWCG's <4 / 4-14 / >14
-// dose bands, so at AWS 8-14 it gives 10mg where AGTAP Table 8.4 gives 20mg -
-// should the local symptom-triggered doses be revisited against Table 8.4?
+// Decided (v0.5.7):
+// - Instrument: AGTAP's appendix AWS is the same 7-item scale (max 27) as the
+//   Scales page calculator, reproduced from the NSW Health detoxification
+//   guidelines, so the AGTAP bands transfer.
+// - A score of 4 is Mild-Moderate. AGTAP contradicts itself (p111 mild,
+//   Table 8.4 moderate); NSWCG Table 5.6 is the tiebreaker.
+// - The AWS calculator now uses the same <4 / 4-7 / 8-14 / >=15 bands.
+// - Symptom-triggered dosing keeps NSWCG's <4 / 4-14 / >14 bands and doses so
+//   that CIWA-Ar and AWS give the same dose for the same withdrawal; the reason
+//   is stated in the regimen (AWS_SYMPTOM_DOSE_NOTE).
 
 // AGTAP Figure 8.2 asks "is a loading regimen required?" before anything else,
 // and answers it from three things, only one of which is a score: severe
@@ -141,6 +142,11 @@ const symptomTriggeredBands = (doses) => [
     { ...band('&gt; 20', '&gt; 14'), dose: doses[2], monitoring: BAND_MONITORING.severe }
 ];
 
+// Why AWS 8-14 does not get AGTAP's higher symptom-triggered dose. The fixed
+// schedules split NSWCG's AWS 4-14 band at 7/8 (per AGTAP); this regimen does
+// not, so CIWA-Ar and AWS keep giving the same dose for the same withdrawal.
+const awsSymptomDoseNote = (midDose) => `<b>If your ward charts AWS: why AWS 8-14 still gets ${midDose}.</b> The AWS 4-7 / 8-14 split on the fixed schedules decides <b>which schedule to start</b>. It does not change the dose here. This regimen keeps NSWCG's single <b>AWS 4-14</b> band, so a patient gets the same dose whichever scale the ward charts: CIWA-Ar 10-20 and AWS 4-14 both give <b>${midDose}</b>. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.4, Table 5.6 - rationale: AGTAP Table 8.4 gives a higher dose above AWS 7, but it also pairs AWS above 7 with CIWA-Ar above 20, its severe band. Taking AGTAP's AWS dose without its pairing would give a patient charted on AWS more diazepam than the same patient charted on CIWA-Ar. The NSWCG doses are kept so the two scales stay roughly equivalent. Rising scores still prompt medical review, and the dose can be repeated at the next scoring.</span> ${agtap('Table 8.4, p111')}`;
+
 // Symptom-triggered dosing is the regimen NSWCG §5.4.4 calls ideal for
 // uncomplicated withdrawal reviewed frequently by skilled clinicians — i.e. the
 // one a specialist withdrawal unit would reach for first. It was absent from
@@ -151,6 +157,7 @@ const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
     name: 'Symptom-Triggered',
     caveat: [...extraCaveats, `<b>When this regimen is appropriate.</b> Symptom-triggered dosing suits <b>uncomplicated withdrawal</b> in patients without co-occurring conditions, in an inpatient setting with <b>frequent review by skilled clinicians</b>. Where those conditions do not hold - complex inpatients with co-occurring conditions - a <b>hybrid</b> regimen (a fixed schedule reviewed daily, plus PRN) is often the most appropriate choice. <span class="src-tag src-nswcg">NSWCG §5.4.4</span><br>
 <b>AGTAP rules it out in three groups NSWCG only cautions about.</b> Do not dose to the score where there is a <b>history of withdrawal seizures</b> - a seizure can arrive before the score rises - nor in <b>concurrent withdrawal from other drugs</b>, nor in <b>significant medical or psychiatric comorbidity</b>, which AGTAP notes covers many general and psychiatric hospital inpatients. Use a fixed schedule in those patients, and seek addiction medicine advice on monitoring. ${agtap('8.10 (B), 8.26 (B), 8.28 (C)')}`],
+    caveatAws: awsSymptomDoseNote(doses[1]),
     bands: symptomTriggeredBands(doses),
     schedule: [
         `Score the patient at the interval shown for their current band, and give the dose for that band. There is no fixed daily total to complete. <span class="src-tag src-nswcg">NSWCG Table 5.4, Table 5.6</span>`,
@@ -172,27 +179,24 @@ const testDoseCell = (drug, testDose, extraCaveats = []) => ({
     schedule: [
         `<b>Only in consultation</b> with Addiction Medicine or a similar CL service, given the risks of test dosing.`,
         `<b>Test dose:</b> ${drug} ${testDose} orally, once.`,
-        `<b>Reassess at 1 hour, and again at 2 hours.</b> Absence of sedation at 1 hour is weak evidence of tolerance on its own: oral absorption is variable and 1 hour is approximately peak, so a patient who is going to be sedated may not be yet. <span class="src-tag src-local">LOCAL - rationale: the original protocol assessed only at 1 hour; the 2-hour reassessment is added locally to catch delayed absorption.</span>`,
-        `<b>Assess sedation with a charted scale</b>, not an impression, so the finding is reproducible between assessors and across shifts.`,
-        `<b>If sedated</b> (drowsy, slurred speech, ataxia): lower or normal tolerance. Manage cautiously with the Mild-Moderate regimen, or the Sub-Mild option if the score is below that band.`,
-        `<b>If not sedated at 2 hours</b>: higher or established tolerance. Consider the Moderate-Severe schedule, or symptom-triggered dosing.`
+        `<b>Check at 1 hour for safety; decide at 2 hours.</b> At 1 hour, if the patient is <b>RASS -2 or below</b>, give no further benzodiazepine and arrange medical review. Absence of sedation at 1 hour is not yet evidence of tolerance: oral absorption is variable and 1 hour is roughly peak, so a patient who will be sedated may not be yet. <span class="src-tag src-local">LOCAL - rationale: the original protocol assessed only at 1 hour; the 2-hour decision point is added locally to catch delayed absorption, and the 1-hour check is kept to catch early over-sedation.</span>`,
+        `<b>Assess sedation with the RASS</b> (Scales &amp; Calculators &rarr; RASS), not an impression, so the finding is the same between assessors and across shifts. <span class="src-tag src-local">LOCAL - rationale: neither NSWCG nor AGTAP names a sedation scale; RASS is used so that "sedated" has one reproducible definition.</span> <span class="src-tag src-other">OTHER - Sessler 2002</span>`,
+        `<b>If sedated at 2 hours</b> (<b>RASS -1 or below</b>: drowsy, or slurred speech or ataxia): lower or normal tolerance. Manage cautiously with the Mild-Moderate regimen, or the Sub-Mild option if the score is below that band.`,
+        `<b>If not sedated at 2 hours</b> (<b>RASS 0 or above</b>): higher or established tolerance. Consider the Moderate-Severe schedule, or symptom-triggered dosing.`,
+        `<b>Before every later dose, the patient should be RASS 0 or above.</b> At RASS -1 the sedation target is reached, so withhold the dose and rescore at the next scheduled time. At -2 or below, withhold the dose and arrange medical review. <span class="src-tag src-local">LOCAL - rationale: puts NSWCG's sedation target (lightly sedated and easily rousable) on a charted scale.</span> <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
     ],
     prn: [
         'Monitor the patient closely for signs of toxicity or escalating withdrawal.',
         'Consult a Drug & Alcohol specialist service if withdrawal severity remains unclear.'
     ]
-    // TODO(clinical): should the assessment point move to 2 hours only, rather
-    // than assessing at both 1 and 2 hours? Oral diazepam peaks at about 1 hour,
-    // so a 1-hour reading is at best a partial answer.
-    // TODO(clinical): which charted sedation scale should be used to define
-    // "sedated" here — e.g. a Ramsay/RASS-style scale, or the local sedation
-    // score already charted on the ward? The descriptive list is not reproducible.
+    // Decided (v0.5.7): keep both checks - 1 hour for safety, 2 hours to
+    // decide - and define "sedated" with RASS (Scales page).
 });
 
-// TODO(clinical): should the elderly/frail have a separately authored reduced
-// oxazepam schedule rather than a converted one? A converted schedule starts
-// them at 30mg qid, which is a substantial dose for the population it is aimed
-// at, and the conversion caveat may not be enough on its own.
+// Decided (v0.5.7): no separate elderly/frail schedule. The Benzo Choice tab
+// steers elderly/frail patients to symptom-triggered dosing or careful
+// titration of oxazepam 15-30mg (AGTAP ch. 18; NSWCG §5.6.3) rather than the
+// converted fixed schedule.
 
 // The three safety lines that travel with every regimen pasted into the EMR.
 //
@@ -207,8 +211,8 @@ export const EMR_SAFETY_LINES = {
     dosingInterval: 'Do not dose more frequently than 2-hourly, unless the patient has delirium tremens '
         + 'and is in a heavily medically monitored environment (HDU, or 1:1 nursing with continuous observation).',
     // Twin of "De-escalate / withhold if sedated" in the Escalation triggers block.
-    sedation: 'DO NOT give a regular or PRN dose if the patient is sedated - withhold the dose and review '
-        + 'the regular schedule. If multiple doses are withheld, the schedule is too high.',
+    // Defined in sedation.js: one RASS rule for every benzodiazepine dose.
+    sedation: RASS_RULE_PLAIN,
     // Twin of the escalation block's review threshold (NSWCG §5.4.4).
     review: (drug, max) => `Medical review if scores are rising, if withdrawal is not responding, or if the `
         + `total ${drug} dose exceeds ${max} in 24 hours.`
@@ -257,6 +261,7 @@ export const REGIMEN_CONFIG = {
                     heading: 'Step 1 · Day 1 (loading)',
                     items: [
                         `Diazepam 20mg <b>2-hourly</b> until the patient is lightly sedated and easily rousable, <b>or</b> until a total of <b>80mg</b> is reached. <b>The loading day is Day 1.</b> <span class="src-tag src-nswcg">NSWCG §5.4.4, Table 5.4</span>`,
+                        RASS_LOADING_HTML,
                         `<b>80mg in 24 hours - medical officer review required.</b> This is a review threshold, not a ceiling. Assess for other pathology before giving more (see Special Cases &rarr; alcohol withdrawal delirium is a diagnosis of exclusion). <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
                     ]
                 },
@@ -264,6 +269,7 @@ export const REGIMEN_CONFIG = {
                     heading: 'Step 2 · Day 1 (PRN) — up to 120mg in 24 hours, including the 80mg load',
                     items: [
                         `<b>If no other cause is found and withdrawal persists:</b> diazepam 10-20mg 2-hourly PRN, to a <b>maximum of 120mg in 24 hours</b>. <b>The 120mg includes the 80mg load</b>, so no more than 40mg is given as PRN on Day 1. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+                        RASS_STEP_HTML,
                         `<b>Persistent agitation or hallucinations, or more than 120mg in 24 hours</b> - specialist advice required: DASAS <a href="tel:1800023687">1800 023 687</a> (regional, rural and remote NSW) or <a href="tel:0283821006">(02) 8382 1006</a> (Sydney metropolitan area), or the on-call addiction medicine specialist or addiction psychiatrist. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
                     ]
                 },
@@ -272,6 +278,7 @@ export const REGIMEN_CONFIG = {
                     items: [
                         `<b>No more loading.</b> Start the Moderate-Severe schedule at its <b>Day 2 row</b> - never its Day 1 row, because the loading day was Day 1. Diazepam's long-acting active metabolites are the reason loading works, so a fixed 80mg day behind the load is double dosing. <span class="src-tag src-nswcg">NSWCG §5.4.4</span> <span class="src-tag src-local">LOCAL - rationale: NSWCG §5.4.4 names symptom-triggered dosing as its preferred post-loading handover, and this app makes the fixed Moderate-Severe schedule the default instead. A patient who has just required loading has usually declared a history, a complication or a comorbidity - which are the same features that make scale-driven dosing unreliable - so handing them to a schedule that depends on the score is inconsistent with the exclusions stated on the Symptom-Triggered regimen. AGTAP p122 offers a fixed reducing regimen and as-needed dosing as equally acceptable after loading.</span>`,
                         { schedule: DIAZEPAM_MOD_SEV_SCHEDULE.slice(1), firstDay: 2 },
+                        RASS_STEP_HTML,
                         `<b>Alternative:</b> symptom-triggered dosing in a reducing regimen, where none of the exclusions on that regimen apply and frequent skilled review is available. <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`
                     ],
                     // On screen only - a button means nothing in an EMR paste.

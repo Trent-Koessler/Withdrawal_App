@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.6" />
+    <meta name="app-build" content="0.5.7" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -1765,6 +1765,13 @@ textarea[id$="-quickstart-summary"] {
                             • <b>Respiratory insufficiency</b> or risk of respiratory depression (e.g., COPD).<br>
                             • <b>Elderly or frail patients</b> who are more sensitive to sedative effects.<br>
                             • <b>Cerebral trauma / CVA</b> where over-sedation is a risk.</p>
+                        <p><b>Elderly or frail patients:</b> prefer symptom-triggered dosing, or titrate oxazepam
+                            15-30mg carefully against response, rather than a fixed schedule. Older people usually need
+                            lower doses than the standard schedules give.
+                            <span class="src-tag src-other">OTHER - AGTAP ch. 18</span>
+                            <span class="src-tag src-nswcg-adapted">NSWCG-adapted §5.6.3 - rationale: NSWCG gives the
+                                15-30mg titration for severe liver disease; it is applied here to elderly and frail
+                                patients for the same reason, the risk of accumulation and over-sedation.</span></p>
                         <p><b>Conversion:</b> Diazepam 10mg is approximately equivalent to Oxazepam 30mg.
                             <span class="src-tag src-nswcg">NSWCG Table 11.2</span></p>
                         <div class="button-group">
@@ -1960,9 +1967,15 @@ textarea[id$="-quickstart-summary"] {
                                 <li>Any seizure, delirium, hallucinations, or hyperthermia &rarr; treat as severe; see
                                     Special Cases.</li>
                             </ul>
-                            <p><strong>De-escalate / withhold if sedated:</strong> do not give regular or PRN doses if
-                                the patient is sedated - withhold the dose and review the regular schedule. If multiple
-                                doses are withheld, the schedule is too high.</p>
+                            <p><strong>De-escalate / withhold if sedated:</strong> check the RASS before every regular
+                                or PRN dose. Give the dose only if the patient is <strong>RASS 0 or above</strong>. At
+                                <strong>RASS -1</strong> the sedation target is reached: withhold the dose and rescore at
+                                the next scheduled time. At
+                                <strong>RASS -2 or below</strong>, withhold the dose, arrange medical review and review
+                                the regular schedule. If multiple doses are withheld, the schedule is too high.
+                                <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></p>
                             <p><em>Consider increasing the regimen if PRN is being used frequently.</em> A patient who
                                 keeps needing PRN doses and remains symptomatic needs a different schedule, not a
                                 longer wait.
@@ -2030,7 +2043,13 @@ textarea[id$="-quickstart-summary"] {
                         <p><strong>Benzodiazepine:</strong> diazepam 20mg hourly up to 80mg/24 hours - <strong>often
                                 insufficient alone in established DT</strong>. If the oral route is not possible: IV
                             midazolam infusion <strong>monitored in HDU</strong>, or IM lorazepam where no HDU is
-                            available. <strong>Target: light sleep, readily rousable.</strong>
+                            available. <strong>Target: light sleep, readily rousable.</strong> For oral or IM doses, check the RASS
+                            before each one: the target is <strong>RASS -1</strong>, so stop once it is reached, and at
+                            <strong>RASS -2 or below</strong> withhold and arrange medical review. A midazolam infusion
+                            in HDU is titrated to the unit's own sedation target.
+                            <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span>
                             <span class="src-tag src-nswcg">NSWCG §5.6.2</span></p>
                         <div class="warning-box">
                             <strong>⚠️ Counterintuitive - consider reducing, not increasing.</strong> If delirium
@@ -2238,6 +2257,14 @@ textarea[id$="-quickstart-summary"] {
                             overdose, undiagnosed complications, and failure to complete the withdrawal.
                             <strong>Limit benzodiazepine use to 5-7 days.</strong>
                             <span class="src-tag src-nswcg">NSWCG §5.4.4, App 6</span></p>
+                        <p><strong>Sedation check.</strong> Check the RASS at each daily review: continue only if the
+                            patient is <strong>RASS 0 or above</strong>. At <strong>RASS -1</strong>, withhold the next
+                            dose and review the dose with the prescriber; at <strong>RASS -2 or below</strong>, withhold
+                            further doses and arrange medical review. Doses taken at home cannot be scored, so tell the
+                            patient and carer to <strong>skip a dose and call if the patient is drowsy or hard to
+                            wake</strong>. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></p>
 
                         <p><strong>Dosing Times:</strong></p>
                         <p>A QID (four times a day) schedule can be challenging. While ideal times might be 0600, 1200,
@@ -2282,6 +2309,7 @@ textarea[id$="-quickstart-summary"] {
                         <button class="tab-button" data-tab="nsw-cws">CWS</button>
                         <button class="tab-button" data-tab="cwas">CWAS</button>
                         <button class="tab-button" data-tab="awq">AWQ (Amphetamine)</button>
+                        <button class="tab-button" data-tab="rass">RASS (Sedation)</button>
                     </div>
 
                     <!-- This is a hidden template for generating calculators -->
@@ -2543,6 +2571,9 @@ textarea[id$="-quickstart-summary"] {
                         <!-- Content will be generated by script.js -->
                     </section>
                     <section id="awq" class="tab-content calculator-container">
+                        <!-- Content will be generated by script.js -->
+                    </section>
+                    <section id="rass" class="tab-content calculator-container">
                         <!-- Content will be generated by script.js -->
                     </section>
                 </div>
@@ -3160,6 +3191,12 @@ textarea[id$="-quickstart-summary"] {
                         <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                     <li>In most cases a <strong>daily maximum of 40mg diazepam</strong> will prevent major withdrawal,
                         including seizures. <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
+                    <li><strong>Sedation check:</strong> before every dose given by staff, check the RASS - give it
+                        only at <strong>RASS 0 or above</strong>; at <strong>RASS -1</strong>, withhold it; at
+                        <strong>RASS -2 or below</strong>, withhold and arrange medical review. For doses taken at home, check sedation at each review and tell the
+                        patient to skip a dose and seek advice if drowsy or hard to wake. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></li>
                     <li><strong>Seek specialist advice before converting to diazepam in severe hepatic
                             dysfunction</strong> - accumulation risk; oxazepam may be preferred.
                         <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
@@ -3565,6 +3602,11 @@ textarea[id$="-quickstart-summary"] {
                     <li><strong>Diazepam 10-20mg every 1-2 hours</strong>, commenced early - within 2 hours of the
                         last dose if the patient is not sedated - until light sedation and control of agitation.
                         <span class="src-tag src-nswcg">NSWCG §9</span></li>
+                    <li><strong>Check the RASS before each dose.</strong> Light sedation is <strong>RASS -1</strong>:
+                        once reached, stop the 1-2 hourly doses. At <strong>RASS -2 or below</strong>, withhold and
+                        arrange medical review. In ICU, the unit's own sedation target applies. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></li>
                     <li><strong>Medical officer review before exceeding 120mg diazepam in the first 24 hours</strong>;
                         addiction specialist consultation is recommended at that point.
                         <span class="src-tag src-nswcg">NSWCG §9</span></li>
@@ -4517,6 +4559,32 @@ textarea[id$="-quickstart-summary"] {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.5.7 - October 2026</h4>
+                <p><em>The AWS calculator now agrees with the Regimens tab, sedation is defined with the RASS, and
+                        one unsourced medication is removed.</em></p>
+                <ul>
+                    <li><strong>The AWS calculator uses four bands:</strong> under 4, 4-7, 8-14, and 15 or more,
+                        named after the regimens they lead to. It used to call 4 mild and 5-14 moderate, so the
+                        calculator and the Regimens tab could give different answers for the same score.</li>
+                    <li><strong>Symptom-triggered dosing on AWS is unchanged</strong>, and now says why: it keeps
+                        NSWCG's single 4-14 band so that AWS and CIWA-Ar give the same dose for the same
+                        withdrawal.</li>
+                    <li><strong>New RASS reference</strong> on the Scales page. The test-dose protocol now defines
+                        "sedated" as RASS -1 or below, checks at 1 hour for safety and decides at 2 hours, and asks
+                        for RASS 0 or above before any later dose.</li>
+                    <li><strong>One sedation rule for every benzodiazepine dose:</strong> check the RASS first, give
+                        the dose only at RASS 0 or above. RASS -1 (drowsy, easily rousable) is the sedation target, so
+                        the dose is withheld there too; at -2 or below it is withheld with a medical review. It
+                        appears on every regimen, in the EMR copy, and on the delirium tremens, ambulatory,
+                        benzodiazepine, GHB and symptomatic medication pages. Loading and delirium tremens dose to
+                        light sedation, so for them RASS -1 is the point to stop. Every step of the Loading regimen,
+                        including the PRN doses and the Day 2+ schedule, now shows the check.</li>
+                    <li><strong>Elderly or frail patients:</strong> the Benzo Choice tab now recommends
+                        symptom-triggered dosing or careful oxazepam titration rather than a fixed schedule.</li>
+                    <li><strong>Promethazine removed</strong> from cannabis withdrawal insomnia. It is not in the NSW
+                        guidance, and its source could not be confirmed.</li>
+                </ul>
 
                 <h4>0.5.6 - September 2026</h4>
                 <p><em>The Loading regimen is laid out as three steps in the order they happen, and says

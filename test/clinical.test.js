@@ -29,13 +29,16 @@ const byId = (id) => {
 const severityAt = (id, score) => byId(id).severityLogic(score);
 
 describe('severity boundaries', () => {
-    // AWS: <=4 Mild, <=14 Moderate, >14 Severe
+    // AWS: <4 Sub-Mild, 4-7 Mild-Moderate, 8-14 Moderate-Severe, >=15 Severe
+    // (NSWCG Table 5.6 with AGTAP's 7/8 split), matching the Regimens tab.
     test('AWS bands', () => {
-        assert.equal(severityAt('aws', 0), 'Mild withdrawal');
-        assert.equal(severityAt('aws', 4), 'Mild withdrawal');
-        assert.equal(severityAt('aws', 5), 'Moderate withdrawal');
-        assert.equal(severityAt('aws', 14), 'Moderate withdrawal');
-        assert.equal(severityAt('aws', 15), 'Severe withdrawal');
+        assert.match(severityAt('aws', 0), /^Sub-Mild/);
+        assert.match(severityAt('aws', 3), /^Sub-Mild/);
+        assert.match(severityAt('aws', 4), /^Mild-Moderate/);
+        assert.match(severityAt('aws', 7), /^Mild-Moderate/);
+        assert.match(severityAt('aws', 8), /^Moderate-Severe/);
+        assert.match(severityAt('aws', 14), /^Moderate-Severe/);
+        assert.match(severityAt('aws', 15), /^Severe/);
     });
 
     // CIWA-Ar: <10 Mild, <=18 Moderate, >18 Severe.
@@ -540,5 +543,22 @@ describe('OTP missed doses', () => {
         assert.equal(ORAL_OTP_AGENTS.methadone.stepMg, 20);
         assert.equal(ORAL_OTP_AGENTS.buprenorphine.floorMg, 8);
         assert.equal(ORAL_OTP_AGENTS.buprenorphine.stepMg, 8);
+    });
+});
+
+describe('0.5.7 decisions', () => {
+    test('RASS: 0 or above allows the next dose, -1 (target) and below withhold it', () => {
+        assert.match(severityAt('rass', 0), /next dose may be given/);
+        assert.match(severityAt('rass', 1), /next dose may be given/);
+        assert.match(severityAt('rass', -1), /target reached: withhold/i);
+        assert.doesNotMatch(severityAt('rass', -1), /medical review/);
+        assert.match(severityAt('rass', -2), /withhold.*medical review/i);
+        assert.match(severityAt('rass', -5), /withhold/i);
+        assert.match(severityAt('rass', 2), /look for a cause/);
+    });
+
+    test('RASS opens at 0, not at +4', () => {
+        const item = byId('rass').items[0];
+        assert.equal(item.options[item.defaultIndex].value, 0);
     });
 });

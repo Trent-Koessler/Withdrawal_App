@@ -5,6 +5,46 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.7 - October 2026
+
+### Clinical
+
+- **AWS calculator bands now match the Regimens tab:** <4 Sub-Mild, 4-7
+  Mild-Moderate, 8-14 Moderate-Severe, >=15 Severe (NSWCG Table 5.6, split at
+  7/8 per AGTAP Table 8.4 and p111). Previously <=4 mild / <=14 moderate, which
+  disagreed with NSWCG at a score of 4 and with the regimen screen at 8-14.
+- **Symptom-triggered dosing keeps NSWCG's AWS 4-14 band and dose**, with a
+  note (shown when AWS is selected) explaining that AGTAP's higher dose above
+  AWS 7 comes with a pairing to CIWA-Ar >20, so taking it alone would break
+  CIWA-Ar/AWS equivalence.
+- **A score of exactly 4 is Mild-Moderate**, with NSWCG as the tiebreaker
+  between AGTAP's two readings. AWS reference corrected to NSW Health (1999)
+  as reproduced in AGTAP.
+- **RASS added to Scales & Calculators.** The test-dose protocol uses it:
+  safety check at 1 hour, decision at 2 hours, "sedated" = RASS -1 or below,
+  and RASS 0 or above before any later dose (LOCAL).
+- **One RASS rule for every benzodiazepine dose** (data/sedation.js): give
+  only at RASS 0 or above. RASS -1 is the sedation target (lightly sedated,
+  easily rousable), so the dose is withheld there and rescored at the next
+  scheduled time; at -2 or below, withhold with medical review. On
+  every regimen, the EMR paste, the escalation block, DT, ambulatory, benzo
+  withdrawal, GHB and the shared symptomatic rules. Loading, DT and GHB stop
+  at RASS -1 (their light-sedation endpoint), and Loading Steps 2 (PRN) and 3
+  (Day 2+ schedule) carry a one-line check of their own; HDU/ICU infusions follow the
+  unit's own target; doses taken at home are covered by a daily-review check
+  and a skip-if-drowsy instruction (LOCAL).
+- **Benzo Choice: elderly/frail** steered to symptom-triggered dosing or
+  oxazepam 15-30mg titration (AGTAP ch. 18; NSWCG-adapted §5.6.3). No separate
+  schedule.
+- **Promethazine removed** from cannabis withdrawal insomnia (not in NSWCG
+  Table 6.2; provenance unconfirmed).
+
+### Decisions recorded
+
+- OTP missed doses: the cap at the usual dose stays; no extra referral step,
+  because the prescriber already authorises the 4-5 missed-dose restart.
+- Resolves 9 `TODO(clinical)` and 1 `TODO(review)` markers.
+
 ## 0.5.6 - September 2026
 
 ### Clinical
