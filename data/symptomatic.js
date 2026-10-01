@@ -1,3 +1,5 @@
+import { RASS_RULE_HTML } from './sedation.js';
+
 // Shared symptomatic medication content (P2-08).
 //
 // These regimens used to be copied into the opioid, benzodiazepine, cannabis
@@ -11,14 +13,10 @@
 // content, whose source was not established during this revision, say so
 // rather than borrowing the credibility of the tagged ones.
 
-const UNSOURCED = `<span class="src-tag src-local">LOCAL - rationale: carried forward unchanged; source not yet confirmed.</span>`;
 
-// TODO(review): establish the provenance of promethazine for cannabis
-// withdrawal insomnia, currently carried-forward local practice, and re-tag
-// it against whichever guideline it came from. The rest of the entries this
-// note used to cover (metoclopramide, ondansetron, hyoscine butylbromide,
-// loperamide, paracetamol/ibuprofen) have since been resolved against
-// NSWCG per substance, or dropped as not relevant to that substance.
+// Carried-forward entries have been resolved against NSWCG per substance or
+// dropped. Promethazine for cannabis insomnia was removed in 0.5.7: it is not
+// in NSWCG Table 6.2, which lists diazepam and the z-drugs.
 
 // Common to every substance. Same words everywhere, because they are the rules
 // a clinician most often skips when reading a symptomatic table. The NRT line
@@ -26,6 +24,9 @@ const UNSOURCED = `<span class="src-tag src-local">LOCAL - rationale: carried fo
 // tobacco") rendering on every substance's page, including ones with no
 // connection to cannabis — it now lives with cannabis's own items instead.
 export const SYMPTOMATIC_UNIVERSAL = [
+    // Every substance with a symptomatic table lists diazepam, so the RASS
+    // rule belongs with the rules common to all of them.
+    RASS_RULE_HTML,
     `Symptomatic medications are <b>generally not continued beyond 7 days</b> without medical review and a clear indication. <span class="src-tag src-nswcg">NSWCG §6.3.4, §8.3.4</span>`,
     `For inpatient or residential withdrawal, <b>cease symptomatic medication 1-2 days before discharge</b> to assess how the patient copes without it. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
     `<b>Supervise access</b> - daily dispensing, or supervision by a carer. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
@@ -160,8 +161,7 @@ export const SYMPTOMATIC = {
             {
                 symptom: 'Insomnia',
                 lines: [
-                    `Diazepam 5-10mg oral nocte, <b>or</b> z-drugs: zolpidem 10-20mg nocte, or zopiclone 7.5-15mg nocte. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`,
-                    `Promethazine 25mg oral nocte PRN. ${UNSOURCED}`
+                    `Diazepam 5-10mg oral nocte, <b>or</b> z-drugs: zolpidem 10-20mg nocte, or zopiclone 7.5-15mg nocte. <span class="src-tag src-nswcg">NSWCG Table 6.2</span>`
                 ]
             },
             {

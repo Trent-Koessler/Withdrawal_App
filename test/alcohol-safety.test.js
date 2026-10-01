@@ -136,8 +136,9 @@ describe('P0-04 — escalation and de-escalation criteria exist', () => {
 
     test('the sedation withhold rule is retained, not replaced', () => {
         const flat = regimens.replace(/\s+/g, ' ');
-        assert.ok(/do not give regular or PRN doses if the patient is sedated/i.test(flat),
-            'the pre-existing sedation caveat was dropped');
+        assert.ok(/check the RASS before every regular or PRN dose/i.test(flat)
+            && /RASS -2 or below<\/strong>, withhold the dose/i.test(flat),
+            'the sedation withhold rule was dropped');
         assert.ok(/multiple doses are withheld, the schedule is too high/i.test(flat),
             'the converse of the sedation rule is missing');
     });
@@ -680,14 +681,16 @@ describe('P1-09 — the test-dose protocol declares itself as local', () => {
 
         test(`${benzo}: assessment is not left at 1 hour alone`, () => {
             const text = textOf(cell);
-            assert.ok(/again at 2 hours/i.test(text), 'no 2-hour reassessment');
-            assert.ok(/weak evidence of tolerance/i.test(text),
+            assert.ok(/decide at 2 hours/i.test(text), 'no 2-hour decision point');
+            assert.ok(/not yet evidence of tolerance/i.test(text),
                 'the limits of a 1-hour reading are not stated');
+            assert.ok(/RASS -2 or below/i.test(text), 'the 1-hour safety check has no threshold');
         });
 
         test(`${benzo}: sedation is assessed with a charted scale`, () => {
-            assert.ok(/charted scale/i.test(textOf(cell)),
+            assert.ok(/charted scale/i.test(textOf(cell)) && /RASS -1 or below/.test(textOf(cell)),
                 'sedation is still defined by a descriptive list, which is not reproducible');
+            assert.ok(/RASS 0 or above/.test(textOf(cell)), 'no sedation check before later doses');
         });
     }
 });

@@ -20,6 +20,9 @@ const ALCOHOL_SCALE_CAVEATS = [
     `<b>Re-evaluate regularly</b> to confirm the diagnosis is withdrawal and not another condition - particularly where the patient is not responding to treatment. A rising score is a reason to reconsider the diagnosis, not only to increase the dose. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`
 ];
 
+// Why the AWS calculator has four bands when NSWCG publishes three.
+const AWS_BANDS_CAVEAT = `<b>The bands match the Regimens tab.</b> NSWCG treats AWS 4-14 as one moderate band. This app splits it at 7/8, following AGTAP, so an AWS score can choose between the Mild-Moderate and Moderate-Severe fixed schedules. A score of 4 is Mild-Moderate, as in NSWCG. <b>Symptom-triggered dosing does not use the split</b>: it keeps NSWCG's single 4-14 band and dose, so AWS and CIWA-Ar give the same dose. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span>`;
+
 // The monitoring-only scales. The UI shows a score and a severity band beside
 // each other, which invites an inference these instruments cannot support.
 const NOT_FOR_DOSING = [
@@ -29,9 +32,9 @@ const NOT_FOR_DOSING = [
 export const SCALES = [
     {
         id: 'aws',
-        caveats: ALCOHOL_SCALE_CAVEATS,
+        caveats: [...ALCOHOL_SCALE_CAVEATS, AWS_BANDS_CAVEAT],
         name: 'Alcohol Withdrawal Scale (AWS)',
-        reference: 'Adapted from NSW Dept of Health (2000).',
+        reference: 'Adapted from NSW Health Department (1999), NSW Detoxification Clinical Practice Guidelines, as reproduced in Haber PS, Riordan BC, et al., Guidelines for the Treatment of Alcohol Problems, 4th ed (2021), Appendix.',
         items: [
             {
                 displayName: "Perspiration", radioName: "aws-perspiration", options: [
@@ -96,10 +99,14 @@ export const SCALES = [
                 ]
             }
         ],
+        // Same bands as the AWS view of the Regimens tab, so the calculator
+        // and the regimen cannot give two answers for one score. NSWCG Table
+        // 5.6 is <4 / 4-14 / >14; the 7/8 split inside 4-14 is AGTAP's.
         severityLogic: (score) => {
-            if (score <= 4) return "Mild withdrawal";
-            if (score <= 14) return "Moderate withdrawal";
-            return "Severe withdrawal";
+            if (score < 4) return "Sub-Mild withdrawal (AWS < 4)";
+            if (score <= 7) return "Mild-Moderate withdrawal (AWS 4-7)";
+            if (score <= 14) return "Moderate-Severe withdrawal (AWS 8-14)";
+            return "Severe withdrawal (AWS 15 or more)";
         }
     },
 
@@ -192,6 +199,45 @@ export const SCALES = [
             if (score < 10) return "Mild withdrawal";
             if (score <= 18) return "Moderate withdrawal";
             return "Severe withdrawal";
+        }
+    },
+
+    // RASS. Not a withdrawal scale: it is here as the shared definition of
+    // "sedated" for the test-dose protocol and the check before each further
+    // benzodiazepine dose. Listed +4 to -5 as published, with 0 pre-selected.
+    {
+        id: 'rass',
+        name: 'Richmond Agitation-Sedation Scale (RASS)',
+        universalCaveats: false,
+        note: 'Observe first. If not alert, say the patient\'s name and ask them to open their eyes and look at you. Only if there is no response to voice, use physical stimulation (shake the shoulder, then rub the sternum).',
+        caveats: [
+            `<b>Before the next benzodiazepine dose, the patient should be RASS 0 or above.</b> RASS -1 is the sedation target - lightly sedated and easily rousable - so withhold the dose there and rescore at the next scheduled time. At -2 or below, withhold the dose and arrange medical review. This puts NSWCG's sedation target on a charted scale. <span class="src-tag src-local">LOCAL - rationale: NSWCG and AGTAP describe the sedation endpoint in words but name no scale; RASS gives every assessor the same definition, so "sedated" means the same thing between nurses and across shifts.</span> <span class="src-tag src-nswcg">NSWCG §5.4.4</span>`,
+            `<b>RASS +2 or above is a reason to look for a cause</b> - pain, anxiety, delirium, or another medical problem - not only a reason to give more benzodiazepine. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`,
+            `<b>RASS was validated in intensive care</b>, not on general wards or in intoxicated patients. Intoxication, head injury and other sedating drugs all lower the score, so read it alongside the whole clinical picture. <span class="src-tag src-other">OTHER - Sessler 2002</span>`
+        ],
+        reference: 'Sessler CN, Gosnell MS, Grap MJ, et al. The Richmond Agitation-Sedation Scale: validity and reliability in adult intensive care unit patients. Am J Respir Crit Care Med 2002; 166: 1338-1344.',
+        items: [
+            {
+                displayName: "Level of agitation or sedation", radioName: "rass-level", defaultIndex: 4, options: [
+                    { value: 4, label: "<b>+4:</b> Combative - openly combative or violent; an immediate danger to staff." },
+                    { value: 3, label: "<b>+3:</b> Very agitated - pulls at or removes tubes or lines; aggressive." },
+                    { value: 2, label: "<b>+2:</b> Agitated - frequent movement without purpose." },
+                    { value: 1, label: "<b>+1:</b> Restless - anxious, but movements are not aggressive or vigorous." },
+                    { value: 0, label: "<b>0:</b> Alert and calm." },
+                    { value: -1, label: "<b>-1:</b> Drowsy - not fully alert, but stays awake to voice, with eye opening and eye contact, for more than 10 seconds." },
+                    { value: -2, label: "<b>-2:</b> Light sedation - wakes briefly to voice, with eye contact for less than 10 seconds." },
+                    { value: -3, label: "<b>-3:</b> Moderate sedation - moves or opens eyes to voice, but no eye contact." },
+                    { value: -4, label: "<b>-4:</b> Deep sedation - no response to voice; moves or opens eyes to physical stimulation." },
+                    { value: -5, label: "<b>-5:</b> Unrousable - no response to voice or physical stimulation." }
+                ]
+            }
+        ],
+        severityLogic: (score) => {
+            if (score >= 2) return "Agitated: look for a cause (pain, anxiety, delirium, medical problem)";
+            if (score >= 0) return "RASS 0 or above: next dose may be given if indicated";
+            if (score === -1) return "Sedation target reached: withhold the next dose and rescore at the next scheduled time";
+            if (score >= -3) return "Too sedated: withhold the next dose and arrange medical review";
+            return "Deeply sedated: withhold all sedatives and arrange urgent medical review";
         }
     },
 

@@ -138,9 +138,9 @@ export function bandFor(missedDoses) {
 // and the caller is told the cap fired so it can say so rather than silently
 // disagreeing with the guideline.
 //
-// TODO(clinical): is capping the restart dose at the patient's usual dose the
-// right local position, or should a patient maintained below the floor be
-// referred to the prescriber rather than dosed at all after 4-5 missed doses?
+// Decided (v0.5.7): keep the cap. A patient is never given more than their
+// usual dose after a gap that has cost them tolerance. No extra referral step
+// is needed: in the 4-5 band the prescriber already has to authorise the dose.
 export function restartDose(agentKey, usualDoseMg) {
     const agent = ORAL_OTP_AGENTS[agentKey];
     if (!agent) return null;
