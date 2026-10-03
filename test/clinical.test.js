@@ -41,15 +41,15 @@ describe('severity boundaries', () => {
         assert.match(severityAt('aws', 15), /^Severe/);
     });
 
-    // CIWA-Ar: <10 Mild, <=18 Moderate, >18 Severe.
-    // NOTE: the regimen selector in index.html describes Severe as "CIWA > 20",
-    // so 19 and 20 are labelled Severe here but sit in the Mod-Sev band there.
-    // Flagged for clinical review; asserted as-is.
+    // CIWA-Ar: <10 Sub-Mild, 10-15 Mild-Moderate, 16-20 Moderate-Severe, >20
+    // Severe - the Regimens tab's bands (v0.5.8; severe was >18 before).
     test('CIWA-Ar bands', () => {
-        assert.equal(severityAt('ciwa-ar', 9), 'Mild withdrawal');
-        assert.equal(severityAt('ciwa-ar', 10), 'Moderate withdrawal');
-        assert.equal(severityAt('ciwa-ar', 18), 'Moderate withdrawal');
-        assert.equal(severityAt('ciwa-ar', 19), 'Severe withdrawal');
+        assert.match(severityAt('ciwa-ar', 9), /^Sub-Mild/);
+        assert.match(severityAt('ciwa-ar', 10), /^Mild-Moderate/);
+        assert.match(severityAt('ciwa-ar', 15), /^Mild-Moderate/);
+        assert.match(severityAt('ciwa-ar', 16), /^Moderate-Severe/);
+        assert.match(severityAt('ciwa-ar', 20), /^Moderate-Severe/);
+        assert.match(severityAt('ciwa-ar', 21), /^Severe/);
     });
 
     // SAWS: 0 None, <=5 Mild, <=12 Moderate, >12 Severe

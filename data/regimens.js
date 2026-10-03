@@ -24,6 +24,10 @@ const band = (ciwa, aws) => ({ ciwa, aws });
 // NSWCG Table 5.6. Observation frequency is a property of the band, so it
 // travels with the band rather than being restated per schedule.
 const BAND_MONITORING = { submild: '4-6 hourly', mild: '2-4 hourly', moderate: '2-4 hourly', severe: 'hourly' };
+// AWS 8-14 is "severe" in AGTAP Table 8.4, which rescores it 1-2 hourly (v0.5.8).
+// CIWA-Ar 16-20 stays on NSWCG's 2-4 hourly, so the fixed Moderate-Severe
+// schedule carries a second, AWS-only frequency.
+const AWS_SEVERE_MONITORING = '1-2 hourly';
 
 // Stated on the Assessment & Banding tab for every patient commenced on a
 // regimen, and repeated in the EMR export so a fixed schedule never pastes with
@@ -58,9 +62,8 @@ export const INITIAL_SCORING_INTERVAL = '2-hourly at least initially';
 //   equivalent band, and states AGTAP's position so escalation is a decision
 //   rather than an oversight.
 //
-//   The symptom-triggered dose table. That is NSWCG Table 5.4's published
-//   dose-per-score table and keeps its own <4 / 4-14 / >14 bands; subdividing
-//   it would mean inventing doses rather than splitting a range.
+//   (Until v0.5.8 the symptom-triggered table was also kept on NSWCG's AWS
+//   bands. It now follows AGTAP Table 8.4 for AWS - see awsSymptomDoseNote.)
 // Short-form chip for the same document, for the places where AGTAP is cited
 // alongside an NSWCG chip rather than instead of one. The full bibliographic
 // citation is on the Sources & Attribution page, so repeating it beside every
@@ -72,18 +75,25 @@ const agtap = (ref) => `<span class="src-tag src-other">OTHER - AGTAP ${ref}</sp
 
 const AGTAP_CITE = agtap('Table 8.4, p111');
 
+// Where a CIWA-Ar score of exactly 15 belongs (v0.5.8). NSWCG Table 5.6 and
+// AGTAP Table 8.4 both publish 10-20 as one moderate band; the app splits it to
+// choose between the two fixed schedules. The split sits above 15 because
+// "above 15" is the published escalation threshold.
+const CIWA_BAND_CAVEAT = `<b>If your ward charts CIWA-Ar: why the fixed schedules split at 15/16.</b> NSWCG and AGTAP both treat CIWA-Ar 10-20 as one moderate band, which cannot choose between the two fixed schedules, so this app splits it: <b>10-15 Mild-Moderate</b>, <b>16-20 Moderate-Severe</b>. Severe stays at <b>above 20</b>, as published. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> ${agtap('Table 8.4')}<br>
+<b>Why above 15.</b> It is the published escalation point. NICE-derived banding treats CIWA-Ar above 15 as severe withdrawal with an increased risk of seizures or delirium (Day &amp; Daly, <i>Addiction</i> 2022). In a general hospital, patients scoring above 15 were at significantly higher risk of severe withdrawal if left untreated, with a relative risk of 3.72 (Foy et al., <i>Alcohol Clin Exp Res</i> 1988), though that study used a modified CIWA rather than CIWA-Ar itself. So a score of exactly 15 stays in the lower band. <span class="src-tag src-local">LOCAL - rationale: the split inside NSWCG's 10-20 band is not published in any Australian guideline; it is placed at the most widely cited threshold so that 15 has one band, one schedule and one PRN dose. References: Day E, Daly C. Clinical management of the alcohol withdrawal syndrome. Addiction 2022;117(3):804-814. Foy A, March S, Drinkwater V. Use of an objective clinical scale in the assessment and management of alcohol withdrawal in a large general hospital. Alcohol Clin Exp Res 1988;12(3):360-364.</span>`;
+
 const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the two fixed schedules combine two published sources, because neither alone separates the schedules.
 <div class="clinical-table-wrap"><table class="clinical-table"><thead><tr><th scope="col">AWS</th><th scope="col">This app</th><th scope="col">AGTAP</th><th scope="col">NSWCG Table 5.6</th></tr></thead><tbody>
 <tr><td>0-3</td><td>Sub-Mild, 4-6 hrly</td><td>mild</td><td>&lt; 4, 4-6 hrly</td></tr>
 <tr><td><b>4-7</b></td><td><b>Mild-Moderate</b>, 2-4 hrly</td><td>moderate</td><td rowspan="2">4-14, 2-4 hrly<br>(one band, not two)</td></tr>
-<tr><td><b>8-14</b></td><td><b>Moderate-Severe</b>, 2-4 hrly</td><td>severe</td></tr>
+<tr><td><b>8-14</b></td><td><b>Moderate-Severe</b>, 1-2 hrly</td><td>severe</td></tr>
 <tr><td>&ge; 15</td><td>Severe, hourly</td><td>very severe</td><td>&gt; 14, hourly</td></tr>
 </tbody></table></div>
 <b>Where each boundary comes from.</b> <b>4-7</b> is published as a band in AGTAP Table 8.4, and the break at <b>7/8</b> appears in both Table 8.4 (severe above 7) and p111 (severe 8-14). <b>15</b> is p111's very severe, and matches NSWCG's &gt; 14. NSWCG's own middle band is the union of the two middle rows, so subdividing it does not overturn it. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> ${AGTAP_CITE}<br>
 <b>A score of exactly 4 is Mild-Moderate.</b> AGTAP is inconsistent here - mild in its text (p111), moderate in Table 8.4 - so NSWCG decides it: Table 5.6 puts 4 in its moderate band. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> ${AGTAP_CITE}<br>
-<b>The split chooses a fixed schedule. It does not change symptom-triggered doses.</b> The Symptom-Triggered regimen keeps NSWCG's single AWS 4-14 band and its dose - see the note on that regimen for why. <span class="src-tag src-nswcg">NSWCG Table 5.4</span><br>
+<b>Symptom-triggered dosing uses the same break.</b> Its AWS bands follow AGTAP Table 8.4, so AWS 8 or more takes the severe dose there - see the note on that regimen. ${agtap('Table 8.4')}<br>
 <b>The score is not the whole decision.</b> The bands above are a starting point, not a rule - reported intake, risk factors and clinical assessment select the schedule with the score, exactly as they do on the CIWA-Ar side. <span class="src-tag src-nswcg">NSWCG §5.4.2</span><br>
-<b>Monitoring: this app follows NSWCG, and AGTAP would monitor more closely.</b> The app rescores <b>2-4 hourly</b> across AWS 4-14, per NSWCG. AGTAP Table 8.4 rescores <b>1-2 hourly</b> above AWS 7. If your patient is in the 8-14 band, treat more frequent observation as available and reasonable rather than a departure. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6, with AGTAP Table 8.4 and p111 - rationale: the two documents map the same CIWA-Ar bands to different AWS ranges (NSWCG CIWA 10-20 to AWS 4-14; AGTAP CIWA 10-20 to AWS 4-7), so no crosswalk between them is exact. The band boundaries follow AGTAP because it is the only source that splits the range these two schedules share, and the observation frequency follows NSWCG so the AWS and CIWA-Ar views of the same band cannot disagree about monitoring. AGTAP's more frequent rescoring is stated rather than silently dropped.</span>`;
+<b>Monitoring follows AGTAP above AWS 7.</b> AWS 8-14 is rescored <b>1-2 hourly</b> on the Moderate-Severe schedule (hourly on symptom-triggered dosing), as AGTAP Table 8.4 gives for AWS above 7. NSWCG's 2-4 hourly still applies to AWS 4-7, and to CIWA-Ar 16-20 if your ward charts CIWA-Ar. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.6 - rationale: AGTAP Table 8.4 places AWS above 7 alongside CIWA-Ar above 20 and monitors it accordingly; the app now follows that pairing for AWS dosing, so monitoring follows it too.</span>`;
 
 // Decided (v0.5.7):
 // - Instrument: AGTAP's appendix AWS is the same 7-item scale (max 27) as the
@@ -92,9 +102,9 @@ const AWS_BAND_CAVEAT = `<b>If your ward charts AWS.</b> The AWS bands on the tw
 // - A score of 4 is Mild-Moderate. AGTAP contradicts itself (p111 mild,
 //   Table 8.4 moderate); NSWCG Table 5.6 is the tiebreaker.
 // - The AWS calculator now uses the same <4 / 4-7 / 8-14 / >=15 bands.
-// - Symptom-triggered dosing keeps NSWCG's <4 / 4-14 / >14 bands and doses so
-//   that CIWA-Ar and AWS give the same dose for the same withdrawal; the reason
-//   is stated in the regimen (AWS_SYMPTOM_DOSE_NOTE).
+// - Symptom-triggered dosing: CIWA-Ar on NSWCG's bands; AWS on AGTAP Table 8.4's
+//   <4 / 4-7 / >7 (decided v0.5.8, replacing NSWCG's 4-14 / >14), because Table
+//   8.4 is the published table pairing the two scales for dosing.
 
 // AGTAP Figure 8.2 asks "is a loading regimen required?" before anything else,
 // and answers it from three things, only one of which is a score: severe
@@ -130,7 +140,8 @@ const subMildCell = (drug, halved, extraCaveats = []) => ({
     ]
 });
 
-// NSWCG Table 5.4 / 5.6. The dose is drug-specific; the score bands and the
+// CIWA-Ar bands: NSWCG Table 5.4 / 5.6 (AGTAP Table 8.4 agrees). AWS bands:
+// AGTAP Table 8.4 (v0.5.8) - see awsSymptomDoseNote. The dose is drug-specific; the score bands and the
 // monitoring frequency are not, so they are written once here.
 //
 // A list rather than a four-column table: this is the block clinicians paste
@@ -138,14 +149,15 @@ const subMildCell = (drug, halved, extraCaveats = []) => ({
 // band still carries both scales - the renderer shows one.
 const symptomTriggeredBands = (doses) => [
     { ...band('&lt; 10', '&lt; 4'), dose: doses[0], monitoring: BAND_MONITORING.submild },
-    { ...band('10-20', '4-14'), dose: doses[1], monitoring: BAND_MONITORING.mild },
-    { ...band('&gt; 20', '&gt; 14'), dose: doses[2], monitoring: BAND_MONITORING.severe }
+    { ...band('10-20', '4-7'), dose: doses[1], monitoring: BAND_MONITORING.mild },
+    { ...band('&gt; 20', '&gt; 7'), dose: doses[2], monitoring: BAND_MONITORING.severe }
 ];
 
-// Why AWS 8-14 does not get AGTAP's higher symptom-triggered dose. The fixed
-// schedules split NSWCG's AWS 4-14 band at 7/8 (per AGTAP); this regimen does
-// not, so CIWA-Ar and AWS keep giving the same dose for the same withdrawal.
-const awsSymptomDoseNote = (midDose) => `<b>If your ward charts AWS: why AWS 8-14 still gets ${midDose}.</b> The AWS 4-7 / 8-14 split on the fixed schedules decides <b>which schedule to start</b>. It does not change the dose here. This regimen keeps NSWCG's single <b>AWS 4-14</b> band, so a patient gets the same dose whichever scale the ward charts: CIWA-Ar 10-20 and AWS 4-14 both give <b>${midDose}</b>. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.4, Table 5.6 - rationale: AGTAP Table 8.4 gives a higher dose above AWS 7, but it also pairs AWS above 7 with CIWA-Ar above 20, its severe band. Taking AGTAP's AWS dose without its pairing would give a patient charted on AWS more diazepam than the same patient charted on CIWA-Ar. The NSWCG doses are kept so the two scales stay roughly equivalent. Rising scores still prompt medical review, and the dose can be repeated at the next scoring.</span> ${agtap('Table 8.4, p111')}`;
+// Why this table's AWS bands are AGTAP's, not NSWCG's (v0.5.8). No validated
+// CIWA-Ar/AWS equivalence has been published. AGTAP Table 8.4 is the published
+// symptom-triggered table that pairs the two scales row by row; its CIWA-Ar
+// rows match NSWCG's, so only the AWS side changes, and only for 8-14.
+const awsSymptomDoseNote = (severeDose) => `<b>If your ward charts AWS: AWS 8 or more takes the severe dose (${severeDose}).</b> The AWS bands in this table follow <b>AGTAP Table 8.4</b>: AWS &lt; 4, 4-7 and &gt; 7, alongside CIWA-Ar &lt; 10, 10-20 and &gt; 20. NSWCG puts AWS 8-14 in its moderate band instead, so an AWS-charted patient in that range gets more diazepam here than NSWCG would give. <span class="src-tag src-nswcg-adapted">NSWCG-adapted Table 5.4, Table 5.6 - rationale: no validated CIWA-Ar/AWS equivalence has been published, and AGTAP notes the AWS itself has no published validation. AGTAP Table 8.4 is the published symptom-triggered table that pairs both scales row by row, and its CIWA-Ar rows are the same as NSWCG's. NSWCG's AWS bands are the severity labels the NSW AWS chart has carried since the 1999 NSW detoxification guidelines. AGTAP's pairing errs towards treating AWS 8-14 as severe; the RASS check before every dose guards against over-sedation.</span> ${agtap('Table 8.4, p111')}`;
 
 // Symptom-triggered dosing is the regimen NSWCG §5.4.4 calls ideal for
 // uncomplicated withdrawal reviewed frequently by skilled clinicians — i.e. the
@@ -157,7 +169,7 @@ const symptomTriggeredCell = (drug, doses, reviewMax, extraCaveats = []) => ({
     name: 'Symptom-Triggered',
     caveat: [...extraCaveats, `<b>When this regimen is appropriate.</b> Symptom-triggered dosing suits <b>uncomplicated withdrawal</b> in patients without co-occurring conditions, in an inpatient setting with <b>frequent review by skilled clinicians</b>. Where those conditions do not hold - complex inpatients with co-occurring conditions - a <b>hybrid</b> regimen (a fixed schedule reviewed daily, plus PRN) is often the most appropriate choice. <span class="src-tag src-nswcg">NSWCG §5.4.4</span><br>
 <b>AGTAP rules it out in three groups NSWCG only cautions about.</b> Do not dose to the score where there is a <b>history of withdrawal seizures</b> - a seizure can arrive before the score rises - nor in <b>concurrent withdrawal from other drugs</b>, nor in <b>significant medical or psychiatric comorbidity</b>, which AGTAP notes covers many general and psychiatric hospital inpatients. Use a fixed schedule in those patients, and seek addiction medicine advice on monitoring. ${agtap('8.10 (B), 8.26 (B), 8.28 (C)')}`],
-    caveatAws: awsSymptomDoseNote(doses[1]),
+    caveatAws: awsSymptomDoseNote(doses[2]),
     bands: symptomTriggeredBands(doses),
     schedule: [
         `Score the patient at the interval shown for their current band, and give the dose for that band. There is no fixed daily total to complete. <span class="src-tag src-nswcg">NSWCG Table 5.4, Table 5.6</span>`,
@@ -234,14 +246,15 @@ export const REGIMEN_CONFIG = {
         mild: {
             name: 'Mild-Moderate',
             band: band('10-15', '4-7'),
+            caveatCiwa: CIWA_BAND_CAVEAT,
             monitoring: BAND_MONITORING.mild,
             caveat: [AWS_BAND_CAVEAT],
             schedule: [{ dose: 10, freq: 'qid' }, { dose: 10, freq: 'tds' }, { dose: 10, freq: 'bd' }, { dose: 5, freq: 'bd' }, { dose: 5, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }]
+            prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '16-20', aws: '8-14', dose: 20 }]
         },
         submild: subMildCell('diazepam', 'diazepam 5mg qid on Day 1, 5mg tds on Day 2, 5mg bd on Day 3, 2.5mg bd on Day 4, then 2.5mg nocte on Day 5'),
         symptom: symptomTriggeredCell('diazepam', ['0-5mg diazepam', '10mg diazepam', '20mg diazepam'], '80mg'),
-        moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [AWS_BAND_CAVEAT], schedule: DIAZEPAM_MOD_SEV_SCHEDULE, prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '15-20', aws: '8-14', dose: 20 }] },
+        moderate: { name: 'Moderate-Severe', band: band('16-20', '8-14'), caveatCiwa: CIWA_BAND_CAVEAT, monitoring: BAND_MONITORING.moderate, monitoringAws: AWS_SEVERE_MONITORING, caveat: [AWS_BAND_CAVEAT], schedule: DIAZEPAM_MOD_SEV_SCHEDULE, prn: [{ range: '10-15', aws: '4-7', dose: 10 }, { range: '16-20', aws: '8-14', dose: 20 }] },
         severe: severeRoutesToLoading(),
         loading: {
             name: 'Loading',
@@ -301,14 +314,15 @@ export const REGIMEN_CONFIG = {
         mild: {
             name: 'Mild-Moderate',
             band: band('10-15', '4-7'),
+            caveatCiwa: CIWA_BAND_CAVEAT,
             monitoring: BAND_MONITORING.mild,
             caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT],
             schedule: [{ dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 30, freq: 'bd' }, { dose: 15, freq: 'bd' }, { dose: 15, freq: 'nocte' }],
-            prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }]
+            prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '16-20', aws: '8-14', dose: 60 }]
         },
         submild: subMildCell('oxazepam', 'oxazepam 15mg qid on Day 1, 15mg tds on Day 2, 15mg bd on Day 3, 7.5mg bd on Day 4, then 7.5mg nocte on Day 5', [OXAZEPAM_CONVERSION_CAVEAT]),
         symptom: symptomTriggeredCell('oxazepam', ['0-15mg oxazepam', '30mg oxazepam', '60mg oxazepam'], '240mg', [OXAZEPAM_CONVERSION_CAVEAT]),
-        moderate: { name: 'Moderate-Severe', band: band('15-20', '8-14'), monitoring: BAND_MONITORING.moderate, caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '15-20', aws: '8-14', dose: 60 }] },
+        moderate: { name: 'Moderate-Severe', band: band('16-20', '8-14'), caveatCiwa: CIWA_BAND_CAVEAT, monitoring: BAND_MONITORING.moderate, monitoringAws: AWS_SEVERE_MONITORING, caveat: [OXAZEPAM_CONVERSION_CAVEAT, AWS_BAND_CAVEAT], schedule: [{ dose: 60, freq: 'qid' }, { dose: 45, freq: 'qid' }, { dose: 30, freq: 'qid' }, { dose: 30, freq: 'tds' }, { dose: 15, freq: 'tds' }, { dose: 15, freq: 'bd', note: 'Further doses beyond day 6 are discretionary and not in NSW Health guidelines for diazepam-based withdrawals. However, a day 7 dose for oxazepam (e.g. 15mg nocte) is sometimes indicated due to the shorter half-life.' }], prn: [{ range: '10-15', aws: '4-7', dose: 30 }, { range: '16-20', aws: '8-14', dose: 60 }] },
         // Deliberately has no schedule. The population that needs oxazepam —
         // decompensated liver disease, respiratory insufficiency, elderly/frail,
         // cerebral trauma — is precisely the population NSWCG §5.6.3 says must not

@@ -333,12 +333,13 @@ both thresholds, and a threshold must not bake in a scale name.
 
 The toggle is scoped to the Regimens tab. The Monitoring tab still shows both
 scales, because its table *is* the mapping between them. The AWS band caveat
-still renders on the fixed schedules under either selection: AWS 4-14 spans
+still renders on the fixed schedules under either selection: NSWCG's AWS 4-14 spans
 both, and hiding CIWA-Ar makes that more important to state, not less.
 
 **PRN under AWS.** The Mild-Mod PRN triggers (CIWA-Ar 10-15 → 10mg,
-15-20 → 20mg) are both AWS 4-14. Rendering that band twice at two doses would
-be unfollowable, so under AWS the CIWA-Ar sub-band is named alongside it.
+16-20 → 20mg) map to AWS 4-7 and AWS 8-14 (split at 7/8 per AGTAP since
+v0.5.7; CIWA-Ar overlap at 15 closed in v0.5.8). Each PRN line names the band
+for whichever scale is selected.
 
 **The export is a prescribing block.** `buildPlanSummary` scraped seven blocks
 out of the DOM — about 120 lines, 9,300 characters. `buildRegimenSummary`
