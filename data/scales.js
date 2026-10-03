@@ -20,8 +20,11 @@ const ALCOHOL_SCALE_CAVEATS = [
     `<b>Re-evaluate regularly</b> to confirm the diagnosis is withdrawal and not another condition - particularly where the patient is not responding to treatment. A rising score is a reason to reconsider the diagnosis, not only to increase the dose. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>`
 ];
 
+// Why the CIWA-Ar calculator has four bands when NSWCG publishes three.
+const CIWA_BANDS_CAVEAT = `<b>The bands match the Regimens tab.</b> Severe is <b>above 20</b>, as in NSWCG and AGTAP. Both publish 10-20 as one moderate band; this app splits it at <b>15/16</b> so a score can choose between the Mild-Moderate and Moderate-Severe fixed schedules. Symptom-triggered dosing does not use the split: CIWA-Ar 10-20 takes one dose. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> <span class="src-tag src-other">OTHER - AGTAP Table 8.4</span> <span class="src-tag src-local">LOCAL - rationale: the split sits above 15 because that is the published escalation threshold - CIWA-Ar above 15 indicates severe withdrawal with increased risk of seizures or delirium (Day E, Daly C. Addiction 2022;117(3):804-814), and scores above 15 carried a relative risk of 3.72 for severe withdrawal if untreated (Foy A, March S, Drinkwater V. Alcohol Clin Exp Res 1988;12(3):360-364, using a modified CIWA).</span>`;
+
 // Why the AWS calculator has four bands when NSWCG publishes three.
-const AWS_BANDS_CAVEAT = `<b>The bands match the Regimens tab.</b> NSWCG treats AWS 4-14 as one moderate band. This app splits it at 7/8, following AGTAP, so an AWS score can choose between the Mild-Moderate and Moderate-Severe fixed schedules. A score of 4 is Mild-Moderate, as in NSWCG. <b>Symptom-triggered dosing does not use the split</b>: it keeps NSWCG's single 4-14 band and dose, so AWS and CIWA-Ar give the same dose. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span>`;
+const AWS_BANDS_CAVEAT = `<b>The bands match the Regimens tab.</b> NSWCG treats AWS 4-14 as one moderate band. This app splits it at 7/8, following AGTAP, so an AWS score can choose between the Mild-Moderate and Moderate-Severe fixed schedules. A score of 4 is Mild-Moderate, as in NSWCG. <b>Symptom-triggered dosing uses AGTAP Table 8.4</b>: AWS 4-7 takes the moderate dose and AWS 8 or more the severe dose. <span class="src-tag src-nswcg">NSWCG Table 5.6</span> <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span>`;
 
 // The monitoring-only scales. The UI shows a score and a severity band beside
 // each other, which invites an inference these instruments cannot support.
@@ -112,52 +115,76 @@ export const SCALES = [
 
     {
         id: 'ciwa-ar',
-        caveats: ALCOHOL_SCALE_CAVEATS,
+        caveats: [...ALCOHOL_SCALE_CAVEATS, CIWA_BANDS_CAVEAT],
         name: 'CIWA-Ar',
+        note: 'As published, also record the pulse (taken for one minute) and blood pressure at each assessment. They are not part of the score. Items 1-5 can be scored at any value from 0 to 7; only some values have descriptions.',
         reference: 'Clinical institute withdrawal assessment for alcohol - revised. Sullivan J, Sykora M, Schneiderman J, et al. Assessment of alcohol withdrawal: the revised Clinical Institute withdrawal for alcohol scale (CIWA-Ar). Br J Addict 1989; 84: 1353–1357.',
         items: [
+            // Items 1-5 offer every value 0-7, as published (Sullivan 1989): the form
+            // describes 0, 1, 4 and 7 and leaves 2, 3, 5 and 6 for the rater's judgement
+            // between them. Until v0.5.8 only the described anchors were selectable.
             {
-                displayName: "Nausea and vomiting", instruction: "Ask “Do you feel sick to your stomach? Have you vomited?” and observe.", radioName: "ciwa-nausea", options: [
+                displayName: "Nausea and vomiting", instruction: "Ask “Do you feel sick to your stomach? Have you vomited?” Observation.", radioName: "ciwa-nausea", options: [
                     { value: 0, label: "<b>0:</b> No nausea and no vomiting." },
                     { value: 1, label: "<b>1:</b> Mild nausea with no vomiting." },
+                    { value: 2, label: "<b>2</b>" },
+                    { value: 3, label: "<b>3</b>" },
                     { value: 4, label: "<b>4:</b> Intermittent nausea with dry heaves." },
+                    { value: 5, label: "<b>5</b>" },
+                    { value: 6, label: "<b>6</b>" },
                     { value: 7, label: "<b>7:</b> Constant nausea, frequent dry heaves and vomiting." }
                 ]
             },
             {
-                displayName: "Tremor", instruction: "Observe patient’s arms extended and fingers spread apart.", radioName: "ciwa-tremor", options: [
+                displayName: "Tremor", instruction: "Arms extended and fingers spread apart. Observation.", radioName: "ciwa-tremor", options: [
                     { value: 0, label: "<b>0:</b> No tremor." },
                     { value: 1, label: "<b>1:</b> Not visible, but can be felt fingertip to fingertip." },
+                    { value: 2, label: "<b>2</b>" },
+                    { value: 3, label: "<b>3</b>" },
                     { value: 4, label: "<b>4:</b> Moderate, with patient's arms extended." },
+                    { value: 5, label: "<b>5</b>" },
+                    { value: 6, label: "<b>6</b>" },
                     { value: 7, label: "<b>7:</b> Severe, even with arms not extended." }
                 ]
             },
             {
-                displayName: "Paroxysmal sweats", radioName: "ciwa-sweats", options: [
+                displayName: "Paroxysmal sweats", instruction: "Observation.", radioName: "ciwa-sweats", options: [
                     { value: 0, label: "<b>0:</b> No sweat visible." },
                     { value: 1, label: "<b>1:</b> Barely perceptible sweating, palms moist." },
+                    { value: 2, label: "<b>2</b>" },
+                    { value: 3, label: "<b>3</b>" },
                     { value: 4, label: "<b>4:</b> Beads of sweat obvious on forehead." },
+                    { value: 5, label: "<b>5</b>" },
+                    { value: 6, label: "<b>6</b>" },
                     { value: 7, label: "<b>7:</b> Drenching sweats." }
                 ]
             },
             {
-                displayName: "Anxiety", instruction: "Observe, and ask, “Do you feel nervous?”", radioName: "ciwa-anxiety", options: [
+                displayName: "Anxiety", instruction: "Ask “Do you feel nervous?” Observation.", radioName: "ciwa-anxiety", options: [
                     { value: 0, label: "<b>0:</b> No anxiety, at ease." },
                     { value: 1, label: "<b>1:</b> Mildly anxious." },
+                    { value: 2, label: "<b>2</b>" },
+                    { value: 3, label: "<b>3</b>" },
                     { value: 4, label: "<b>4:</b> Moderately anxious, or guarded, so anxiety is inferred." },
+                    { value: 5, label: "<b>5</b>" },
+                    { value: 6, label: "<b>6</b>" },
                     { value: 7, label: "<b>7:</b> Equivalent to acute panic states as seen in severe delirium or acute schizophrenic reactions." }
                 ]
             },
             {
-                displayName: "Agitation", radioName: "ciwa-agitation", options: [
+                displayName: "Agitation", instruction: "Observation.", radioName: "ciwa-agitation", options: [
                     { value: 0, label: "<b>0:</b> Normal activity." },
                     { value: 1, label: "<b>1:</b> Somewhat more than normal activity." },
+                    { value: 2, label: "<b>2</b>" },
+                    { value: 3, label: "<b>3</b>" },
                     { value: 4, label: "<b>4:</b> Moderately fidgety and restless." },
-                    { value: 7, label: "<b>7:</b> Equivalent to acute panic states as seen in severe delirium or acute schizophrenic reactions." }
+                    { value: 5, label: "<b>5</b>" },
+                    { value: 6, label: "<b>6</b>" },
+                    { value: 7, label: "<b>7:</b> Paces back and forth during most of the interview, or constantly thrashes about." }
                 ]
             },
             {
-                displayName: "Tactile disturbances", instruction: "Ask “Have you any itching, pins and needles sensations, any burning, any numbness or do you feel bugs crawling on or under your skin?”", radioName: "ciwa-tactile", options: [
+                displayName: "Tactile disturbances", instruction: "Ask “Have you any itching, pins and needles sensations, any burning, any numbness or do you feel bugs crawling on or under your skin?” Observation.", radioName: "ciwa-tactile", options: [
                     { value: 0, label: "<b>0:</b> None." }, { value: 1, label: "<b>1:</b> Very mild itching, pins and needles, burning or numbness." },
                     { value: 2, label: "<b>2:</b> Mild itching, pins and needles, burning or numbness." }, { value: 3, label: "<b>3:</b> Moderate itching, pins and needles, burning or numbness." },
                     { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
@@ -165,7 +192,7 @@ export const SCALES = [
                 ]
             },
             {
-                displayName: "Auditory disturbances", instruction: "Ask “Are you more aware of sounds around you? Are they harsh? Do they frighten you? Are you hearing anything that is disturbing to you? Are you hearing things you know are not there?”, and observe.", radioName: "ciwa-auditory", options: [
+                displayName: "Auditory disturbances", instruction: "Ask “Are you more aware of sounds around you? Are they harsh? Do they frighten you? Are you hearing anything that is disturbing to you? Are you hearing things you know are not there?” Observation.", radioName: "ciwa-auditory", options: [
                     { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild harshness or ability to frighten." },
                     { value: 2, label: "<b>2:</b> Mild harshness or ability to frighten." }, { value: 3, label: "<b>3:</b> Moderate harshness or ability to frighten." },
                     { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
@@ -173,7 +200,7 @@ export const SCALES = [
                 ]
             },
             {
-                displayName: "Visual disturbances", instruction: "Ask “Does the light appear to be too bright? Is its colour different? Does it hurt your eyes? Are you seeing anything that is disturbing to you? Are you seeing things you know are not there?”, and observe.", radioName: "ciwa-visual", options: [
+                displayName: "Visual disturbances", instruction: "Ask “Does the light appear to be too bright? Is its colour different? Does it hurt your eyes? Are you seeing anything that is disturbing to you? Are you seeing things you know are not there?” Observation.", radioName: "ciwa-visual", options: [
                     { value: 0, label: "<b>0:</b> Not present." }, { value: 1, label: "<b>1:</b> Very mild sensitivity." },
                     { value: 2, label: "<b>2:</b> Mild sensitivity." }, { value: 3, label: "<b>3:</b> Moderate sensitivity." },
                     { value: 4, label: "<b>4:</b> Moderately severe hallucinations." }, { value: 5, label: "<b>5:</b> Severe hallucinations." },
@@ -195,10 +222,14 @@ export const SCALES = [
                 ]
             }
         ],
+        // Same bands as the Regimens tab (v0.5.8). Severe is above 20, as in NSWCG
+        // Table 5.6 and AGTAP Table 8.4 (it was above 18 here, which disagreed
+        // with every regimen). The 15/16 split inside 10-20 is local.
         severityLogic: (score) => {
-            if (score < 10) return "Mild withdrawal";
-            if (score <= 18) return "Moderate withdrawal";
-            return "Severe withdrawal";
+            if (score < 10) return "Sub-Mild withdrawal (CIWA-Ar < 10)";
+            if (score <= 15) return "Mild-Moderate withdrawal (CIWA-Ar 10-15)";
+            if (score <= 20) return "Moderate-Severe withdrawal (CIWA-Ar 16-20)";
+            return "Severe withdrawal (CIWA-Ar above 20)";
         }
     },
 

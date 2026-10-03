@@ -5,6 +5,40 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.8 - October 2026
+
+### Clinical
+
+- **Symptom-triggered AWS bands now follow AGTAP Table 8.4** (<4 / 4-7 / >7),
+  replacing NSWCG's <4 / 4-14 / >14. AWS 8-14 now takes the severe dose
+  (20mg diazepam / 60mg oxazepam) and hourly rescoring. CIWA-Ar bands are
+  unchanged (NSWCG and AGTAP agree). Tagged NSWCG-adapted with rationale: no
+  validated CIWA-Ar/AWS equivalence is published; AGTAP Table 8.4 is the
+  published table pairing both scales for symptom-triggered dosing; NSWCG's AWS
+  bands are the severity labels from the 1999 NSW AWS chart. Supersedes the
+  0.5.7 decision to keep NSWCG's AWS 4-14 dose.
+- **AWS 8-14 rescored 1-2 hourly on the Moderate-Severe fixed schedule**
+  (AGTAP Table 8.4), shown in the EMR copy when AWS is selected. CIWA-Ar 15-20
+  stays 2-4 hourly (NSWCG). The Monitoring tab and the AWS band note say so.
+- **CIWA-Ar calculator: severe is now >20** (was >18), matching NSWCG Table 5.6,
+  AGTAP Table 8.4 and every regimen; four regimen-named bands (<10 / 10-15 /
+  16-20 / >20).
+- **Fixed-schedule CIWA-Ar overlap at 15 closed:** Mild-Moderate 10-15,
+  Moderate-Severe 16-20 (PRN triggers likewise), so 15 gets the 10mg PRN. LOCAL,
+  placed at the published >15 threshold (Day & Daly, Addiction 2022;117:804-14;
+  Foy et al., Alcohol Clin Exp Res 1988;12:360-4). Note shown on the fixed
+  schedules when CIWA-Ar is selected; references added to Sources.
+- **CIWA-Ar calculator replicates the published scale** (Sullivan et al., Br J
+  Addict 1989;84:1353-7): items 1-5 now offer every value 0-7 (were 0/1/4/7
+  only), with 2, 3, 5 and 6 undescribed as on the published form. Agitation 7
+  corrected to "paces back and forth during most of the interview, or
+  constantly thrashes about" (had duplicated the anxiety anchor). Prompts end
+  "Observation." as published; note added to record pulse and BP (unscored).
+- **PAWSS removed.** Ambulatory inclusion criterion replaced with "no history of
+  severe withdrawal complications (withdrawal seizures or delirium tremens)"
+  (AGTAP Rec 8.4, Grade B). Inpatient PAWSS TODO closed: not used for banding.
+  Resolves the last open TODO(clinical) outside the capacity section.
+
 ## 0.5.7 - October 2026
 
 ### Clinical

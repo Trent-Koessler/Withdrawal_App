@@ -37,7 +37,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.7';
+const APP_VERSION = '0.5.8';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1056,10 +1056,15 @@ document.addEventListener('DOMContentLoaded', () => {
         out.push('');
         // Symptom-triggered dosing states its own frequency per band above, so
         // repeating a single figure here would contradict the list.
-        if (data.monitoring && !data.bands) {
-            out.push(data.monitoring === 'hourly'
-                ? `Score ${scale} hourly.`
-                : `Score ${scale} ${INITIAL_SCORING_INTERVAL}, then ${data.monitoring} while the score stays in band.`);
+        // An AWS-only frequency (AWS 8-14, AGTAP Table 8.4) replaces the
+        // shared one when the ward charts AWS.
+        const monitoring = (selectedScale === 'aws' && data.monitoringAws) || data.monitoring;
+        if (monitoring && !data.bands) {
+            // At 1-2 hourly or closer, the 2-hourly opening interval would be a
+            // step down, so the band frequency applies from the start.
+            out.push(monitoring === 'hourly' || monitoring === '1-2 hourly'
+                ? `Score ${scale} ${monitoring}.`
+                : `Score ${scale} ${INITIAL_SCORING_INTERVAL}, then ${monitoring} while the score stays in band.`);
         }
         if (!data.routing && !/2-hourly|q2hrly/i.test(body)) {
             out.push(EMR_SAFETY_LINES.dosingInterval);
@@ -1196,6 +1201,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // A caveat that only matters to a ward charting AWS (why the
         // symptom-triggered dose is not split at AWS 7/8).
         if (selectedScale === 'aws' && data.caveatAws) displayHTML += renderCaveats([data.caveatAws]);
+        // ...and its CIWA-Ar twin (why the fixed schedules split CIWA-Ar at 15/16).
+        if (selectedScale !== 'aws' && data.caveatCiwa) displayHTML += renderCaveats([data.caveatCiwa]);
 
         // The one sedation rule, shown with every schedule that gives doses.
         // Loading carries its own version inside Step 1 (its endpoint is
