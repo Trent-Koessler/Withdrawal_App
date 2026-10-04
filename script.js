@@ -1020,9 +1020,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const { benzo, band, type } = checklistDecisions();
         const progress = stepProgress(step, checklist);
         if (step.type === 'thiamine' && checklist.wernicke) {
-            return `${THIAMINE_DOSES[checklist.wernicke].name} · ${progress.ticked} of ${progress.total} done`;
+            return `${THIAMINE_DOSES[checklist.wernicke].name} · ${progress.ticked} of ${progress.total} complete`;
         }
-        if (progress) return `${progress.ticked} of ${progress.total} ticked`;
+        if (progress) return `${progress.ticked} of ${progress.total} complete`;
         if (step.type === 'benzo') return benzo;
         if (step.type === 'band') return band ? BAND_NAMES[band] : 'Not chosen yet';
         if (step.type === 'regimen') {
@@ -1041,7 +1041,8 @@ document.addEventListener('DOMContentLoaded', () => {
         checklistPage.appendChild(el('p', 'triage-hint', 'A bedside summary of the Inpatient Guidelines. Each step '
             + 'links to the full text. Ticks are not saved: they clear when the app closes.'));
         checklistPage.appendChild(el('p', 'triage-progress-label', [benzo, band && BAND_NAMES[band],
-            type && REGIMEN_TYPE_NAMES[type], `${ticked} of ${total} ticked`].filter(Boolean).join(' · ')));
+            type && REGIMEN_TYPE_NAMES[type],
+            ticked === total ? 'Checklist complete ✓' : `Checklist complete: ${ticked} of ${total}`].filter(Boolean).join(' · ')));
         const bar = el('div', 'progress-bar');
         bar.appendChild(el('span'));
         bar.firstChild.style.width = `${Math.round(100 * ticked / total)}%`;

@@ -226,7 +226,7 @@ export function checklistSummary(state, regimenText = '') {
             if (!state.ticks[`${step.id}.${item.id}`]) open.push(`- ${step.title}: ${stripTags(item.html)}`);
         }
     }
-    lines.push('', open.length ? 'Not yet ticked:' : 'All checklist items ticked.');
+    lines.push('', open.length ? 'Not yet ticked:' : 'Checklist complete.');
     lines.push(...open);
 
     lines.push('');
