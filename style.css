@@ -725,6 +725,11 @@ textarea {
     margin: 10px 0 0;
 }
 
+.checklist-result.checklist-dose {
+    display: block;
+    line-height: 1.4;
+}
+
 .checklist-actions {
     display: flex;
     flex-wrap: wrap;

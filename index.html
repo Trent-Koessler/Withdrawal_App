@@ -758,6 +758,11 @@ textarea {
     margin: 10px 0 0;
 }
 
+.checklist-result.checklist-dose {
+    display: block;
+    line-height: 1.4;
+}
+
 .checklist-actions {
     display: flex;
     flex-wrap: wrap;
@@ -4916,6 +4921,11 @@ textarea[id$="-quickstart-summary"] {
                         as seven bedside steps on one page, each linked to its full text. It picks the
                         benzodiazepine, band and regimen type, opens the Regimens tab already set to them, and
                         carries over triage answers. Nothing ticked is saved.</li>
+                    <li><strong>The checklist's EMR summary carries the full regimen</strong> - the same text, built
+                        by the same code, as "Copy for EMR" on the Regimens tab, in the scale the ward charts. It
+                        also carries the thiamine plan.</li>
+                    <li><strong>Thiamine in the checklist asks about Wernicke-Korsakoff first</strong>, then shows
+                        only the dose that applies: 300mg prophylaxis, or 500mg IV TDS treatment.</li>
                 </ul>
 
                 <h4>0.5.8 - October 2026</h4>
