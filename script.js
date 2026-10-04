@@ -1,4 +1,12 @@
-import { FLOWCHART_LOGIC } from './data/flowchart.js';
+import {
+    TRIAGE_OUTCOMES, RED_FLAG_NOTES, RED_FLAG_SOURCE, activeQuestions, nextQuestion, isAnswered,
+    pruneAnswers, triageOutcome, triageSummary
+} from './data/flowchart.js';
+import {
+    INPATIENT_CHECKLIST, BENZO_FACTORS, BAND_INTAKE, BAND_RISKS, BAND_NAMES, LOADING_CRITERIA, FIXED_CRITERIA,
+    REGIMEN_TYPE_NAMES, ESCALATION_TRIGGERS, newChecklistState, chooseBenzo, chooseBand, chooseRegimenType,
+    prefillFromTriage, stepProgress, checklistSummary
+} from './data/checklist.js';
 import { REGIMEN_CONFIG, EMR_SAFETY_LINES, INITIAL_SCORING_INTERVAL } from './data/regimens.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
 import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
@@ -37,7 +45,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.8';
+const APP_VERSION = '0.5.9';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -347,6 +355,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pageId === 'alcohol-withdrawal-page') {
             startFlowchart();
         }
+        if (pageId === 'inpatient-checklist-page') {
+            renderChecklist();
+        }
 
         if (tabId) {
             selectScaleTab(tabId);
@@ -567,118 +578,524 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     // =================================================================
-    // ALCOHOL WITHDRAWAL FLOWCHART LOGIC
+    // ALCOHOL WITHDRAWAL TRIAGE
     // =================================================================
+    // Two views of one set of answers: every question on one screen, or one
+    // question per screen. The outcome comes from triageOutcome() either way,
+    // so switching views mid-triage keeps the answers and cannot change the
+    // result. Answers live in memory only.
 
+    const flowchartPage = document.getElementById('triage-root');
+    const TRIAGE_VIEW_KEY = 'sud.triageView';
+    let triageAnswers = {};
+    // Red-flag ticks in the step view wait here until "Continue", so ticking
+    // the first box does not move the page on before the rest can be ticked.
+    let pendingFlags = [];
 
-    const flowchartPage = document.getElementById('alcohol-withdrawal-page');
-    let flowchartHistory = [];
+    // The view is a display preference, not patient information, so it is the
+    // one thing remembered. Storage failing only costs the preference.
+    let triageView = 'steps';
+    try {
+        if (localStorage.getItem(TRIAGE_VIEW_KEY) === 'quick') triageView = 'quick';
+    } catch { /* default view */ }
+
+    function el(tag, className, html) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (html !== undefined) node.innerHTML = html;
+        return node;
+    }
+
+    // Each render rebuilds the page, which would drop keyboard focus. Controls
+    // carry a stable data-focus key so focus can be put back where it was.
+    function rerenderKeepingFocus(container, render) {
+        const key = document.activeElement?.closest?.('[data-focus]')?.dataset.focus;
+        render();
+        if (key) container.querySelector(`[data-focus="${CSS.escape(key)}"]`)?.focus();
+    }
 
     function startFlowchart() {
-        flowchartHistory = ['intake_assessment'];
-        renderFlowchartStep('intake_assessment');
+        triageAnswers = {};
+        pendingFlags = [];
+        renderTriage();
     }
 
-    function renderFlowchartStep(stepId) {
-        const stepData = FLOWCHART_LOGIC[stepId];
-        if (!stepData) return;
-        flowchartPage.innerHTML = '';
-        const breadcrumbs = document.createElement('div');
-        breadcrumbs.className = 'breadcrumbs';
-        flowchartHistory.forEach((histStepId, index) => {
-            const crumb = document.createElement('button');
-            crumb.className = 'breadcrumb-button';
-            crumb.textContent = FLOWCHART_LOGIC[histStepId].title;
-            crumb.addEventListener('click', () => jumpToStep(index));
-            breadcrumbs.appendChild(crumb);
-            if (index < flowchartHistory.length - 1) {
-                const separator = document.createElement('span');
-                separator.textContent = ' > ';
-                breadcrumbs.appendChild(separator);
-            }
-        });
-        flowchartPage.appendChild(breadcrumbs);
-        const textElement = document.createElement('p');
-        textElement.className = 'flowchart-text';
-        textElement.innerText = stepData.text;
-        flowchartPage.appendChild(textElement);
-        if (stepData.warning) {
-            const warningElement = document.createElement('div');
-            warningElement.className = 'warning-box';
-            warningElement.innerHTML = stepData.warning;
-            flowchartPage.appendChild(warningElement);
+    function setTriageAnswer(id, value) {
+        triageAnswers = pruneAnswers({ ...triageAnswers, [id]: value });
+        if (id === 'flags' && value === undefined) pendingFlags = [];
+        rerenderKeepingFocus(flowchartPage, renderTriage);
+    }
+
+    function segmentButton(label, pressed, onClick, focusKey) {
+        const button = el('button', 'seg-btn');
+        button.type = 'button';
+        button.textContent = label;
+        button.setAttribute('aria-pressed', String(pressed));
+        button.dataset.focus = focusKey;
+        button.addEventListener('click', onClick);
+        return button;
+    }
+
+    function checkItem(label, checked, onChange, focusKey, extraHtml = '') {
+        const item = el('label', 'check-item');
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.checked = checked;
+        box.dataset.focus = focusKey;
+        box.addEventListener('change', () => onChange(box.checked));
+        item.appendChild(box);
+        item.appendChild(el('span', '', label + extraHtml));
+        return item;
+    }
+
+    function triageQuestionExtras(card, q) {
+        if (q.calculatorHint) {
+            const hint = el('p', 'triage-hint', 'Not sure? ');
+            const link = el('button', 'link-button');
+            link.type = 'button';
+            link.textContent = 'Standard drinks calculator';
+            link.addEventListener('click', () => showPage('scales-page', { tabId: 'std-drinks' }));
+            hint.appendChild(link);
+            card.appendChild(hint);
         }
-        const optionsContainer = document.createElement('div');
-        optionsContainer.className = 'flowchart-options';
-        if (stepData.type === 'question') {
-            stepData.options.forEach(option => {
-                const button = document.createElement('button');
-                button.className = 'big-button';
-                button.innerText = option.label;
-                button.addEventListener('click', () => {
-                    flowchartHistory.push(option.next_step);
-                    renderFlowchartStep(option.next_step);
+        if (q.note) card.appendChild(el('p', 'triage-hint', q.note));
+        if (q.id === 'flags') card.appendChild(el('p', 'triage-hint', RED_FLAG_SOURCE));
+    }
+
+    // Quick view: a red-flag tick is the answer at once, and unticking the last
+    // one makes the question unanswered again rather than "none".
+    function toggleFlag(value, on) {
+        const current = triageAnswers.flags || [];
+        const next = on ? [...current.filter(v => v !== value), value] : current.filter(v => v !== value);
+        setTriageAnswer('flags', next.length ? next : undefined);
+    }
+
+    function quickQuestionCard(q, number) {
+        const card = el('div', 'triage-card');
+        card.appendChild(el('p', 'triage-q', `${number}. ${q.text}`));
+        if (q.multi) {
+            const chosen = triageAnswers.flags;
+            q.options.forEach(o => card.appendChild(checkItem(o.label, !!chosen?.includes(o.value),
+                on => toggleFlag(o.value, on), `flag-${o.value}`)));
+            card.appendChild(checkItem(q.noneLabel, Array.isArray(chosen) && chosen.length === 0,
+                on => setTriageAnswer('flags', on ? [] : undefined), 'flag-none'));
+        } else {
+            const group = el('div', 'seg-group');
+            group.setAttribute('role', 'group');
+            group.setAttribute('aria-label', q.text);
+            q.options.forEach(o => group.appendChild(segmentButton(o.label, triageAnswers[q.id] === o.value,
+                () => setTriageAnswer(q.id, o.value), `${q.id}-${o.value}`)));
+            card.appendChild(group);
+        }
+        triageQuestionExtras(card, q);
+        return card;
+    }
+
+    function renderQuickView(root) {
+        activeQuestions(triageAnswers).forEach((q, i) => root.appendChild(quickQuestionCard(q, i + 1)));
+    }
+
+    function renderStepView(root) {
+        const questions = activeQuestions(triageAnswers);
+        const current = nextQuestion(triageAnswers);
+        const answered = questions.filter(q => isAnswered(q, triageAnswers));
+
+        if (current) {
+            root.appendChild(el('p', 'triage-progress-label',
+                `Question ${questions.indexOf(current) + 1} of ${questions.length}`));
+            const bar = el('div', 'progress-bar');
+            bar.appendChild(el('span'));
+            bar.firstChild.style.width = `${Math.round(100 * answered.length / questions.length)}%`;
+            root.appendChild(bar);
+        }
+
+        // "So far" doubles as the breadcrumb trail: each answer can be changed
+        // in place, and changing one re-asks only that question.
+        if (answered.length) {
+            const sofar = el('div', 'triage-sofar');
+            sofar.appendChild(el('span', 'triage-sofar-label', 'So far:'));
+            answered.forEach(q => {
+                const chip = el('button', 'sofar-chip');
+                chip.type = 'button';
+                const value = q.multi
+                    ? ({ 0: 'none', 1: '1 ticked' }[triageAnswers.flags.length] || `${triageAnswers.flags.length} ticked`)
+                    : q.options.find(o => o.value === triageAnswers[q.id]).label;
+                chip.innerHTML = `<strong>${q.title}:</strong> ${value} <u>change</u>`;
+                chip.setAttribute('aria-label', `${q.title}: ${value}. Change`);
+                chip.dataset.focus = `sofar-${q.id}`;
+                chip.addEventListener('click', () => {
+                    if (q.multi) pendingFlags = [...triageAnswers.flags];
+                    setTriageAnswer(q.id, undefined);
                 });
-                optionsContainer.appendChild(button);
+                sofar.appendChild(chip);
             });
-        } else if (stepData.type === 'outcome') {
-            if (stepData.emr_summary) {
-                const emrTitle = document.createElement('h3');
-                emrTitle.textContent = 'EMR Summary';
-                const emrOutput = document.createElement('textarea');
-                emrOutput.readOnly = true;
-                emrOutput.value = stepData.emr_summary;
-                const copyButton = document.createElement('button');
-                copyButton.textContent = 'Copy to Clipboard';
-                copyButton.addEventListener('click', () => {
-                    emrOutput.select();
-                    navigator.clipboard.writeText(emrOutput.value);
-                    record('emr_copy', 'flowchart');
+            root.appendChild(sofar);
+        }
+
+        if (current) {
+            const card = el('div', 'triage-card');
+            card.appendChild(el('p', 'triage-q triage-q-large', current.text));
+            if (current.multi) {
+                current.options.forEach(o => card.appendChild(checkItem(o.label, pendingFlags.includes(o.value), on => {
+                    pendingFlags = on ? [...pendingFlags, o.value] : pendingFlags.filter(v => v !== o.value);
+                    rerenderKeepingFocus(flowchartPage, renderTriage);
+                }, `pending-${o.value}`)));
+                const actions = el('div', 'flowchart-options');
+                const cont = el('button', 'big-button');
+                cont.type = 'button';
+                cont.textContent = 'Continue';
+                cont.disabled = pendingFlags.length === 0;
+                cont.addEventListener('click', () => setTriageAnswer('flags', [...pendingFlags]));
+                const none = el('button', 'big-button');
+                none.type = 'button';
+                none.textContent = current.noneLabel;
+                none.addEventListener('click', () => { pendingFlags = []; setTriageAnswer('flags', []); });
+                actions.append(cont, none);
+                card.appendChild(actions);
+            } else {
+                const actions = el('div', 'flowchart-options');
+                current.options.forEach(o => {
+                    const button = el('button', 'big-button');
+                    button.type = 'button';
+                    button.textContent = o.label;
+                    button.addEventListener('click', () => setTriageAnswer(current.id, o.value));
+                    actions.appendChild(button);
                 });
-                optionsContainer.appendChild(emrTitle);
-                optionsContainer.appendChild(emrOutput);
-                optionsContainer.appendChild(copyButton);
+                card.appendChild(actions);
             }
-            if (stepData.guideline_link) {
-                const guidelineBtn = document.createElement('button');
-                guidelineBtn.className = 'big-button';
-                guidelineBtn.textContent = 'View Inpatient Guidelines';
-                guidelineBtn.addEventListener('click', () => showPage(stepData.guideline_link));
-                optionsContainer.appendChild(guidelineBtn);
-            }
-            if (stepData.ambulatory_guideline_link) {
-                const ambulatoryBtn = document.createElement('button');
-                ambulatoryBtn.className = 'big-button';
-                ambulatoryBtn.textContent = 'View Ambulatory Detox Guidelines';
-                ambulatoryBtn.addEventListener('click', () => showPage(stepData.ambulatory_guideline_link));
-                optionsContainer.appendChild(ambulatoryBtn);
-            }
-        }
-        flowchartPage.appendChild(optionsContainer);
-        const navContainer = document.createElement('div');
-        navContainer.className = 'flowchart-nav';
-        const backButton = document.createElement('button');
-        backButton.textContent = 'Back';
-        backButton.disabled = flowchartHistory.length <= 1;
-        backButton.addEventListener('click', goBack);
-        const restartButton = document.createElement('button');
-        restartButton.textContent = 'Restart';
-        restartButton.addEventListener('click', startFlowchart);
-        navContainer.appendChild(backButton);
-        navContainer.appendChild(restartButton);
-        flowchartPage.appendChild(navContainer);
-    }
-
-    function goBack() {
-        if (flowchartHistory.length > 1) {
-            flowchartHistory.pop();
-            renderFlowchartStep(flowchartHistory[flowchartHistory.length - 1]);
+            triageQuestionExtras(card, current);
+            root.appendChild(card);
         }
     }
 
-    function jumpToStep(index) {
-        flowchartHistory = flowchartHistory.slice(0, index + 1);
-        renderFlowchartStep(flowchartHistory[flowchartHistory.length - 1]);
+    function triageOutcomeCard(result) {
+        const outcome = TRIAGE_OUTCOMES[result.key];
+        const card = el('div', `triage-card triage-outcome outcome-${result.key}`);
+        card.appendChild(el('p', 'triage-result-label', 'Result'));
+        card.appendChild(el('h3', 'triage-result-title', outcome.title));
+        card.appendChild(el('p', '', outcome.text));
+        if (result.steppedUp) card.appendChild(el('p', 'triage-hint', 'Moved up one level of care for red flags.'));
+        (triageAnswers.flags || []).forEach(v => {
+            if (RED_FLAG_NOTES[v]) card.appendChild(el('div', 'warning-box', RED_FLAG_NOTES[v]));
+        });
+
+        card.appendChild(el('h4', '', 'EMR summary'));
+        const emr = el('textarea');
+        emr.readOnly = true;
+        emr.rows = 5;
+        emr.value = triageSummary(triageAnswers);
+        const copy = el('button');
+        copy.type = 'button';
+        copy.textContent = 'Copy to Clipboard';
+        copy.addEventListener('click', () => {
+            emr.select();
+            navigator.clipboard.writeText(emr.value);
+            record('emr_copy', 'flowchart');
+        });
+        card.append(emr, copy);
+
+        const links = el('div', 'flowchart-options');
+        const link = (label, onClick) => {
+            const button = el('button', 'big-button');
+            button.type = 'button';
+            button.textContent = label;
+            button.addEventListener('click', onClick);
+            links.appendChild(button);
+        };
+        if (outcome.checklist) link('Next: Inpatient checklist →', openChecklistFromTriage);
+        if (outcome.guideline_link) link('View Inpatient Guidelines', () => showPage(outcome.guideline_link));
+        if (outcome.ambulatory_guideline_link) {
+            link('View Ambulatory Detox Guidelines', () => showPage(outcome.ambulatory_guideline_link));
+        }
+        card.appendChild(links);
+        return card;
+    }
+
+    function renderTriage() {
+        flowchartPage.innerHTML = '';
+
+        const toggle = el('div', 'seg-group triage-view-toggle');
+        toggle.setAttribute('role', 'group');
+        toggle.setAttribute('aria-label', 'Triage view');
+        [['quick', 'Quick view'], ['steps', 'Step by step']].forEach(([view, label]) => {
+            toggle.appendChild(segmentButton(label, triageView === view, () => {
+                triageView = view;
+                pendingFlags = [];
+                try { localStorage.setItem(TRIAGE_VIEW_KEY, view); } catch { /* preference only */ }
+                rerenderKeepingFocus(flowchartPage, renderTriage);
+            }, `view-${view}`));
+        });
+        flowchartPage.appendChild(toggle);
+
+        if (triageView === 'quick') renderQuickView(flowchartPage);
+        else renderStepView(flowchartPage);
+
+        const result = triageOutcome(triageAnswers);
+        if (result) flowchartPage.appendChild(triageOutcomeCard(result));
+
+        const nav = el('div', 'flowchart-nav');
+        if (triageView === 'steps') {
+            const back = el('button');
+            back.type = 'button';
+            back.textContent = 'Back';
+            const answered = activeQuestions(triageAnswers).filter(q => isAnswered(q, triageAnswers));
+            back.disabled = answered.length === 0;
+            back.addEventListener('click', () => {
+                const last = answered[answered.length - 1];
+                if (last.multi) pendingFlags = [...triageAnswers.flags];
+                setTriageAnswer(last.id, undefined);
+            });
+            nav.appendChild(back);
+        }
+        const restart = el('button');
+        restart.type = 'button';
+        restart.textContent = 'Restart';
+        restart.addEventListener('click', startFlowchart);
+        nav.appendChild(restart);
+        flowchartPage.appendChild(nav);
+    }
+
+    // =================================================================
+    // INPATIENT CHECKLIST
+    // =================================================================
+    // A bedside summary of the Inpatient Guidelines tabs, every step on one
+    // page. Ticks are kept in memory only: they survive a visit to a guideline
+    // tab and back, and are gone when the app closes or "Start again" is used.
+
+    const checklistPage = document.getElementById('checklist-root');
+    let checklist = newChecklistState();
+
+    function openChecklistFromTriage() {
+        checklist = prefillFromTriage(triageAnswers);
+        showPage('inpatient-checklist-page');
+    }
+
+    function openGuidelineTab(tabId) {
+        showPage('inpatient-guidelines-page');
+        document.querySelector(`#inpatient-guidelines-page .tab-button[data-tab="${tabId}"]`)?.click();
+    }
+
+    function checklistDecisions() {
+        const band = chooseBand(checklist.intake, checklist.risks);
+        return {
+            benzo: chooseBenzo(checklist.benzoFactors),
+            band,
+            type: chooseRegimenType({ band, loading: checklist.loading, fixed: checklist.fixed, picked: checklist.picked }),
+        };
+    }
+
+    // Opens the Regimens tab already set to the checklist's drug, band and type,
+    // by pressing the tab's own buttons so its state stays the single source.
+    function openChosenRegimen() {
+        const { benzo, band, type } = checklistDecisions();
+        document.querySelector(`.benzo-choice-btn[data-benzo="${benzo}"]`)?.click();
+        if (type === 'fixed' && band) document.querySelector(`.regimen-severity-btn[data-severity="${band}"]`)?.click();
+        else if (type) selectRegimenType(type);
+        openGuidelineTab('regimens');
+    }
+
+    function updateChecklist(change) {
+        change();
+        rerenderKeepingFocus(checklistPage, renderChecklist);
+    }
+
+    const toggleIn = (list, id, on) => (on ? [...list.filter(x => x !== id), id] : list.filter(x => x !== id));
+
+    function checklistTicks(body, step) {
+        step.items.forEach(item => {
+            const key = `${step.id}.${item.id}`;
+            body.appendChild(checkItem(item.html, !!checklist.ticks[key],
+                on => updateChecklist(() => { checklist.ticks[key] = on; }), `tick-${key}`));
+        });
+        if (step.warning) body.appendChild(el('div', 'warning-box', `⚠️ ${step.warning}`));
+    }
+
+    function checklistResult(label, value) {
+        return el('div', 'checklist-result', `<span>${label}</span><strong>${value}</strong>`);
+    }
+
+    function checklistFactorList(body, factors, listName, fromTriage = []) {
+        factors.forEach(f => body.appendChild(checkItem(f.label, checklist[listName].includes(f.id),
+            on => updateChecklist(() => { checklist[listName] = toggleIn(checklist[listName], f.id, on); }),
+            `${listName}-${f.id}`,
+            fromTriage.includes(f.id) ? ' <em class="from-triage">(from triage - check)</em>' : '')));
+    }
+
+    function checklistBenzo(body) {
+        body.appendChild(el('p', 'checklist-prompt', 'Oxazepam if any apply:'));
+        checklistFactorList(body, BENZO_FACTORS, 'benzoFactors');
+        body.appendChild(checklistResult(checklist.benzoFactors.length ? 'Ticked →' : 'None ticked →',
+            chooseBenzo(checklist.benzoFactors)));
+        if (checklist.benzoFactors.includes('elderly')) {
+            body.appendChild(el('div', 'warning-box', 'Elderly or frail: prefer symptom-triggered dosing, or titrate '
+                + 'oxazepam 15-30mg carefully against response, rather than a fixed schedule. '
+                + '<span class="src-tag src-other">OTHER - AGTAP ch. 18</span>'));
+        }
+        body.appendChild(el('p', 'triage-hint', 'Diazepam 10mg ≈ oxazepam 30mg. '
+            + '<span class="src-tag src-nswcg">NSWCG Table 11.2</span>'));
+    }
+
+    function checklistBand(body) {
+        body.appendChild(el('p', 'checklist-prompt', 'Reported intake:'));
+        const group = el('div', 'seg-group');
+        group.setAttribute('role', 'group');
+        group.setAttribute('aria-label', 'Reported intake');
+        BAND_INTAKE.forEach(i => group.appendChild(segmentButton(`${i.label} → ${BAND_NAMES[i.band]}`,
+            checklist.intake === i.id, () => updateChecklist(() => { checklist.intake = i.id; }), `intake-${i.id}`)));
+        body.appendChild(group);
+        if (checklist.fromTriage.includes('intake')) {
+            body.appendChild(el('p', 'triage-hint', '<em class="from-triage">Intake carried over from triage - check.</em>'));
+        }
+        body.appendChild(el('p', 'checklist-prompt',
+            'Move up a band if any apply: <span class="src-tag src-nswcg">NSWCG §5.1.1</span>'));
+        checklistFactorList(body, BAND_RISKS, 'risks', checklist.fromTriage);
+        const band = chooseBand(checklist.intake, checklist.risks);
+        if (band) {
+            body.appendChild(checklistResult(checklist.risks.length ? 'Moved up a band →' : 'Band →',
+                band === 'severe' ? 'Severe (managed by loading)' : BAND_NAMES[band]));
+        }
+        const unknown = el('p', 'triage-hint', 'Tolerance genuinely unknown? ');
+        const testDose = el('button', 'link-button', 'Use the test-dose protocol');
+        testDose.type = 'button';
+        testDose.addEventListener('click', () => openGuidelineTab('assessment-banding'));
+        unknown.appendChild(testDose);
+        body.appendChild(unknown);
+    }
+
+    function checklistRegimen(body) {
+        const { band, type } = checklistDecisions();
+        body.appendChild(el('p', 'checklist-prompt', 'Loading if any apply:'));
+        if (band === 'severe') body.appendChild(el('p', 'triage-hint', 'Band is Severe: severe withdrawal is managed by loading.'));
+        checklistFactorList(body, LOADING_CRITERIA, 'loading');
+        body.appendChild(el('p', 'checklist-prompt', 'Otherwise, a fixed schedule if any apply:'));
+        checklistFactorList(body, FIXED_CRITERIA, 'fixed');
+        if (band !== 'severe' && !checklist.loading.length && !checklist.fixed.length) {
+            body.appendChild(el('p', 'checklist-prompt', 'None apply - choose:'));
+            const group = el('div', 'seg-group');
+            group.setAttribute('role', 'group');
+            group.setAttribute('aria-label', 'Regimen type');
+            ['fixed', 'symptom'].forEach(t => group.appendChild(segmentButton(REGIMEN_TYPE_NAMES[t],
+                checklist.picked === t, () => updateChecklist(() => { checklist.picked = t; }), `picked-${t}`)));
+            body.appendChild(group);
+            body.appendChild(el('p', 'triage-hint', 'Symptom-triggered dosing is not for patients with a history of '
+                + 'withdrawal seizures, concurrent withdrawal from other drugs, or significant comorbidity. '
+                + '<span class="src-tag src-other">OTHER - AGTAP 8.10 (B), 8.26 (B), 8.28 (C)</span>'));
+        }
+        if (type) body.appendChild(checklistResult('Regimen →', REGIMEN_TYPE_NAMES[type]));
+    }
+
+    function checklistEscalate(body) {
+        body.appendChild(el('div', 'danger-box', '<strong>Move up a schedule and request medical review if any of:</strong>'
+            + `<ul>${ESCALATION_TRIGGERS.map(t => `<li>${t}</li>`).join('')}</ul>`));
+    }
+
+    const CHECKLIST_BODIES = { ticks: checklistTicks, benzo: checklistBenzo, band: checklistBand,
+        regimen: checklistRegimen, escalate: checklistEscalate };
+
+    function checklistRecap(step) {
+        const { benzo, band, type } = checklistDecisions();
+        const progress = stepProgress(step, checklist);
+        if (progress) return `${progress.ticked} of ${progress.total} ticked`;
+        if (step.type === 'benzo') return benzo;
+        if (step.type === 'band') return band ? BAND_NAMES[band] : 'Not chosen yet';
+        if (step.type === 'regimen') return type ? REGIMEN_TYPE_NAMES[type] : 'Not chosen yet';
+        return 'Escalation triggers';
+    }
+
+    function renderChecklist() {
+        checklistPage.innerHTML = '';
+        const { benzo, band, type } = checklistDecisions();
+        const tickSteps = INPATIENT_CHECKLIST.map(s => stepProgress(s, checklist)).filter(Boolean);
+        const ticked = tickSteps.reduce((n, p) => n + p.ticked, 0);
+        const total = tickSteps.reduce((n, p) => n + p.total, 0);
+
+        checklistPage.appendChild(el('p', 'triage-hint', 'A bedside summary of the Inpatient Guidelines. Each step '
+            + 'links to the full text. Ticks are not saved: they clear when the app closes.'));
+        checklistPage.appendChild(el('p', 'triage-progress-label', [benzo, band && BAND_NAMES[band],
+            type && REGIMEN_TYPE_NAMES[type], `${ticked} of ${total} ticked`].filter(Boolean).join(' · ')));
+        const bar = el('div', 'progress-bar');
+        bar.appendChild(el('span'));
+        bar.firstChild.style.width = `${Math.round(100 * ticked / total)}%`;
+        checklistPage.appendChild(bar);
+
+        const list = el('ol', 'checklist-steps');
+        INPATIENT_CHECKLIST.forEach((step, index) => {
+            const open = checklist.open === step.id;
+            const done = !!checklist.done[step.id];
+            // Done with boxes still unticked is allowed - the EMR summary lists
+            // them - but it is shown amber, so it never reads as complete.
+            const progress = stepProgress(step, checklist);
+            const partial = done && progress && progress.ticked < progress.total;
+            const item = el('li', `checklist-step${done ? ' done' : ''}${partial ? ' partial' : ''}${open ? ' open' : ''}`);
+            const head = el('button', 'checklist-head');
+            head.type = 'button';
+            head.setAttribute('aria-expanded', String(open));
+            head.dataset.focus = `head-${step.id}`;
+            head.innerHTML = `<span class="checklist-dot" aria-hidden="true">${partial ? '!' : done ? '✓' : index + 1}</span>`
+                + `<span class="checklist-title">${step.title}</span>`
+                + `<span class="checklist-recap">${checklistRecap(step)}</span>`;
+            head.addEventListener('click', () => updateChecklist(() => { checklist.open = open ? null : step.id; }));
+            item.appendChild(head);
+
+            if (open) {
+                const body = el('div', 'checklist-body');
+                CHECKLIST_BODIES[step.type](body, step);
+                const actions = el('div', 'checklist-actions');
+                const more = el('button', 'link-button', 'Full text on the guideline tab →');
+                more.type = 'button';
+                more.addEventListener('click', () => openGuidelineTab(step.tab));
+                const next = el('button', 'checklist-next');
+                next.type = 'button';
+                next.dataset.focus = `next-${step.id}`;
+                const following = INPATIENT_CHECKLIST[index + 1];
+                next.textContent = following ? 'Done - next step' : 'Done';
+                next.addEventListener('click', () => updateChecklist(() => {
+                    checklist.done[step.id] = true;
+                    checklist.open = following ? following.id : null;
+                }));
+                actions.append(more, next);
+                body.appendChild(actions);
+                item.appendChild(body);
+            }
+            list.appendChild(item);
+        });
+        checklistPage.appendChild(list);
+
+        const summary = el('div', 'triage-card');
+        summary.appendChild(el('h4', '', 'Checklist summary for the EMR'));
+        const emr = el('textarea');
+        emr.readOnly = true;
+        emr.rows = 6;
+        emr.value = checklistSummary(checklist);
+        const copy = el('button');
+        copy.type = 'button';
+        copy.textContent = 'Copy to Clipboard';
+        copy.addEventListener('click', () => {
+            emr.select();
+            navigator.clipboard.writeText(emr.value);
+            record('emr_copy', 'inpatient-checklist');
+        });
+        summary.append(emr, copy);
+        const actions = el('div', 'flowchart-options');
+        const regimen = el('button', 'big-button', 'Open this regimen on the Regimens tab →');
+        regimen.type = 'button';
+        regimen.disabled = !(band && type);
+        regimen.addEventListener('click', openChosenRegimen);
+        actions.appendChild(regimen);
+        summary.appendChild(actions);
+        checklistPage.appendChild(summary);
+
+        const nav = el('div', 'flowchart-nav');
+        const reset = el('button');
+        reset.type = 'button';
+        reset.textContent = 'Start again';
+        reset.addEventListener('click', () => {
+            checklist = newChecklistState();
+            renderChecklist();
+            mainContent.scrollTop = 0;
+        });
+        nav.appendChild(reset);
+        checklistPage.appendChild(nav);
     }
 
     // --- TAB NAVIGATION --- //
