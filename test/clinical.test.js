@@ -15,7 +15,14 @@ import { fileURLToPath } from 'node:url';
 
 import { SCALES } from '../data/scales.js';
 import { REGIMEN_CONFIG } from '../data/regimens.js';
-import { FLOWCHART_LOGIC } from '../data/flowchart.js';
+import {
+    TRIAGE_QUESTIONS, TRIAGE_OUTCOMES, RED_FLAG_STEP_UP, activeQuestions, nextQuestion, pruneAnswers,
+    baseOutcome, triageOutcome, triageSummary
+} from '../data/flowchart.js';
+import {
+    INPATIENT_CHECKLIST, newChecklistState, chooseBenzo, chooseBand, chooseRegimenType, prefillFromTriage,
+    checklistSummary
+} from '../data/checklist.js';
 import { bandFor, restartDose, ORAL_OTP_AGENTS, MISSED_DOSE_BANDS } from '../data/otp-missed-doses.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -236,48 +243,176 @@ describe('benzodiazepine regimens', () => {
     });
 });
 
-describe('alcohol withdrawal flowchart', () => {
-    test('every next_step points at a real node', () => {
-        for (const [id, node] of Object.entries(FLOWCHART_LOGIC)) {
-            if (node.type !== 'question') continue;
-            for (const opt of node.options) {
-                assert.ok(FLOWCHART_LOGIC[opt.next_step],
-                    `${id} -> "${opt.next_step}" does not exist`);
+// Every way through the triage: each intake x history x support x red-flag
+// combination, with support only where it is asked.
+function* everyTriage() {
+    yield { need: 'no' };
+    const flags = TRIAGE_QUESTIONS.find((q) => q.id === 'flags').options.map((o) => o.value);
+    const flagSets = [[], ...flags.map((f) => [f]), flags];
+    for (const drinks of ['upto7', '8to14', '15plus']) {
+        for (const history of ['no', 'yes']) {
+            const supports = drinks === '8to14' && history === 'no' ? ['good', 'poor'] : [undefined];
+            for (const support of supports) {
+                for (const f of flagSets) {
+                    const a = { need: 'yes', drinks, history, flags: f };
+                    if (support) a.support = support;
+                    yield a;
+                }
             }
+        }
+    }
+}
+
+describe('alcohol withdrawal triage', () => {
+    test('every complete set of answers reaches an outcome that exists and has text', () => {
+        for (const answers of everyTriage()) {
+            const result = triageOutcome(answers);
+            assert.ok(result, `no outcome for ${JSON.stringify(answers)}`);
+            const outcome = TRIAGE_OUTCOMES[result.key];
+            assert.ok(outcome?.title && outcome.text && outcome.plan, `outcome ${result.key} incomplete`);
+            assert.ok(triageSummary(answers).includes(outcome.plan), `EMR summary for ${result.key} lacks the plan`);
         }
     });
 
-    test('every node is reachable from the entry point', () => {
-        const seen = new Set();
-        const walk = (id) => {
-            if (seen.has(id)) return;
-            seen.add(id);
-            (FLOWCHART_LOGIC[id].options || []).forEach((o) => walk(o.next_step));
-        };
-        walk('intake_assessment');
-        const orphans = Object.keys(FLOWCHART_LOGIC).filter((id) => !seen.has(id));
-        assert.deepEqual(orphans, [], `unreachable nodes: ${orphans.join(', ')}`);
+    test('every outcome is reachable', () => {
+        const seen = new Set([...everyTriage()].map((a) => triageOutcome(a).key));
+        assert.deepEqual(Object.keys(TRIAGE_OUTCOMES).filter((k) => !seen.has(k)), []);
     });
 
-    test('every outcome carries an EMR summary and every node a title', () => {
-        for (const [id, node] of Object.entries(FLOWCHART_LOGIC)) {
-            assert.ok(node.title, `${id} has no title`);
-            assert.ok(node.text, `${id} has no text`);
-            if (node.type === 'outcome') {
-                assert.ok(node.emr_summary, `outcome ${id} has no emr_summary`);
+    // The tree this replaced, node for node. Red flags aside, nothing moved.
+    test('without red flags the outcomes match the previous decision tree', () => {
+        const expected = [
+            [{ drinks: 'upto7', history: 'no' }, 'supportive'],
+            [{ drinks: 'upto7', history: 'yes' }, 'consider_district'],
+            [{ drinks: '8to14', history: 'no', support: 'good' }, 'ambulatory'],
+            [{ drinks: '8to14', history: 'no', support: 'poor' }, 'district'],
+            [{ drinks: '8to14', history: 'yes' }, 'consider_general'],
+            [{ drinks: '15plus', history: 'no' }, 'consider_general'],
+            [{ drinks: '15plus', history: 'yes' }, 'general_only'],
+        ];
+        for (const [a, key] of expected) {
+            assert.equal(baseOutcome(a), key, JSON.stringify(a));
+            assert.equal(triageOutcome({ need: 'yes', ...a, flags: [] }).key, key, JSON.stringify(a));
+        }
+    });
+
+    test('a red flag moves up exactly one level and never to care at home', () => {
+        const order = ['supportive', 'ambulatory', 'consider_district', 'district', 'consider_general', 'general_only'];
+        const level = { supportive: 0, ambulatory: 1, consider_district: 2, district: 2, consider_general: 3, general_only: 4 };
+        for (const answers of everyTriage()) {
+            if (!answers.flags?.length) continue;
+            const { key, base } = triageOutcome(answers);
+            assert.ok(!['supportive', 'ambulatory'].includes(key), `${JSON.stringify(answers)} -> ${key}`);
+            assert.ok(level[key] >= level[base], `${base} stepped down to ${key}`);
+            if (base !== 'supportive' && base !== 'general_only') {
+                assert.equal(level[key], level[base] + 1, `${base} -> ${key} is not one level`);
             }
         }
+        assert.deepEqual(Object.keys(RED_FLAG_STEP_UP).sort(), order.slice().sort());
+    });
+
+    test('an untouched red-flag list is not an answer', () => {
+        const a = { need: 'yes', drinks: '8to14', history: 'no', support: 'good' };
+        assert.equal(triageOutcome(a), null);
+        assert.equal(nextQuestion(a).id, 'flags');
+        assert.equal(triageOutcome({ ...a, flags: [] }).key, 'ambulatory');
+    });
+
+    test('home support is asked only for 8-14 drinks without a complication history', () => {
+        const asked = (a) => activeQuestions(a).some((q) => q.id === 'support');
+        assert.ok(asked({ need: 'yes', drinks: '8to14', history: 'no' }));
+        assert.ok(!asked({ need: 'yes', drinks: '8to14', history: 'yes' }));
+        assert.ok(!asked({ need: 'yes', drinks: '15plus', history: 'no' }));
+    });
+
+    test('an answer that stops applying is dropped, not left to steer the result', () => {
+        const a = pruneAnswers({ need: 'yes', drinks: '15plus', history: 'no', support: 'good', flags: [] });
+        assert.equal(a.support, undefined);
+        assert.deepEqual(pruneAnswers({ need: 'no', drinks: '8to14' }), { need: 'no' });
+    });
+
+    test('the hospital is called General Hospital everywhere', () => {
+        for (const file of ['index.html', 'data/flowchart.js', 'data/checklist.js']) {
+            assert.ok(!/Base Hospital/i.test(read(file)), `${file} still says Base Hospital`);
+        }
+    });
+
+    // 15 drinks is a hospital patient in triage, so ambulatory detox cannot
+    // also accept it.
+    test('the intake split agrees between triage and the ambulatory criteria', () => {
+        assert.ok(TRIAGE_QUESTIONS.find((q) => q.id === 'drinks').options.some((o) => o.label === '≥ 15'));
+        assert.ok(/average alcohol intake is ≤14 standard drinks per day/.test(read('index.html')));
+        assert.ok(!/≤15 standard drinks/.test(read('index.html')));
     });
 
     test('guideline links point at pages that exist', () => {
         const html = read('index.html');
-        for (const [id, node] of Object.entries(FLOWCHART_LOGIC)) {
+        for (const [id, o] of Object.entries(TRIAGE_OUTCOMES)) {
             for (const key of ['guideline_link', 'ambulatory_guideline_link']) {
-                if (!node[key]) continue;
-                assert.ok(html.includes(`id="${node[key]}"`),
-                    `${id}.${key} -> "${node[key]}" is not a page in index.html`);
+                if (!o[key]) continue;
+                assert.ok(html.includes(`id="${o[key]}"`), `${id}.${key} -> "${o[key]}" is not a page in index.html`);
             }
         }
+    });
+});
+
+describe('inpatient checklist', () => {
+    test('every step links to a tab that exists on the Inpatient Guidelines page', () => {
+        const html = read('index.html');
+        for (const step of INPATIENT_CHECKLIST) {
+            assert.ok(html.includes(`class="tab-button" data-tab="${step.tab}"`)
+                || html.includes(`class="tab-button active" data-tab="${step.tab}"`),
+                `${step.id} -> tab "${step.tab}" does not exist`);
+        }
+    });
+
+    test('benzodiazepine choice follows the Benzo Choice tab', () => {
+        assert.equal(chooseBenzo([]), 'Diazepam');
+        for (const f of ['liver', 'resp', 'elderly', 'cerebral']) assert.equal(chooseBenzo([f]), 'Oxazepam');
+    });
+
+    test('band follows the intake split, moved up one band for any risk factor', () => {
+        assert.equal(chooseBand(null, []), null);
+        assert.equal(chooseBand('low', []), 'mild');
+        assert.equal(chooseBand('high', []), 'moderate');
+        assert.equal(chooseBand('low', ['bal']), 'moderate');
+        assert.equal(chooseBand('low', ['bal', 'cns', 'medical']), 'moderate');
+        assert.equal(chooseBand('high', ['previous']), 'severe');
+    });
+
+    test('band keys are the Regimens tab severities', () => {
+        const html = read('index.html');
+        for (const band of ['mild', 'moderate', 'severe']) {
+            assert.ok(html.includes(`data-severity="${band}"`), `no Regimens button for ${band}`);
+        }
+    });
+
+    test('regimen type: severe or a loading criterion loads; a fixed criterion fixes; otherwise the clinician picks', () => {
+        assert.equal(chooseRegimenType({ band: 'severe', loading: [], fixed: [], picked: 'symptom' }), 'loading');
+        assert.equal(chooseRegimenType({ band: 'mild', loading: ['seizure_history'], fixed: ['poly'], picked: null }), 'loading');
+        assert.equal(chooseRegimenType({ band: 'mild', loading: [], fixed: ['poly'], picked: 'symptom' }), 'fixed');
+        assert.equal(chooseRegimenType({ band: 'mild', loading: [], fixed: [], picked: null }), null);
+        assert.equal(chooseRegimenType({ band: 'mild', loading: [], fixed: [], picked: 'symptom' }), 'symptom');
+    });
+
+    test('triage answers carry over without inventing risk factors', () => {
+        const s = prefillFromTriage({ need: 'yes', drinks: '15plus', history: 'yes', flags: ['in_withdrawal', 'comorbid', 'pregnant'] });
+        assert.equal(s.intake, 'high');
+        assert.deepEqual(s.risks.sort(), ['bal', 'previous']);
+        assert.equal(prefillFromTriage({ need: 'yes', drinks: '8to14', history: 'no', flags: [] }).intake, 'low');
+    });
+
+    test('the EMR summary carries the decisions and the unticked items, without source chips', () => {
+        const s = newChecklistState();
+        s.intake = 'low';
+        s.ticks['prereq.bal'] = true;
+        const text = checklistSummary(s);
+        assert.ok(/Benzodiazepine: Diazepam/.test(text));
+        assert.ok(/Band: Mild-Mod/.test(text));
+        assert.ok(/Regimen type: not yet chosen/.test(text));
+        assert.ok(/Thiamine: Thiamine 300mg IV/.test(text));
+        assert.ok(!/BAL checked/.test(text), 'a ticked item is listed as open');
+        assert.ok(!/<|NSWCG §/.test(text), 'markup or a source chip leaked into the EMR text');
     });
 });
 

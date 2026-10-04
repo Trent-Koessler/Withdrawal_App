@@ -5,6 +5,38 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.9 - October 2026
+
+### Clinical
+
+- **Triage red-flag question** (LOCAL): already in withdrawal / high BAL on
+  arrival, coexisting medical or psychiatric illness, other CNS depressant
+  dependence, pregnancy. Any tick moves one level of care up and never to
+  ambulatory detox (supportive and ambulatory both step up to district
+  hospital / MPS / outpatient detox admission). Drawn from NSWCG §5.1.1 band
+  risk factors and the ambulatory exclusions. Pregnancy adds the
+  specialist-inpatient note.
+- **Ambulatory intake criterion ≤15 → ≤14 standard drinks/day**, so a patient
+  on 15 is a hospital patient in triage, ambulatory criteria and regimen bands
+  alike.
+- **"Base Hospital" replaced by "General Hospital"** in the triage EMR copy,
+  which had disagreed with the on-screen text.
+- Without red flags every route reaches the same outcome as before (tested
+  node for node). The two "consider General Hospital" routes now share one
+  wording.
+
+### Other
+
+- Triage rebuilt as one question list and a decision function
+  (`data/flowchart.js`) with two views: all questions on one screen, or one per
+  screen. The view choice is remembered on the device; answers are not. EMR
+  summary written from the answers.
+- New **Inpatient Alcohol Withdrawal Checklist** page (`data/checklist.js`):
+  seven steps from the Inpatient Guidelines tabs on one page. Chooses
+  benzodiazepine, band and regimen type, opens the Regimens tab set to them,
+  prefills from triage, copies a summary to the EMR. Ticks are in memory only.
+- The triage page's review footer is no longer wiped on each redraw.
+
 ## 0.5.8 - October 2026
 
 ### Clinical

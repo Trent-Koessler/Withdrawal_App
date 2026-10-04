@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.8" />
+    <meta name="app-build" content="0.5.9" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -456,6 +456,325 @@ textarea {
     margin-top: 30px;
     display: flex;
     gap: 10px;
+}
+
+/* --- Triage and inpatient checklist --- */
+/* Both pages are built by script.js from data/flowchart.js and
+   data/checklist.js. Cards sit on --card-bg so they read as separate questions
+   in either theme. */
+#alcohol-withdrawal-page,
+#inpatient-checklist-page {
+    max-width: 640px;
+}
+
+.triage-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+.triage-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.triage-card textarea + button {
+    margin-bottom: 14px;
+}
+
+.triage-q {
+    font-weight: bold;
+    margin: 0 0 10px;
+}
+
+.triage-q-large {
+    font-size: 18px;
+}
+
+.triage-hint {
+    font-size: 13.5px;
+    margin: 8px 0 0;
+    opacity: 0.85;
+}
+
+.triage-hint .link-button {
+    font-size: inherit;
+}
+
+.seg-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.seg-btn {
+    flex: 1 1 28%;
+    min-height: 44px;
+    padding: 8px 6px;
+    border-radius: 8px;
+    border: 2px solid var(--primary-btn-bg);
+    background-color: var(--card-bg);
+    color: var(--link-color);
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.seg-btn:hover {
+    background-color: var(--tab-bg);
+}
+
+.seg-btn[aria-pressed="true"] {
+    background-color: var(--primary-btn-bg);
+    color: #fff;
+}
+
+.triage-view-toggle {
+    margin-bottom: 14px;
+}
+
+.check-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1.35;
+    cursor: pointer;
+}
+
+.check-item:last-of-type {
+    border-bottom: none;
+}
+
+.check-item input {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    accent-color: #28a745;
+}
+
+.from-triage {
+    font-size: 12.5px;
+    opacity: 0.8;
+}
+
+.triage-progress-label {
+    font-size: 14px;
+    margin: 0 0 4px;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: var(--border-color);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-bar span {
+    display: block;
+    height: 100%;
+    background-color: #28a745;
+}
+
+.triage-sofar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.sofar-chip {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 4px 10px;
+    font-size: 13.5px;
+}
+
+.triage-card .flowchart-options .big-button {
+    width: 100%;
+    max-width: none;
+    min-height: 52px;
+    margin: 0 0 10px;
+}
+
+.triage-card .flowchart-options .big-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* The result's left edge shows how much care it is: green for care at home,
+   amber for admission, red for General Hospital only. */
+.triage-outcome {
+    border-left: 6px solid #fd7e14;
+}
+
+.triage-outcome.outcome-refer,
+.triage-outcome.outcome-supportive,
+.triage-outcome.outcome-ambulatory {
+    border-left-color: #28a745;
+}
+
+.triage-outcome.outcome-general_only {
+    border-left-color: var(--danger-border);
+}
+
+.triage-result-label {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    opacity: 0.75;
+}
+
+.triage-result-title {
+    margin: 2px 0 6px;
+    font-size: 19px;
+}
+
+.checklist-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px;
+}
+
+/* The rail: a line down the left joins the numbered dots into one pathway. */
+.checklist-step {
+    position: relative;
+    padding-left: 40px;
+    padding-bottom: 6px;
+}
+
+.checklist-step::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 30px;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--border-color);
+}
+
+.checklist-step:last-child::before {
+    display: none;
+}
+
+.checklist-step.done::before {
+    background-color: #28a745;
+}
+
+.checklist-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    width: 100%;
+    background: none;
+    color: var(--text-color);
+    border: none;
+    padding: 6px 0;
+    text-align: left;
+    font-size: 16px;
+}
+
+.checklist-dot {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--border-color);
+    color: var(--text-color);
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checklist-step.open .checklist-dot {
+    background-color: var(--primary-btn-bg);
+    color: #fff;
+}
+
+.checklist-step.done .checklist-dot {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.checklist-step.partial .checklist-dot {
+    background-color: var(--warning-border);
+    color: #000;
+}
+
+.checklist-step.partial::before {
+    background-color: var(--warning-border);
+}
+
+.checklist-title {
+    font-weight: bold;
+}
+
+.checklist-recap {
+    font-size: 13.5px;
+    opacity: 0.75;
+}
+
+.checklist-body {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 4px 0 8px;
+}
+
+.checklist-prompt {
+    font-weight: bold;
+    margin: 12px 0 4px;
+}
+
+.checklist-prompt:first-child {
+    margin-top: 0;
+}
+
+.checklist-result {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    border-left: 5px solid #28a745;
+    background-color: var(--tab-bg);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 12px;
+    margin: 10px 0 0;
+}
+
+.checklist-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.checklist-next {
+    background-color: var(--primary-btn-bg);
+    padding: 10px 16px;
+    font-weight: bold;
+}
+
+.checklist-next:hover {
+    background-color: var(--primary-btn-hover-bg);
 }
 
 /* --- Tab Styles --- */
@@ -1670,6 +1989,7 @@ textarea[id$="-quickstart-summary"] {
             <div id="home-page" class="page active-page">
                 <nav class="button-container">
                     <button class="big-button" data-page="alcohol-withdrawal-page">Alcohol Withdrawal Decision Flowchart</button>
+                    <button class="big-button" data-page="inpatient-checklist-page">Inpatient Alcohol Withdrawal Checklist</button>
                     <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
                     <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol Detox Guidelines</button>
                     <button class="big-button" data-page="scales-page">Clinical Scales & Calculators</button>
@@ -1684,7 +2004,15 @@ textarea[id$="-quickstart-summary"] {
 
             <!-- Alcohol Withdrawal Flowchart Page -->
             <div id="alcohol-withdrawal-page" class="page">
-                <!-- Content will be dynamically generated by script.js -->
+                <!-- Built by script.js. An inner container, so redrawing a question
+                     cannot wipe the review footer appended to the page itself. -->
+                <div id="triage-root"></div>
+            </div>
+
+            <!-- Inpatient Checklist Page -->
+            <div id="inpatient-checklist-page" class="page" data-title="Inpatient Alcohol Withdrawal Checklist">
+                <!-- Built by script.js; inner container for the same reason as the triage. -->
+                <div id="checklist-root"></div>
             </div>
 
             <!-- Inpatient Guidelines Page -->
@@ -2159,7 +2487,7 @@ textarea[id$="-quickstart-summary"] {
                                     <li><strong>No history of severe withdrawal complications</strong> - withdrawal
                                         seizures or delirium tremens.
                                         <span class="src-tag src-other">OTHER - AGTAP Rec 8.4 (Grade B)</span></li>
-                                    <li>Patient’s average alcohol intake is ≤15 standard drinks per day.</li>
+                                    <li>Patient’s average alcohol intake is ≤14 standard drinks per day.</li>
                                 </ul>
                             </li>
                             <li>Patient agrees to daily review at the service.</li>
@@ -4566,6 +4894,29 @@ textarea[id$="-quickstart-summary"] {
                 <p>What changed, when, and why. Clinical changes are listed first in each release, because they are
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
+
+                <h4>0.5.9 - October 2026</h4>
+                <p><em>A shorter triage with a red-flag question, and a new inpatient checklist.</em></p>
+                <ul>
+                    <li><strong>Triage asks about red flags.</strong> Already in withdrawal or a high BAL on arrival,
+                        coexisting medical or psychiatric illness, dependence on other sedatives, and pregnancy. Any
+                        one moves the patient up one level of care, and never to ambulatory detox (LOCAL). Pregnancy
+                        adds a reminder that it needs specialist inpatient management.</li>
+                    <li><strong>15 standard drinks a day is a hospital patient on both pages.</strong> The ambulatory
+                        inclusion criterion now reads ≤14 standard drinks per day, matching triage (≥15) and the
+                        regimen bands. It used to say ≤15.</li>
+                    <li><strong>"General Hospital" throughout.</strong> Triage showed "General Hospital" on screen but
+                        copied a different hospital name into the EMR.</li>
+                    <li><strong>Same outcomes otherwise.</strong> Without a red flag, every answer leads where it did
+                        before. "Consider General Hospital" (8-14 drinks with complication history, or 15+ without)
+                        now has one wording for both routes.</li>
+                    <li><strong>Triage has two views:</strong> every question on one screen, or one per screen. The
+                        EMR summary is written from the answers given.</li>
+                    <li><strong>New: Inpatient Alcohol Withdrawal Checklist.</strong> The Inpatient Guidelines tabs
+                        as seven bedside steps on one page, each linked to its full text. It picks the
+                        benzodiazepine, band and regimen type, opens the Regimens tab already set to them, and
+                        carries over triage answers. Nothing ticked is saved.</li>
+                </ul>
 
                 <h4>0.5.8 - October 2026</h4>
                 <p><em>Symptom-triggered dosing on AWS now follows the national guideline's table.</em></p>
