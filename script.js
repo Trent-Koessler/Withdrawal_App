@@ -1390,6 +1390,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // single plain line it becomes in an EMR field, citations removed.
     function plainLine(html) {
         const line = html
+            // A list inside a line (the RASS levels) reads as sentences once flat.
+            .replace(/<li>/g, ' ').replace(/<\/li>/g, '. ')
             .replace(/<span class="src-tag[\s\S]*?<\/span>/g, '')
             .replace(/<[^>]+>/g, '')
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')

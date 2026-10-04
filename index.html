@@ -693,6 +693,16 @@ textarea {
     background-color: var(--tab-bg);
 }
 
+/* The three RASS levels inside a sedation caution box. */
+.rass-levels {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.rass-levels li {
+    margin: 2px 0;
+}
+
 .checklist-dot {
     position: absolute;
     left: 0;
@@ -2269,13 +2279,7 @@ textarea[id$="-quickstart-summary"] {
                         <h3>4. Monitoring, Escalation &amp; Discharge</h3>
                         <!-- The over-sedation safeguard leads every section that gives a benzodiazepine,
                              in plain words before RASS is named (0.5.9). -->
-                        <div class="warning-box sedation-caution">⚠️ <strong>Monitor sedation before every dose. Do not give a benzodiazepine to a patient who is sedated</strong> (drowsy, or hard to rouse). This is the safeguard against over-sedation.
-                            Measure it with the <strong>RASS</strong> before every regular or PRN dose: give the dose
-                            only if the patient is <strong>RASS 0 or above</strong>. At <strong>RASS -1</strong> the
-                            sedation target is reached: withhold the dose and rescore at the next scheduled time. At
-                            <strong>RASS -2 or below</strong>, withhold the dose, arrange medical review and review the
-                            regular schedule. If multiple doses are withheld, the schedule is too high.
-                            <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                        <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before every regular or PRN dose:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> withhold the dose; rescore at the next scheduled time</li><li><strong>RASS -2 or below:</strong> withhold the dose; medical review and review the regular schedule</li></ul>If multiple doses are withheld, the schedule is too high. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
                                     names no scale. One RASS threshold on every page means "sedated" means the same
                                     thing to every assessor, on every shift and for every drug.</span></div>
                         <div class="clinical-block" id="block-monitoring">
@@ -2356,12 +2360,7 @@ textarea[id$="-quickstart-summary"] {
                     </div>
                     <div id="special-cases" class="tab-content">
                         <h3>Special Cases</h3>
-                        <div class="warning-box sedation-caution">⚠️ <strong>Monitor sedation before every dose. Do not give a benzodiazepine to a patient who is sedated</strong> (drowsy, or hard to rouse). This is the safeguard against over-sedation.
-                            Measure it with the <strong>RASS</strong> before every oral or IM dose: give it only at
-                            <strong>RASS 0 or above</strong>. At <strong>RASS -1</strong> the sedation target is
-                            reached: withhold the dose. At <strong>RASS -2 or below</strong>, withhold and arrange
-                            medical review. A midazolam infusion in HDU is titrated to the unit's own sedation target.
-                            <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                        <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before every oral or IM dose:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> sedation target reached: withhold</li><li><strong>RASS -2 or below:</strong> withhold; medical review</li></ul>A midazolam infusion in HDU follows the unit's own sedation target. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
                                     names no scale. One RASS threshold on every page means "sedated" means the same
                                     thing to every assessor, on every shift and for every drug.</span></div>
                         <div class="warning-box">
@@ -2599,15 +2598,7 @@ textarea[id$="-quickstart-summary"] {
                     </div>
                     <div id="ambulatory-meds" class="tab-content">
                         <h3>Medication Regimen</h3>
-                        <div class="warning-box sedation-caution">⚠️ <strong>Monitor sedation at every daily review.
-                                Do not give or supply a further benzodiazepine dose to a patient who is
-                                sedated</strong> (drowsy, or hard to rouse). This is the safeguard against
-                            over-sedation. Measure it with the <strong>RASS</strong> at each review: continue only if the
-                            patient is <strong>RASS 0 or above</strong>. At <strong>RASS -1</strong>, withhold the next
-                            dose and review the dose with the prescriber; at <strong>RASS -2 or below</strong>, withhold
-                            further doses and arrange medical review. Doses taken at home cannot be scored, so tell the
-                            patient and carer to <strong>skip a dose and call if the patient is drowsy or hard to
-                            wake</strong>. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                        <div class="warning-box sedation-caution">⚠️ <strong>Do not give or supply a further benzodiazepine dose if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> at every daily review:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> continue</li><li><strong>RASS -1:</strong> withhold the next dose; review the dose with the prescriber</li><li><strong>RASS -2 or below:</strong> withhold further doses; medical review</li></ul>Doses taken at home: tell the patient and carer to <strong>skip a dose and call if drowsy or hard to wake</strong>. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
                                     names no scale. One RASS threshold on every page means "sedated" means the same
                                     thing to every assessor, on every shift and for every drug.</span></div>
                         <p><strong>Example Diazepam Regimen (Fixed-Dose):</strong></p>
@@ -3537,11 +3528,7 @@ textarea[id$="-quickstart-summary"] {
                 </div>
                 <div class="clinical-block" data-quickcopy>
                 <h4>Tapering Schedules</h4>
-                <div class="warning-box sedation-caution">⚠️ <strong>Monitor sedation before every dose. Do not give a benzodiazepine to a patient who is sedated</strong> (drowsy, or hard to rouse). This is the safeguard against over-sedation.
-                    Measure it with the <strong>RASS</strong> before every dose given by staff: give it only at
-                    <strong>RASS 0 or above</strong>; at <strong>RASS -1</strong>, withhold it; at <strong>RASS -2 or below</strong>, withhold and arrange medical review. For doses taken at home, check sedation at
-                    each review and tell the patient to skip a dose and seek advice if drowsy or hard to wake.
-                    <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before every dose given by staff:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> withhold</li><li><strong>RASS -2 or below:</strong> withhold; medical review</li></ul>Doses taken at home: check sedation at each review, and tell the patient to skip a dose and seek advice if drowsy or hard to wake. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
                                     names no scale. One RASS threshold on every page means "sedated" means the same
                                     thing to every assessor, on every shift and for every drug.</span></div>
                 <p><strong>Discussion with addiction services is strongly recommended.</strong></p>
@@ -3961,10 +3948,7 @@ textarea[id$="-quickstart-summary"] {
                     often requiring significantly larger doses than standard alcohol withdrawal.</p>
 
                 <h5>Benzodiazepines - primary treatment</h5>
-                <div class="warning-box sedation-caution">⚠️ <strong>Monitor sedation before every dose. Do not give a benzodiazepine to a patient who is sedated</strong> (drowsy, or hard to rouse). This is the safeguard against over-sedation.
-                    Measure it with the <strong>RASS</strong> before each dose. Light sedation is <strong>RASS -1</strong>: once reached, stop the 1-2 hourly doses. At <strong>RASS -2 or below</strong>,
-                    withhold and arrange medical review. In ICU, the unit's own sedation target applies.
-                    <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before each dose:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> light sedation reached: stop the 1-2 hourly doses</li><li><strong>RASS -2 or below:</strong> withhold; medical review</li></ul>In ICU, the unit's own sedation target applies. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
                                     names no scale. One RASS threshold on every page means "sedated" means the same
                                     thing to every assessor, on every shift and for every drug.</span></div>
                 <ul>
@@ -4931,9 +4915,9 @@ textarea[id$="-quickstart-summary"] {
                     <li><strong>The sedation caution now leads every section that gives a benzodiazepine</strong>, in
                         an amber box: Regimens, Monitoring, Special Cases, the test dose and loading, Ambulatory
                         medication, Benzodiazepine tapering, GHB treatment, the symptom-relief tables on other
-                        substance pages, and the checklist. It says first, in plain words, to monitor sedation and not
-                        to give a dose to a sedated patient, and only then how to measure it with the RASS. The rule
-                        itself is unchanged.</li>
+                        substance pages, and the checklist. It now reads "Do not give a benzodiazepine if the patient is
+                        sedated (drowsy or hard to rouse)", then the three RASS levels as bullets. The rule itself is
+                        unchanged.</li>
                     <li><strong>In the EMR copy, the sedation caution comes straight after the doses</strong>, before
                         the scoring and review lines, headed "SEDATION:".</li>
                     <li><strong>Triage asks about red flags.</strong> Already in withdrawal or a high BAL on arrival,

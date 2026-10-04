@@ -58,15 +58,24 @@ describe('RASS rule on every benzodiazepine dose', () => {
 const plainBeforeRass = (text) => {
     const flat = text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
     const plain = flat.search(/Do not give/);
-    return plain >= 0 && /Monitor sedation/.test(flat) && plain < flat.indexOf('RASS');
+    return plain >= 0 && /sedated/.test(flat.slice(plain, plain + 80)) && plain < flat.indexOf('RASS');
 };
 
 describe('sedation caution comes first, in plain words', () => {
+    // Concise by request: one warning line, then the three RASS levels.
+    test('the shared statements stay short', () => {
+        const words = (h) => h.replace(/<span class="src-tag[\s\S]*?<\/span>/g, '').replace(/<[^>]+>/g, ' ')
+            .split(/\s+/).filter(Boolean).length;
+        assert.ok(words(RASS_RULE_HTML) <= 40, `RASS_RULE_HTML is ${words(RASS_RULE_HTML)} words`);
+        assert.ok(words(RASS_STEP_HTML) <= 25, `RASS_STEP_HTML is ${words(RASS_STEP_HTML)} words`);
+        assert.ok(/class="rass-levels"/.test(RASS_RULE_HTML), 'the RASS levels are not a list');
+    });
+
     test('every shared statement says "do not give if sedated" before naming RASS', () => {
         for (const t of [RASS_RULE_HTML, RASS_RULE_PLAIN, RASS_LOADING_HTML, SEDATION_STEPS_HTML]) {
             assert.ok(plainBeforeRass(t), t.slice(0, 80));
         }
-        assert.ok(/^Do not give a dose to a sedated patient/.test(RASS_STEP_HTML.replace(/<[^>]+>/g, '')));
+        assert.ok(/^Do not give if sedated/.test(RASS_STEP_HTML.replace(/<[^>]+>/g, '')));
     });
 
     test('the EMR paste states it straight after the doses, before scoring and review lines', () => {

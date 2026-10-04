@@ -660,6 +660,16 @@ textarea {
     background-color: var(--tab-bg);
 }
 
+/* The three RASS levels inside a sedation caution box. */
+.rass-levels {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.rass-levels li {
+    margin: 2px 0;
+}
+
 .checklist-dot {
     position: absolute;
     left: 0;

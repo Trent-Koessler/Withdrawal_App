@@ -127,7 +127,7 @@ export const INPATIENT_CHECKLIST = [
         tab: 'monitoring-discharge',
         type: 'ticks',
         items: [
-            { id: 'rass', short: 'sedation checked', html: '<b>Sedation monitored before every dose, and no dose given while sedated</b> (drowsy, or hard to rouse) - the over-sedation safeguard. Measured with the RASS: give only at RASS 0 or above; at RASS -1 withhold; at RASS -2 or below withhold and arrange medical review.' },
+            { id: 'rass', short: 'sedation checked', html: '<b>Sedation checked before every dose; none given while sedated</b> (drowsy or hard to rouse). RASS 0 or above: give. RASS -1: withhold. RASS -2 or below: withhold; medical review.' },
             { id: 'obs', short: 'obs', html: 'Observations each review: temperature, pulse rate and rhythm, blood pressure, CIWA-Ar or AWS, hydration. <span class="src-tag src-nswcg">NSWCG §5.4.5, Table 5.6</span>' },
             { id: 'frequency', short: 'scoring frequency', html: 'Scoring frequency set by severity, from the table on the Monitoring tab.' },
         ],
