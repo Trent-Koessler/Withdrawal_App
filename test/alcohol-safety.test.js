@@ -136,7 +136,7 @@ describe('P0-04 — escalation and de-escalation criteria exist', () => {
 
     test('the sedation withhold rule is retained, not replaced', () => {
         const flat = regimens.replace(/\s+/g, ' ');
-        assert.ok(/check the RASS before every regular or PRN dose/i.test(flat)
+        assert.ok(/(check|measure it with) the (<strong>)?RASS(<\/strong>)? before every regular or PRN dose/i.test(flat)
             && /RASS -2 or below<\/strong>, withhold the dose/i.test(flat),
             'the sedation withhold rule was dropped');
         assert.ok(/multiple doses are withheld, the schedule is too high/i.test(flat),

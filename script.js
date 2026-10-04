@@ -9,8 +9,8 @@ import {
 } from './data/checklist.js';
 import { REGIMEN_CONFIG, EMR_SAFETY_LINES, INITIAL_SCORING_INTERVAL } from './data/regimens.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
-import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
-import { RASS_RULE_HTML } from './data/sedation.js';
+import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL, SYMPTOMATIC_SEDATION } from './data/symptomatic.js';
+import { RASS_RULE_HTML, SEDATION_STEPS_HTML } from './data/sedation.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
 import {
@@ -1505,7 +1505,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2-hourly interval and its own 80mg review point; repeating them
         // underneath invites the reader to treat the two as different rules.
         const body = out.join('\n');
-        out.push('');
+        // The sedation caution is the first thing after the doses: it is the
+        // over-sedation safeguard, so it must not be read as one rule among
+        // the scoring and review lines underneath.
+        out.push('', EMR_SAFETY_LINES.sedation, '');
         // Symptom-triggered dosing states its own frequency per band above, so
         // repeating a single figure here would contradict the list.
         // An AWS-only frequency (AWS 8-14, AGTAP Table 8.4) replaces the
@@ -1521,7 +1524,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data.routing && !/2-hourly|q2hrly/i.test(body)) {
             out.push(EMR_SAFETY_LINES.dosingInterval);
         }
-        out.push(EMR_SAFETY_LINES.sedation);
         if (config.reviewMax && !data.routing && !/in 24 hours/i.test(body)) {
             out.push(EMR_SAFETY_LINES.review(drug.toLowerCase(), config.reviewMax));
         }
@@ -1631,11 +1633,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // on the way out: a routing card that left the previous regimen's doses
         // sitting in the textarea would be the worst possible stale paste.
         if (data.routing) {
-            return `<h3>${regimenTitle(data)}</h3>`
+            // Oxazepam's "loading" card has no schedule but still advises
+            // titrated doses, so it leads with the sedation caution too.
+            const caution = data.name === 'Loading'
+                ? `<div class="warning-box sedation-caution">⚠️ ${RASS_RULE_HTML}</div>` : '';
+            return `<h3>${regimenTitle(data)}</h3>` + caution
                 + data.routing.map(item => `<div class="routing-card">${item}</div>`).join('');
         }
 
         let displayHTML = `<h3>${regimenTitle(data)}</h3>`;
+
+        // The sedation caution leads every regimen that gives a dose: it is the
+        // over-sedation safeguard, so it sits above the setting, the caveats
+        // and the doses. A schedule carries the full rule; loading and the
+        // test dose carry their RASS checks inside their steps, so they get
+        // the plain caution and a pointer to those steps.
+        const givesDoses = !data.steps && !/Test-Dose/.test(data.name || '');
+        displayHTML += `<div class="warning-box sedation-caution">⚠️ ${givesDoses ? RASS_RULE_HTML : SEDATION_STEPS_HTML}</div>`;
 
         // Where to manage the patient comes before what to prescribe, so it is
         // rendered above everything else rather than under PRN dosing.
@@ -1656,12 +1670,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // ...and its CIWA-Ar twin (why the fixed schedules split CIWA-Ar at 15/16).
         if (selectedScale !== 'aws' && data.caveatCiwa) displayHTML += renderCaveats([data.caveatCiwa]);
 
-        // The one sedation rule, shown with every schedule that gives doses.
-        // Loading carries its own version inside Step 1 (its endpoint is
-        // RASS -1), the test-dose protocol has its own, and a routing card
-        // gives no dose.
-        const givesDoses = !data.steps && !data.routing && !/Test-Dose/.test(data.name || '');
-        if (givesDoses) displayHTML += `<div class="clinical-block rass-rule"><p>${RASS_RULE_HTML}</p></div>`;
 
         // Score-banded dosing (symptom-triggered). A list, not a table: this is
         // the block clinicians paste into the EMR, where a table degrades into
@@ -2182,6 +2190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `<h5>${item.symptom}</h5><ul>${item.lines.map(l => `<li>${l}</li>`).join('')}</ul>`).join('');
         host.classList.add('shared-block');
         host.innerHTML = `<h4>${set.title}</h4>`
+            + `<div class="warning-box sedation-caution">⚠️ ${SYMPTOMATIC_SEDATION}</div>`
             + (set.intro ? `<p>${set.intro}</p>` : '')
             + items
             + `<h5>Rules that apply to all of the above</h5><ul>`

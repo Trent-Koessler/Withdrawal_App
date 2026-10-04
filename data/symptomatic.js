@@ -23,10 +23,12 @@ import { RASS_RULE_HTML } from './sedation.js';
 // that used to sit here was cannabis-specific wording ("mixed cannabis with
 // tobacco") rendering on every substance's page, including ones with no
 // connection to cannabis — it now lives with cannabis's own items instead.
+// Every substance with a symptomatic table lists diazepam, so the sedation
+// caution is shown first in every table, above the medications, rather than
+// as one rule among the general ones underneath (0.5.9).
+export const SYMPTOMATIC_SEDATION = RASS_RULE_HTML;
+
 export const SYMPTOMATIC_UNIVERSAL = [
-    // Every substance with a symptomatic table lists diazepam, so the RASS
-    // rule belongs with the rules common to all of them.
-    RASS_RULE_HTML,
     `Symptomatic medications are <b>generally not continued beyond 7 days</b> without medical review and a clear indication. <span class="src-tag src-nswcg">NSWCG §6.3.4, §8.3.4</span>`,
     `For inpatient or residential withdrawal, <b>cease symptomatic medication 1-2 days before discharge</b> to assess how the patient copes without it. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
     `<b>Supervise access</b> - daily dispensing, or supervision by a carer. <span class="src-tag src-nswcg">NSWCG §6.3.4</span>`,
