@@ -48,6 +48,32 @@ export const FIXED_CRITERIA = [
     { id: 'poly', label: 'Polysubstance withdrawal' },
 ];
 
+export const WERNICKE_PROMPT = 'Wernicke-Korsakoff syndrome suspected? Confusion, ataxia, ophthalmoplegia, memory '
+    + 'disturbance or malnutrition - the classic triad is rare.';
+
+// Thiamine Tab, inpatient doses. The oral 100mg course on that tab is for an
+// otherwise healthy person with good dietary intake, and the tab itself says it
+// is generally not appropriate for patients receiving significant withdrawal
+// treatment, so the inpatient checklist does not offer it.
+export const THIAMINE_DOSES = {
+    no: {
+        name: 'Prophylaxis',
+        html: '300mg IV (preferred) or IM daily for 3 days, then 300mg oral daily for 2-3 weeks. '
+            + '<span class="src-tag src-nswcg">NSWCG §5.4.7</span>',
+        emr: 'Thiamine 300mg IV (preferred) or IM daily for 3 days, then 300mg oral daily for 2-3 weeks '
+            + '(Wernicke-Korsakoff prophylaxis). Give before any glucose-containing fluids.',
+    },
+    yes: {
+        name: 'Treatment - suspected Wernicke-Korsakoff',
+        html: '500mg IV TDS for at least 5 days (7.5g), or until symptoms resolve or improvement plateaus, then oral '
+            + 'supplementation. <span class="src-tag src-nswcg">NSWCG §5.4.7</span>',
+        emr: 'Thiamine 500mg IV TDS for at least 5 days, or until symptoms resolve or improvement plateaus, then oral '
+            + 'supplementation (suspected Wernicke-Korsakoff syndrome). Give before any glucose-containing fluids.',
+    },
+};
+
+export const SCALE_NAMES = { ciwa: 'CIWA-Ar', aws: 'AWS' };
+
 export const REGIMEN_TYPE_NAMES = { fixed: 'Fixed schedule', symptom: 'Symptom-triggered', loading: 'Loading' };
 
 export const ESCALATION_TRIGGERS = [
@@ -78,16 +104,18 @@ export const INPATIENT_CHECKLIST = [
         warning: 'Last drink more than 24-48 hours ago, or the history unreliable? Seek specialist advice first, and consider the test-dose protocol.',
     },
     {
+        // The Wernicke screen comes first because it decides the dose: the
+        // prophylactic and treatment doses are alternatives, so only the one
+        // that applies is shown, and only that one reaches the EMR.
         id: 'thiamine',
         title: 'Thiamine',
         tab: 'thiamine',
-        type: 'ticks',
+        type: 'thiamine',
         items: [
-            { id: 'dose', html: 'Thiamine 300mg IV (preferred) or IM daily for 3 days, then 300mg oral daily for 2-3 weeks. <span class="src-tag src-nswcg">NSWCG §5.4.7</span>' },
+            { id: 'charted', html: 'Thiamine charted at the dose above.' },
             { id: 'glucose', html: 'Given before any glucose-containing fluids.' },
             { id: 'im', html: 'If IM: platelets and coagulation checked first.' },
-            { id: 'wks', html: 'Screened for Wernicke-Korsakoff (confusion, ataxia, ophthalmoplegia, memory disturbance, malnutrition). If suspected: 500mg IV TDS for at least 5 days. <span class="src-tag src-nswcg">NSWCG §5.4.7</span>' },
-            { id: 'magnesium', html: 'Magnesium replete.' },
+            { id: 'magnesium', html: 'Magnesium replete, for thiamine absorption and activation. <span class="src-tag src-nswcg">NSWCG §5.4.7</span>' },
         ],
     },
     { id: 'benzo', title: 'Choose the benzodiazepine', tab: 'benzo-choice', type: 'benzo' },
@@ -109,8 +137,8 @@ export const INPATIENT_CHECKLIST = [
 
 export function newChecklistState() {
     return {
-        ticks: {}, benzoFactors: [], intake: null, risks: [], loading: [], fixed: [],
-        picked: null, done: {}, open: 'prereq', fromTriage: [],
+        ticks: {}, wernicke: null, benzoFactors: [], intake: null, risks: [], loading: [], fixed: [],
+        picked: null, scale: null, done: {}, open: 'prereq', fromTriage: [],
     };
 }
 
@@ -149,17 +177,34 @@ export function prefillFromTriage(answers) {
     return state;
 }
 
+// The Wernicke screen counts as one item of the thiamine step, so the step
+// cannot read as complete while the dose is still undecided.
 export function stepProgress(step, state) {
-    if (step.type !== 'ticks') return null;
-    const ticked = step.items.filter((i) => state.ticks[`${step.id}.${i.id}`]).length;
-    return { ticked, total: step.items.length };
+    if (!step.items) return null;
+    let ticked = step.items.filter((i) => state.ticks[`${step.id}.${i.id}`]).length;
+    let total = step.items.length;
+    if (step.type === 'thiamine') {
+        total += 1;
+        if (state.wernicke) ticked += 1;
+    }
+    return { ticked, total };
+}
+
+// The Regimens tab cell the checklist's choices land on: a fixed schedule is
+// keyed by band, the other two types are single protocols.
+export function regimenCellKey(band, type) {
+    if (type === 'fixed') return band;
+    return type || null;
 }
 
 const stripTags = (html) => html.replace(/<span class="src-tag[\s\S]*?<\/span>/g, '').replace(/<[^>]+>/g, '').trim();
 
-// The EMR paste: the decisions, then anything left unticked. Source chips are
+// The EMR paste: the decisions and thiamine, anything left unticked, then the
+// regimen block. The regimen block is passed in rather than written here: it is
+// the Regimens tab's own "Copy for EMR" text, built by the same function from
+// the same data, so the two can never give different doses. Source chips are
 // stripped, because an EMR field shows them as raw text.
-export function checklistSummary(state) {
+export function checklistSummary(state, regimenText = '') {
     const band = chooseBand(state.intake, state.risks);
     const type = chooseRegimenType({ band, loading: state.loading, fixed: state.fixed, picked: state.picked });
     const lines = ['Inpatient alcohol withdrawal checklist:'];
@@ -170,16 +215,23 @@ export function checklistSummary(state) {
     } else {
         lines.push('- Band: not yet chosen');
     }
-    lines.push(`- Regimen type: ${type ? REGIMEN_TYPE_NAMES[type] : 'not yet chosen'}`);
+    lines.push(`- Regimen type: ${type ? REGIMEN_TYPE_NAMES[type] : 'not yet chosen'}`
+        + `${state.scale ? `, scored on ${SCALE_NAMES[state.scale]}` : ''}`);
+    lines.push(`- ${state.wernicke ? THIAMINE_DOSES[state.wernicke].emr : 'Thiamine: Wernicke screen not yet answered'}`);
 
     const open = [];
     for (const step of INPATIENT_CHECKLIST) {
-        if (step.type !== 'ticks') continue;
+        if (!step.items) continue;
         for (const item of step.items) {
             if (!state.ticks[`${step.id}.${item.id}`]) open.push(`- ${step.title}: ${stripTags(item.html)}`);
         }
     }
-    lines.push(open.length ? 'Not yet ticked:' : 'All checklist items ticked.');
+    lines.push('', open.length ? 'Not yet ticked:' : 'All checklist items ticked.');
     lines.push(...open);
+
+    lines.push('');
+    if (regimenText) lines.push(regimenText);
+    else if (!band || !type) lines.push('Regimen doses: choose the band and regimen type to add them.');
+    else lines.push('Regimen doses: choose the scale your ward charts (Regimen type step) to add them.');
     return lines.join('\n');
 }
