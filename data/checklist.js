@@ -95,11 +95,11 @@ export const INPATIENT_CHECKLIST = [
         tab: 'prerequisites',
         type: 'ticks',
         items: [
-            { id: 'diagnosis', html: 'Alcohol withdrawal is the probable diagnosis (DSM-5 / ICD-11), and mimics - sepsis, metabolic disturbance, intracranial events - have been considered.' },
-            { id: 'bal', html: 'BAL checked. Not a contraindication: dose when low or falling (0.05-0.10%). <span class="src-tag src-nswcg">NSWCG §5.1, §5.3</span>' },
-            { id: 'bloods', html: 'Bloods: FBC, magnesium, UEC, LFT, plus INR and albumin to guide the benzodiazepine choice. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>' },
-            { id: 'scale', html: 'CIWA-Ar (or AWS) started 2-4 hourly, and at least 2-hourly at first once a regimen starts.' },
-            { id: 'followup', html: 'A post-withdrawal follow-up plan is in place.' },
+            { id: 'diagnosis', short: 'diagnosis', html: 'Alcohol withdrawal is the probable diagnosis (DSM-5 / ICD-11), and mimics - sepsis, metabolic disturbance, intracranial events - have been considered.' },
+            { id: 'bal', short: 'BAL', html: 'BAL checked. Not a contraindication: dose when low or falling (0.05-0.10%). <span class="src-tag src-nswcg">NSWCG §5.1, §5.3</span>' },
+            { id: 'bloods', short: 'bloods', html: 'Bloods: FBC, magnesium, UEC, LFT, plus INR and albumin to guide the benzodiazepine choice. <span class="src-tag src-nswcg">NSWCG §5.4.5</span>' },
+            { id: 'scale', short: 'scoring started', html: 'CIWA-Ar (or AWS) started 2-4 hourly, and at least 2-hourly at first once a regimen starts.' },
+            { id: 'followup', short: 'follow-up plan', html: 'A post-withdrawal follow-up plan is in place.' },
         ],
         warning: 'Last drink more than 24-48 hours ago, or the history unreliable? Seek specialist advice first, and consider the test-dose protocol.',
     },
@@ -112,10 +112,10 @@ export const INPATIENT_CHECKLIST = [
         tab: 'thiamine',
         type: 'thiamine',
         items: [
-            { id: 'charted', html: 'Thiamine charted at the dose above.' },
-            { id: 'glucose', html: 'Given before any glucose-containing fluids.' },
-            { id: 'im', html: 'If IM: platelets and coagulation checked first.' },
-            { id: 'magnesium', html: 'Magnesium replete, for thiamine absorption and activation. <span class="src-tag src-nswcg">NSWCG §5.4.7</span>' },
+            { id: 'charted', short: 'charted', html: 'Thiamine charted at the dose above.' },
+            { id: 'glucose', short: 'before glucose', html: 'Given before any glucose-containing fluids.' },
+            { id: 'im', short: 'IM platelets/coags', html: 'If IM: platelets and coagulation checked first.' },
+            { id: 'magnesium', short: 'magnesium', html: 'Magnesium replete, for thiamine absorption and activation. <span class="src-tag src-nswcg">NSWCG §5.4.7</span>' },
         ],
     },
     { id: 'benzo', title: 'Choose the benzodiazepine', tab: 'benzo-choice', type: 'benzo' },
@@ -127,9 +127,9 @@ export const INPATIENT_CHECKLIST = [
         tab: 'monitoring-discharge',
         type: 'ticks',
         items: [
-            { id: 'obs', html: 'Observations each review: temperature, pulse rate and rhythm, blood pressure, CIWA-Ar or AWS, hydration. <span class="src-tag src-nswcg">NSWCG §5.4.5, Table 5.6</span>' },
-            { id: 'frequency', html: 'Scoring frequency set by severity, from the table on the Monitoring tab.' },
-            { id: 'rass', html: 'RASS checked before every regular or PRN dose: give only at RASS 0 or above; at -1 withhold; at -2 or below withhold and arrange medical review.' },
+            { id: 'obs', short: 'obs', html: 'Observations each review: temperature, pulse rate and rhythm, blood pressure, CIWA-Ar or AWS, hydration. <span class="src-tag src-nswcg">NSWCG §5.4.5, Table 5.6</span>' },
+            { id: 'frequency', short: 'scoring frequency', html: 'Scoring frequency set by severity, from the table on the Monitoring tab.' },
+            { id: 'rass', short: 'RASS before doses', html: 'RASS checked before every regular or PRN dose: give only at RASS 0 or above; at -1 withhold; at -2 or below withhold and arrange medical review.' },
         ],
     },
     { id: 'escalate', title: 'Escalate if…', tab: 'monitoring-discharge', type: 'escalate' },
@@ -197,13 +197,12 @@ export function regimenCellKey(band, type) {
     return type || null;
 }
 
-const stripTags = (html) => html.replace(/<span class="src-tag[\s\S]*?<\/span>/g, '').replace(/<[^>]+>/g, '').trim();
-
 // The EMR paste: the decisions and thiamine, anything left unticked, then the
 // regimen block. The regimen block is passed in rather than written here: it is
 // the Regimens tab's own "Copy for EMR" text, built by the same function from
-// the same data, so the two can never give different doses. Source chips are
-// stripped, because an EMR field shows them as raw text.
+// the same data, so the two can never give different doses. Unticked items are
+// listed by their short labels, one line per step, so they flag what is left
+// without burying the regimen.
 export function checklistSummary(state, regimenText = '') {
     const band = chooseBand(state.intake, state.risks);
     const type = chooseRegimenType({ band, loading: state.loading, fixed: state.fixed, picked: state.picked });
@@ -221,10 +220,8 @@ export function checklistSummary(state, regimenText = '') {
 
     const open = [];
     for (const step of INPATIENT_CHECKLIST) {
-        if (!step.items) continue;
-        for (const item of step.items) {
-            if (!state.ticks[`${step.id}.${item.id}`]) open.push(`- ${step.title}: ${stripTags(item.html)}`);
-        }
+        const left = (step.items || []).filter((item) => !state.ticks[`${step.id}.${item.id}`]);
+        if (left.length) open.push(`- ${step.title}: ${left.map((item) => item.short).join(', ')}`);
     }
     lines.push('', open.length ? 'Not yet ticked:' : 'Checklist complete.');
     lines.push(...open);

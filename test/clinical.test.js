@@ -412,12 +412,22 @@ describe('inpatient checklist', () => {
         assert.ok(/Regimen type: not yet chosen/.test(text));
         assert.ok(/Wernicke screen not yet answered/.test(text));
         assert.ok(/Regimen doses: choose the band and regimen type/.test(text));
-        assert.ok(!/BAL checked/.test(text), 'a ticked item is listed as open');
+        assert.ok(/- Before you start: diagnosis, bloods, scoring started, follow-up plan/.test(text),
+            'unticked items should be listed by short label, one line per step');
+        assert.ok(!/\bBAL\b/.test(text.split('Not yet ticked:')[1]), 'a ticked item is listed as open');
         assert.ok(!/<|NSWCG §/.test(text), 'markup or a source chip leaked into the EMR text');
     });
 
     // The two thiamine doses are alternatives decided by the Wernicke screen;
     // only the one that applies reaches the EMR.
+    test('every checklist item has a short label of a few words for the EMR', () => {
+        for (const step of INPATIENT_CHECKLIST) {
+            for (const item of step.items || []) {
+                assert.ok(item.short && item.short.split(' ').length <= 3, `${step.id}.${item.id} short label`);
+            }
+        }
+    });
+
     test('thiamine: the Wernicke answer picks one dose, and the screen counts toward the step', () => {
         const step = INPATIENT_CHECKLIST.find((x) => x.id === 'thiamine');
         const s = newChecklistState();

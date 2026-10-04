@@ -43,6 +43,8 @@ The user-facing version of this lives at `#changelog-page` in the app.
   one dose: 300mg IV/IM prophylaxis, or 500mg IV TDS treatment (NSWCG §5.4.7).
   The oral 100mg course is not offered: the Thiamine tab says it is generally
   not appropriate for patients receiving significant withdrawal treatment.
+- Checklist EMR summary lists unticked items by short label, one line per
+  step (e.g. "- Thiamine: charted, magnesium"), instead of each item in full.
 - The triage page's review footer is no longer wiped on each redraw.
 
 ## 0.5.8 - October 2026
