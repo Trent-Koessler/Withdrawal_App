@@ -5,7 +5,7 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
-## 0.5.9 - October 2026
+## 0.5.10 - October 2026
 
 ### Clinical
 
@@ -24,6 +24,28 @@ The user-facing version of this lives at `#changelog-page` in the app.
   the Monitoring tab only. The RASS thresholds are unchanged.
 - **EMR paste: sedation line moved to straight after the doses/PRN**, before
   the scoring frequency, dosing-interval and 24-hour review lines.
+- **Checklist thiamine step asks "Wernicke-Korsakoff suspected?" first** and
+  shows one dose: 300mg IV/IM prophylaxis, or 500mg IV TDS treatment (NSWCG
+  §5.4.7). The oral 100mg course is not offered: the Thiamine tab says it is
+  generally not appropriate for patients receiving significant withdrawal
+  treatment.
+
+### Other
+
+- Checklist EMR summary includes the full regimen block from
+  `buildRegimenSummary()`, the Regimens tab's own export, now parameterised by
+  drug, cell and scale (defaults unchanged). The checklist asks which scale the
+  ward charts. Thiamine plan included.
+- Checklist EMR summary lists unticked items by short label, one line per
+  step (e.g. "- Thiamine: charted, magnesium"), instead of each item in full.
+- Checklist progress reads "Checklist complete: 3 of 13", and "Checklist
+  complete ✓" when everything is done. Step titles and triage answer chips no
+  longer turn dark grey under the pointer.
+
+## 0.5.9 - October 2026
+
+### Clinical
+
 - **Triage red-flag question** (LOCAL): already in withdrawal / high BAL on
   arrival, coexisting medical or psychiatric illness, other CNS depressant
   dependence, pregnancy. Any tick moves one level of care up and never to
@@ -50,16 +72,6 @@ The user-facing version of this lives at `#changelog-page` in the app.
   seven steps from the Inpatient Guidelines tabs on one page. Chooses
   benzodiazepine, band and regimen type, opens the Regimens tab set to them,
   prefills from triage, copies a summary to the EMR. Ticks are in memory only.
-- Checklist EMR summary includes the full regimen block from
-  `buildRegimenSummary()`, the Regimens tab's own export, now parameterised by
-  drug, cell and scale (defaults unchanged). The checklist asks which scale the
-  ward charts. Thiamine plan included.
-- Checklist thiamine step asks "Wernicke-Korsakoff suspected?" first and shows
-  one dose: 300mg IV/IM prophylaxis, or 500mg IV TDS treatment (NSWCG §5.4.7).
-  The oral 100mg course is not offered: the Thiamine tab says it is generally
-  not appropriate for patients receiving significant withdrawal treatment.
-- Checklist EMR summary lists unticked items by short label, one line per
-  step (e.g. "- Thiamine: charted, magnesium"), instead of each item in full.
 - The triage page's review footer is no longer wiped on each redraw.
 
 ## 0.5.8 - October 2026

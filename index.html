@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.9" />
+    <meta name="app-build" content="0.5.10" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -4908,18 +4908,27 @@ textarea[id$="-quickstart-summary"] {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
-                <h4>0.5.9 - October 2026</h4>
-                <p><em>The sedation caution comes first, a shorter triage with a red-flag question, and a new
-                        inpatient checklist.</em></p>
+                <h4>0.5.10 - October 2026</h4>
+                <p><em>The sedation caution comes first, and the checklist copies the full regimen.</em></p>
                 <ul>
                     <li><strong>The sedation caution now leads every section that gives a benzodiazepine</strong>, in
                         an amber box: Regimens, Monitoring, Special Cases, the test dose and loading, Ambulatory
                         medication, Benzodiazepine tapering, GHB treatment, the symptom-relief tables on other
-                        substance pages, and the checklist. It now reads "Do not give a benzodiazepine if the patient is
+                        substance pages, and the checklist. It reads "Do not give a benzodiazepine if the patient is
                         sedated (drowsy or hard to rouse)", then the three RASS levels as bullets. The rule itself is
                         unchanged.</li>
                     <li><strong>In the EMR copy, the sedation caution comes straight after the doses</strong>, before
                         the scoring and review lines, headed "SEDATION:".</li>
+                    <li><strong>The checklist's EMR summary carries the full regimen</strong> - the same text, built
+                        by the same code, as "Copy for EMR" on the Regimens tab, in the scale the ward charts - and
+                        the thiamine plan. Unticked items are listed as short labels.</li>
+                    <li><strong>Thiamine in the checklist asks about Wernicke-Korsakoff first</strong>, then shows
+                        only the dose that applies: 300mg prophylaxis, or 500mg IV TDS treatment.</li>
+                </ul>
+
+                <h4>0.5.9 - October 2026</h4>
+                <p><em>A shorter triage with a red-flag question, and a new inpatient checklist.</em></p>
+                <ul>
                     <li><strong>Triage asks about red flags.</strong> Already in withdrawal or a high BAL on arrival,
                         coexisting medical or psychiatric illness, dependence on other sedatives, and pregnancy. Any
                         one moves the patient up one level of care, and never to ambulatory detox (LOCAL). Pregnancy
@@ -4938,11 +4947,6 @@ textarea[id$="-quickstart-summary"] {
                         as seven bedside steps on one page, each linked to its full text. It picks the
                         benzodiazepine, band and regimen type, opens the Regimens tab already set to them, and
                         carries over triage answers. Nothing ticked is saved.</li>
-                    <li><strong>The checklist's EMR summary carries the full regimen</strong> - the same text, built
-                        by the same code, as "Copy for EMR" on the Regimens tab, in the scale the ward charts. It
-                        also carries the thiamine plan.</li>
-                    <li><strong>Thiamine in the checklist asks about Wernicke-Korsakoff first</strong>, then shows
-                        only the dose that applies: 300mg prophylaxis, or 500mg IV TDS treatment.</li>
                 </ul>
 
                 <h4>0.5.8 - October 2026</h4>
