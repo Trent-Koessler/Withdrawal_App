@@ -24,6 +24,7 @@ const urlsToCache = [
     'search.js',
     'data/access-config.js',
     'data/flowchart.js',
+    'data/checklist.js',
     'data/regimens.js',
     'data/scales.js',
     'data/symptomatic.js',

@@ -51,6 +51,109 @@ No clinical content changes in this release.
 - New tests: `test/feedback.test.js` runs the worker's SQL against a real
   SQLite database (`node:sqlite`), so CI moves to Node 22.
 
+## 0.5.10 - October 2026
+
+### Clinical
+
+- **Sedation caution first, in plain words, kept short.** Every statement
+  of the RASS rule now opens "Do not give a benzodiazepine if the patient is
+  sedated (drowsy or hard to rouse)." before naming RASS, then lists the three
+  RASS levels as bullets (0 or above: give; -1: withhold; -2 or below:
+  withhold, medical review), each worded for its setting (`SEDATION_LEAD_*`,
+  `rassLevelsHtml` in data/sedation.js). It is the first element, in an amber
+  caution box, of every section that gives a benzodiazepine: regimen cards
+  (loading and test dose get the plain caution plus a pointer to their step
+  checks; oxazepam's loading card too), Monitoring, Special Cases, Ambulatory
+  medication, Benzodiazepine tapering, GHB benzodiazepine treatment, the
+  shared symptomatic tables, and the checklist's review step. "If multiple
+  doses are withheld, the schedule is too high" stays in the EMR paste and on
+  the Monitoring tab only. The RASS thresholds are unchanged.
+- **EMR paste: sedation line moved to straight after the doses/PRN**, before
+  the scoring frequency, dosing-interval and 24-hour review lines.
+- **Checklist thiamine step asks "Wernicke-Korsakoff suspected?" first** and
+  shows one dose: 300mg IV/IM prophylaxis, or 500mg IV TDS treatment (NSWCG
+  §5.4.7). The oral 100mg course is not offered: the Thiamine tab says it is
+  generally not appropriate for patients receiving significant withdrawal
+  treatment.
+
+### Other
+
+- Checklist EMR summary includes the full regimen block from
+  `buildRegimenSummary()`, the Regimens tab's own export, now parameterised by
+  drug, cell and scale (defaults unchanged). The checklist asks which scale the
+  ward charts. Thiamine plan included.
+- Checklist EMR summary lists unticked items by short label, one line per
+  step (e.g. "- Thiamine: charted, magnesium"), instead of each item in full.
+- Checklist progress reads "Checklist complete: 3 of 13", and "Checklist
+  complete ✓" when everything is done. Step titles and triage answer chips no
+  longer turn dark grey under the pointer.
+
+## 0.5.9 - October 2026
+
+### Clinical
+
+- **Triage red-flag question** (LOCAL): already in withdrawal / high BAL on
+  arrival, coexisting medical or psychiatric illness, other CNS depressant
+  dependence, pregnancy. Any tick moves one level of care up and never to
+  ambulatory detox (supportive and ambulatory both step up to district
+  hospital / MPS / outpatient detox admission). Drawn from NSWCG §5.1.1 band
+  risk factors and the ambulatory exclusions. Pregnancy adds the
+  specialist-inpatient note.
+- **Ambulatory intake criterion ≤15 → ≤14 standard drinks/day**, so a patient
+  on 15 is a hospital patient in triage, ambulatory criteria and regimen bands
+  alike.
+- **"Base Hospital" replaced by "General Hospital"** in the triage EMR copy,
+  which had disagreed with the on-screen text.
+- Without red flags every route reaches the same outcome as before (tested
+  node for node). The two "consider General Hospital" routes now share one
+  wording.
+
+### Other
+
+- Triage rebuilt as one question list and a decision function
+  (`data/flowchart.js`) with two views: all questions on one screen, or one per
+  screen. The view choice is remembered on the device; answers are not. EMR
+  summary written from the answers.
+- New **Inpatient Alcohol Withdrawal Checklist** page (`data/checklist.js`):
+  seven steps from the Inpatient Guidelines tabs on one page. Chooses
+  benzodiazepine, band and regimen type, opens the Regimens tab set to them,
+  prefills from triage, copies a summary to the EMR. Ticks are in memory only.
+- The triage page's review footer is no longer wiped on each redraw.
+
+## 0.5.8 - October 2026
+
+### Clinical
+
+- **Symptom-triggered AWS bands now follow AGTAP Table 8.4** (<4 / 4-7 / >7),
+  replacing NSWCG's <4 / 4-14 / >14. AWS 8-14 now takes the severe dose
+  (20mg diazepam / 60mg oxazepam) and hourly rescoring. CIWA-Ar bands are
+  unchanged (NSWCG and AGTAP agree). Tagged NSWCG-adapted with rationale: no
+  validated CIWA-Ar/AWS equivalence is published; AGTAP Table 8.4 is the
+  published table pairing both scales for symptom-triggered dosing; NSWCG's AWS
+  bands are the severity labels from the 1999 NSW AWS chart. Supersedes the
+  0.5.7 decision to keep NSWCG's AWS 4-14 dose.
+- **AWS 8-14 rescored 1-2 hourly on the Moderate-Severe fixed schedule**
+  (AGTAP Table 8.4), shown in the EMR copy when AWS is selected. CIWA-Ar 15-20
+  stays 2-4 hourly (NSWCG). The Monitoring tab and the AWS band note say so.
+- **CIWA-Ar calculator: severe is now >20** (was >18), matching NSWCG Table 5.6,
+  AGTAP Table 8.4 and every regimen; four regimen-named bands (<10 / 10-15 /
+  16-20 / >20).
+- **Fixed-schedule CIWA-Ar overlap at 15 closed:** Mild-Moderate 10-15,
+  Moderate-Severe 16-20 (PRN triggers likewise), so 15 gets the 10mg PRN. LOCAL,
+  placed at the published >15 threshold (Day & Daly, Addiction 2022;117:804-14;
+  Foy et al., Alcohol Clin Exp Res 1988;12:360-4). Note shown on the fixed
+  schedules when CIWA-Ar is selected; references added to Sources.
+- **CIWA-Ar calculator replicates the published scale** (Sullivan et al., Br J
+  Addict 1989;84:1353-7): items 1-5 now offer every value 0-7 (were 0/1/4/7
+  only), with 2, 3, 5 and 6 undescribed as on the published form. Agitation 7
+  corrected to "paces back and forth during most of the interview, or
+  constantly thrashes about" (had duplicated the anxiety anchor). Prompts end
+  "Observation." as published; note added to record pulse and BP (unscored).
+- **PAWSS removed.** Ambulatory inclusion criterion replaced with "no history of
+  severe withdrawal complications (withdrawal seizures or delirium tremens)"
+  (AGTAP Rec 8.4, Grade B). Inpatient PAWSS TODO closed: not used for banding.
+  Resolves the last open TODO(clinical) outside the capacity section.
+
 ## 0.5.7 - October 2026
 
 ### Clinical

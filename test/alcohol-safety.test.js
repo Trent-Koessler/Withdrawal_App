@@ -136,8 +136,8 @@ describe('P0-04 — escalation and de-escalation criteria exist', () => {
 
     test('the sedation withhold rule is retained, not replaced', () => {
         const flat = regimens.replace(/\s+/g, ' ');
-        assert.ok(/check the RASS before every regular or PRN dose/i.test(flat)
-            && /RASS -2 or below<\/strong>, withhold the dose/i.test(flat),
+        assert.ok(/check (<strong>)?RASS(<\/strong>)? before every regular or PRN dose/i.test(flat)
+            && /RASS -2 or below:<\/strong> withhold the dose/i.test(flat),
             'the sedation withhold rule was dropped');
         assert.ok(/multiple doses are withheld, the schedule is too high/i.test(flat),
             'the converse of the sedation rule is missing');
@@ -281,10 +281,12 @@ describe('P1-01 — symptom-triggered dosing is offered as its own regimen', () 
     // A list, not a table: this block is pasted into an EMR field, where a
     // table degrades into unreadable pipe-separated rows. The guard is that the
     // dosing data stays structured — one entry per band, not prose.
-    test('the bands carry the NSWCG thresholds, doses and monitoring frequencies', () => {
+    // CIWA-Ar bands are NSWCG's; AWS bands are AGTAP Table 8.4's (v0.5.8),
+    // the published table that pairs both scales for symptom-triggered dosing.
+    test('the bands carry the published thresholds, doses and monitoring frequencies', () => {
         const { bands } = REGIMEN_CONFIG.Diazepam.symptom;
         assert.deepEqual(bands.map((b) => b.ciwa), ['&lt; 10', '10-20', '&gt; 20']);
-        assert.deepEqual(bands.map((b) => b.aws), ['&lt; 4', '4-14', '&gt; 14']);
+        assert.deepEqual(bands.map((b) => b.aws), ['&lt; 4', '4-7', '&gt; 7']);
         assert.deepEqual(bands.map((b) => b.dose),
             ['0-5mg diazepam', '10mg diazepam', '20mg diazepam']);
         assert.deepEqual(bands.map((b) => b.monitoring),
@@ -410,7 +412,7 @@ describe('P1-02 — no band is expressed in one scale only', () => {
     // scoring into the next band up gets the wrong rescue dose.
     test('PRN triggers carry the same AWS bands as the schedules', () => {
         for (const [benzo, config] of Object.entries(REGIMEN_CONFIG)) {
-            const expected = { '10-15': config.mild.band.aws, '15-20': config.moderate.band.aws };
+            const expected = { '10-15': config.mild.band.aws, '16-20': config.moderate.band.aws };
             for (const severity of ['mild', 'moderate']) {
                 for (const entry of config[severity].prn) {
                     if (typeof entry !== 'object' || !entry.range) continue;

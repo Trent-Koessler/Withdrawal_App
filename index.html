@@ -458,6 +458,347 @@ textarea {
     gap: 10px;
 }
 
+/* --- Triage and inpatient checklist --- */
+/* Both pages are built by script.js from data/flowchart.js and
+   data/checklist.js. Cards sit on --card-bg so they read as separate questions
+   in either theme. */
+#alcohol-withdrawal-page,
+#inpatient-checklist-page {
+    max-width: 640px;
+}
+
+.triage-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+.triage-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.triage-card textarea + button {
+    margin-bottom: 14px;
+}
+
+.triage-q {
+    font-weight: bold;
+    margin: 0 0 10px;
+}
+
+.triage-q-large {
+    font-size: 18px;
+}
+
+.triage-hint {
+    font-size: 13.5px;
+    margin: 8px 0 0;
+    opacity: 0.85;
+}
+
+.triage-hint .link-button {
+    font-size: inherit;
+}
+
+.seg-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.seg-btn {
+    flex: 1 1 28%;
+    min-height: 44px;
+    padding: 8px 6px;
+    border-radius: 8px;
+    border: 2px solid var(--primary-btn-bg);
+    background-color: var(--card-bg);
+    color: var(--link-color);
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.seg-btn:hover {
+    background-color: var(--tab-bg);
+}
+
+.seg-btn[aria-pressed="true"] {
+    background-color: var(--primary-btn-bg);
+    color: #fff;
+}
+
+.triage-view-toggle {
+    margin-bottom: 14px;
+}
+
+.check-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1.35;
+    cursor: pointer;
+}
+
+.check-item:last-of-type {
+    border-bottom: none;
+}
+
+.check-item input {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    accent-color: #28a745;
+}
+
+.from-triage {
+    font-size: 12.5px;
+    opacity: 0.8;
+}
+
+.triage-progress-label {
+    font-size: 14px;
+    margin: 0 0 4px;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: var(--border-color);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-bar span {
+    display: block;
+    height: 100%;
+    background-color: #28a745;
+}
+
+.triage-sofar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.sofar-chip {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 4px 10px;
+    font-size: 13.5px;
+}
+
+.triage-card .flowchart-options .big-button {
+    width: 100%;
+    max-width: none;
+    min-height: 52px;
+    margin: 0 0 10px;
+}
+
+.triage-card .flowchart-options .big-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* The result's left edge shows how much care it is: green for care at home,
+   amber for admission, red for General Hospital only. */
+.triage-outcome {
+    border-left: 6px solid #fd7e14;
+}
+
+.triage-outcome.outcome-refer,
+.triage-outcome.outcome-supportive,
+.triage-outcome.outcome-ambulatory {
+    border-left-color: #28a745;
+}
+
+.triage-outcome.outcome-general_only {
+    border-left-color: var(--danger-border);
+}
+
+.triage-result-label {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    opacity: 0.75;
+}
+
+.triage-result-title {
+    margin: 2px 0 6px;
+    font-size: 19px;
+}
+
+.checklist-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px;
+}
+
+/* The rail: a line down the left joins the numbered dots into one pathway. */
+.checklist-step {
+    position: relative;
+    padding-left: 40px;
+    padding-bottom: 6px;
+}
+
+.checklist-step::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 30px;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--border-color);
+}
+
+.checklist-step:last-child::before {
+    display: none;
+}
+
+.checklist-step.done::before {
+    background-color: #28a745;
+}
+
+.checklist-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    width: 100%;
+    background: none;
+    color: var(--text-color);
+    border: none;
+    padding: 6px 0;
+    text-align: left;
+    font-size: 16px;
+}
+
+/* The global button hover is the dark secondary grey, which would black out
+   a step title or an answer chip under the pointer. */
+.checklist-head:hover,
+.sofar-chip:hover {
+    background-color: var(--tab-bg);
+}
+
+/* The three RASS levels inside a sedation caution box. */
+.rass-levels {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.rass-levels li {
+    margin: 2px 0;
+}
+
+.checklist-dot {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--border-color);
+    color: var(--text-color);
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checklist-step.open .checklist-dot {
+    background-color: var(--primary-btn-bg);
+    color: #fff;
+}
+
+.checklist-step.done .checklist-dot {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.checklist-step.partial .checklist-dot {
+    background-color: var(--warning-border);
+    color: #000;
+}
+
+.checklist-step.partial::before {
+    background-color: var(--warning-border);
+}
+
+.checklist-title {
+    font-weight: bold;
+}
+
+.checklist-recap {
+    font-size: 13.5px;
+    opacity: 0.75;
+}
+
+.checklist-body {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 4px 0 8px;
+}
+
+.checklist-prompt {
+    font-weight: bold;
+    margin: 12px 0 4px;
+}
+
+.checklist-prompt:first-child {
+    margin-top: 0;
+}
+
+.checklist-result {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    border-left: 5px solid #28a745;
+    background-color: var(--tab-bg);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 12px;
+    margin: 10px 0 0;
+}
+
+.checklist-result.checklist-dose {
+    display: block;
+    line-height: 1.4;
+}
+
+.checklist-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.checklist-next {
+    background-color: var(--primary-btn-bg);
+    padding: 10px 16px;
+    font-weight: bold;
+}
+
+.checklist-next:hover {
+    background-color: var(--primary-btn-hover-bg);
+}
+
 /* --- Tab Styles --- */
 .tab-container {
     border: 1px solid var(--border-color);
@@ -2010,6 +2351,7 @@ button.survey-never:hover {
             <div id="home-page" class="page active-page">
                 <nav class="button-container">
                     <button class="big-button" data-page="alcohol-withdrawal-page">Alcohol Withdrawal Decision Flowchart</button>
+                    <button class="big-button" data-page="inpatient-checklist-page">Inpatient Alcohol Withdrawal Checklist</button>
                     <button class="big-button" data-page="inpatient-guidelines-page">Inpatient Alcohol Withdrawal Guidelines</button>
                     <button class="big-button" data-page="ambulatory-guidelines-page">Ambulatory (Outpatient) Alcohol Detox Guidelines</button>
                     <button class="big-button" data-page="scales-page">Clinical Scales & Calculators</button>
@@ -2024,7 +2366,15 @@ button.survey-never:hover {
 
             <!-- Alcohol Withdrawal Flowchart Page -->
             <div id="alcohol-withdrawal-page" class="page">
-                <!-- Content will be dynamically generated by script.js -->
+                <!-- Built by script.js. An inner container, so redrawing a question
+                     cannot wipe the review footer appended to the page itself. -->
+                <div id="triage-root"></div>
+            </div>
+
+            <!-- Inpatient Checklist Page -->
+            <div id="inpatient-checklist-page" class="page" data-title="Inpatient Alcohol Withdrawal Checklist">
+                <!-- Built by script.js; inner container for the same reason as the triage. -->
+                <div id="checklist-root"></div>
             </div>
 
             <!-- Inpatient Guidelines Page -->
@@ -2153,9 +2503,9 @@ button.survey-never:hover {
                                 <li>Seizures early in withdrawal.</li>
                                 <li>Co-occurring dependence on other CNS depressants.</li>
                             </ul>
-                            <!-- TODO(clinical): should PAWSS be used for inpatient band selection, for consistency
-                                 with the ambulatory pathway, which already uses it as an inclusion criterion? Using
-                                 two different band-selection methods across the two pathways is the current state. -->
+                            <!-- Decided (v0.5.8): PAWSS is not used for inpatient banding, and was removed from the
+                                 ambulatory criteria too. It is in neither NSWCG nor AGTAP and predicts risk rather
+                                 than a dose band; banding uses score, intake and risk factors (NSWCG 5.4.2). -->
                         </div>
                         <div class="clinical-block">
                             <h4>When tolerance is genuinely unknown</h4>
@@ -2182,7 +2532,8 @@ button.survey-never:hover {
                                         <a href="https://alcoholtreatmentguidelines.com.au/pdf/guidelines-for-the-treatment-of-alcohol-problems.pdf"
                                             target="_blank" rel="noopener">AGTAP</a>, which subdivides the single
                                         4-14 band NSWCG leaves undivided; the derivation, and where the two
-                                        documents disagree, is in the AWS note on each schedule below.
+                                        documents disagree, is in the AWS note on each schedule below. AWS 8-14
+                                        monitoring (1-2 hourly) also follows AGTAP Table 8.4.
                                         <span class="src-tag src-other">OTHER - AGTAP Table 8.4, p111</span></span>
                                 </small></p>
                         </div>
@@ -2236,8 +2587,8 @@ button.survey-never:hover {
                                 </button>
                                 <button class="regimen-severity-btn" data-severity="moderate" aria-pressed="false">
                                     <strong>Mod-Sev</strong>
-                                    <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 15-20"
-                                            data-aws="AWS 8-14">CIWA-Ar 15-20</span> | &ge; 15 standard
+                                    <small>e.g. <span class="band-label" data-ciwa="CIWA-Ar 16-20"
+                                            data-aws="AWS 8-14">CIWA-Ar 16-20</span> | &ge; 15 standard
                                         drinks/day</small>
                                 </button>
                                 <button class="regimen-severity-btn" data-severity="severe" aria-pressed="false">
@@ -2266,6 +2617,11 @@ button.survey-never:hover {
                     </div>
                     <div id="monitoring-discharge" class="tab-content">
                         <h3>4. Monitoring, Escalation &amp; Discharge</h3>
+                        <!-- The over-sedation safeguard leads every section that gives a benzodiazepine,
+                             in plain words before RASS is named (0.5.9). -->
+                        <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before every regular or PRN dose:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> withhold the dose; rescore at the next scheduled time</li><li><strong>RASS -2 or below:</strong> withhold the dose; medical review and review the regular schedule</li></ul>If multiple doses are withheld, the schedule is too high. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></div>
                         <div class="clinical-block" id="block-monitoring">
                             <h4>Monitoring</h4>
                             <div class="clinical-table-wrap">
@@ -2285,6 +2641,11 @@ button.survey-never:hover {
                                     </tbody>
                                 </table>
                             </div>
+                            <p><strong>If your ward charts AWS:</strong> AWS above 7 is treated as severe for
+                                monitoring - rescore <strong>1-2 hourly</strong> on the Moderate-Severe schedule, and
+                                hourly on symptom-triggered dosing - following AGTAP Table 8.4 rather than the AWS
+                                column above.
+                                <span class="src-tag src-other">OTHER - AGTAP Table 8.4</span></p>
                             <p><strong>Observation set at each review:</strong> temperature; pulse rate and rhythm;
                                 blood pressure; CIWA-Ar or AWS; hydration.
                                 <span class="src-tag src-nswcg">NSWCG §5.4.5, Table 5.6</span></p>
@@ -2307,21 +2668,14 @@ button.survey-never:hover {
                                 <li>Any seizure, delirium, hallucinations, or hyperthermia &rarr; treat as severe; see
                                     Special Cases.</li>
                             </ul>
-                            <p><strong>De-escalate / withhold if sedated:</strong> check the RASS before every regular
-                                or PRN dose. Give the dose only if the patient is <strong>RASS 0 or above</strong>. At
-                                <strong>RASS -1</strong> the sedation target is reached: withhold the dose and rescore at
-                                the next scheduled time. At
-                                <strong>RASS -2 or below</strong>, withhold the dose, arrange medical review and review
-                                the regular schedule. If multiple doses are withheld, the schedule is too high.
-                                <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
-                                    names no scale. One RASS threshold on every page means "sedated" means the same
-                                    thing to every assessor, on every shift and for every drug.</span></p>
+                            <p><strong>De-escalate / withhold if sedated:</strong> as in the sedation caution at the
+                                top of this tab. If multiple doses are withheld, the schedule is too high.</p>
                             <p><em>Consider increasing the regimen if PRN is being used frequently.</em> A patient who
                                 keeps needing PRN doses and remains symptomatic needs a different schedule, not a
                                 longer wait.
                                 <span class="src-tag src-local">LOCAL - rationale: NSWCG gives escalation thresholds but
                                     no exit criteria from a fixed schedule, and the Mild-Mod band's higher PRN trigger
-                                    (CIWA 15-20) overlaps the Mod-Sev band entirely, so a patient scoring 17 could
+                                    (CIWA 16-20) overlaps the Mod-Sev band entirely, so a patient scoring 17 could
                                     otherwise stay on a 10mg qid backbone indefinitely.</span></p>
                         </div>
                         <p
@@ -2346,6 +2700,9 @@ button.survey-never:hover {
                     </div>
                     <div id="special-cases" class="tab-content">
                         <h3>Special Cases</h3>
+                        <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before every oral or IM dose:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> sedation target reached: withhold</li><li><strong>RASS -2 or below:</strong> withhold; medical review</li></ul>A midazolam infusion in HDU follows the unit's own sedation target. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></div>
                         <div class="warning-box">
                             <strong>⚠️ Pregnancy:</strong> Alcohol withdrawal during pregnancy is high risk for both
                             maternal and fetal complications (including miscarriage, premature labour, and fetal
@@ -2383,8 +2740,8 @@ button.survey-never:hover {
                         <p><strong>Benzodiazepine:</strong> diazepam 20mg hourly up to 80mg/24 hours - <strong>often
                                 insufficient alone in established DT</strong>. If the oral route is not possible: IV
                             midazolam infusion <strong>monitored in HDU</strong>, or IM lorazepam where no HDU is
-                            available. <strong>Target: light sleep, readily rousable.</strong> For oral or IM doses, check the RASS
-                            before each one: the target is <strong>RASS -1</strong>, so stop once it is reached, and at
+                            available. <strong>Target: light sleep, readily rousable - do not give a dose to a patient
+                            already sedated.</strong> For oral or IM doses, check the RASS before each one: the target is <strong>RASS -1</strong>, so stop once it is reached, and at
                             <strong>RASS -2 or below</strong> withhold and arrange medical review. A midazolam infusion
                             in HDU is titrated to the unit's own sedation target.
                             <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
@@ -2490,9 +2847,10 @@ button.survey-never:hover {
                                 clinician.</li>
                             <li>Mild to moderate alcohol withdrawal severity expected, defined by:
                                 <ul>
-                                    <li>Average or low risk on Prediction of Alcohol Withdrawal Severity Scale (PAWSS),
-                                        OR a clear clinical rationale exists for proceeding despite a higher score.</li>
-                                    <li>Patient’s average alcohol intake is ≤15 standard drinks per day.</li>
+                                    <li><strong>No history of severe withdrawal complications</strong> - withdrawal
+                                        seizures or delirium tremens.
+                                        <span class="src-tag src-other">OTHER - AGTAP Rec 8.4 (Grade B)</span></li>
+                                    <li>Patient’s average alcohol intake is ≤14 standard drinks per day.</li>
                                 </ul>
                             </li>
                             <li>Patient agrees to daily review at the service.</li>
@@ -2580,6 +2938,9 @@ button.survey-never:hover {
                     </div>
                     <div id="ambulatory-meds" class="tab-content">
                         <h3>Medication Regimen</h3>
+                        <div class="warning-box sedation-caution">⚠️ <strong>Do not give or supply a further benzodiazepine dose if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> at every daily review:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> continue</li><li><strong>RASS -1:</strong> withhold the next dose; review the dose with the prescriber</li><li><strong>RASS -2 or below:</strong> withhold further doses; medical review</li></ul>Doses taken at home: tell the patient and carer to <strong>skip a dose and call if drowsy or hard to wake</strong>. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></div>
                         <p><strong>Example Diazepam Regimen (Fixed-Dose):</strong></p>
                         <p>A common approach is a 5-day fixed-dose weaning regimen. This must be adjusted based on
                             clinical assessment. <strong>Staged, daily supply from a pharmacy is essential.</strong></p>
@@ -2597,14 +2958,6 @@ button.survey-never:hover {
                             overdose, undiagnosed complications, and failure to complete the withdrawal.
                             <strong>Limit benzodiazepine use to 5-7 days.</strong>
                             <span class="src-tag src-nswcg">NSWCG §5.4.4, App 6</span></p>
-                        <p><strong>Sedation check.</strong> Check the RASS at each daily review: continue only if the
-                            patient is <strong>RASS 0 or above</strong>. At <strong>RASS -1</strong>, withhold the next
-                            dose and review the dose with the prescriber; at <strong>RASS -2 or below</strong>, withhold
-                            further doses and arrange medical review. Doses taken at home cannot be scored, so tell the
-                            patient and carer to <strong>skip a dose and call if the patient is drowsy or hard to
-                            wake</strong>. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
-                                    names no scale. One RASS threshold on every page means "sedated" means the same
-                                    thing to every assessor, on every shift and for every drug.</span></p>
 
                         <p><strong>Dosing Times:</strong></p>
                         <p>A QID (four times a day) schedule can be challenging. While ideal times might be 0600, 1200,
@@ -3515,6 +3868,9 @@ button.survey-never:hover {
                 </div>
                 <div class="clinical-block" data-quickcopy>
                 <h4>Tapering Schedules</h4>
+                <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before every dose given by staff:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> withhold</li><li><strong>RASS -2 or below:</strong> withhold; medical review</li></ul>Doses taken at home: check sedation at each review, and tell the patient to skip a dose and seek advice if drowsy or hard to wake. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></div>
                 <p><strong>Discussion with addiction services is strongly recommended.</strong></p>
                 <p>Arranging a safe and effective outpatient taper is often difficult and carries risks if not closely
                     monitored. Relapse rates are high, and abrupt cessation can lead to seizures and delirium.</p>
@@ -3531,12 +3887,6 @@ button.survey-never:hover {
                         <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
                     <li>In most cases a <strong>daily maximum of 40mg diazepam</strong> will prevent major withdrawal,
                         including seizures. <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
-                    <li><strong>Sedation check:</strong> before every dose given by staff, check the RASS - give it
-                        only at <strong>RASS 0 or above</strong>; at <strong>RASS -1</strong>, withhold it; at
-                        <strong>RASS -2 or below</strong>, withhold and arrange medical review. For doses taken at home, check sedation at each review and tell the
-                        patient to skip a dose and seek advice if drowsy or hard to wake. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
-                                    names no scale. One RASS threshold on every page means "sedated" means the same
-                                    thing to every assessor, on every shift and for every drug.</span></li>
                     <li><strong>Seek specialist advice before converting to diazepam in severe hepatic
                             dysfunction</strong> - accumulation risk; oxazepam may be preferred.
                         <span class="src-tag src-nswcg">NSWCG §11.3.7</span></li>
@@ -3938,15 +4288,13 @@ button.survey-never:hover {
                     often requiring significantly larger doses than standard alcohol withdrawal.</p>
 
                 <h5>Benzodiazepines - primary treatment</h5>
+                <div class="warning-box sedation-caution">⚠️ <strong>Do not give a benzodiazepine if the patient is sedated</strong> (drowsy or hard to rouse). Check <strong>RASS</strong> before each dose:<ul class="rass-levels"><li><strong>RASS 0 or above:</strong> give</li><li><strong>RASS -1:</strong> light sedation reached: stop the 1-2 hourly doses</li><li><strong>RASS -2 or below:</strong> withhold; medical review</li></ul>In ICU, the unit's own sedation target applies. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
+                                    names no scale. One RASS threshold on every page means "sedated" means the same
+                                    thing to every assessor, on every shift and for every drug.</span></div>
                 <ul>
                     <li><strong>Diazepam 10-20mg every 1-2 hours</strong>, commenced early - within 2 hours of the
                         last dose if the patient is not sedated - until light sedation and control of agitation.
                         <span class="src-tag src-nswcg">NSWCG §9</span></li>
-                    <li><strong>Check the RASS before each dose.</strong> Light sedation is <strong>RASS -1</strong>:
-                        once reached, stop the 1-2 hourly doses. At <strong>RASS -2 or below</strong>, withhold and
-                        arrange medical review. In ICU, the unit's own sedation target applies. <span class="src-tag src-local">LOCAL - rationale: NSWCG describes the sedation endpoint in words but
-                                    names no scale. One RASS threshold on every page means "sedated" means the same
-                                    thing to every assessor, on every shift and for every drug.</span></li>
                     <li><strong>Medical officer review before exceeding 120mg diazepam in the first 24 hours</strong>;
                         addiction specialist consultation is recommended at that point.
                         <span class="src-tag src-nswcg">NSWCG §9</span></li>
@@ -4917,6 +5265,77 @@ button.survey-never:hover {
                     <li><strong>The privacy statement</strong> on the About page now describes all of the above.</li>
                 </ul>
 
+                <h4>0.5.10 - October 2026</h4>
+                <p><em>The sedation caution comes first, and the checklist copies the full regimen.</em></p>
+                <ul>
+                    <li><strong>The sedation caution now leads every section that gives a benzodiazepine</strong>, in
+                        an amber box: Regimens, Monitoring, Special Cases, the test dose and loading, Ambulatory
+                        medication, Benzodiazepine tapering, GHB treatment, the symptom-relief tables on other
+                        substance pages, and the checklist. It reads "Do not give a benzodiazepine if the patient is
+                        sedated (drowsy or hard to rouse)", then the three RASS levels as bullets. The rule itself is
+                        unchanged.</li>
+                    <li><strong>In the EMR copy, the sedation caution comes straight after the doses</strong>, before
+                        the scoring and review lines, headed "SEDATION:".</li>
+                    <li><strong>The checklist's EMR summary carries the full regimen</strong> - the same text, built
+                        by the same code, as "Copy for EMR" on the Regimens tab, in the scale the ward charts - and
+                        the thiamine plan. Unticked items are listed as short labels.</li>
+                    <li><strong>Thiamine in the checklist asks about Wernicke-Korsakoff first</strong>, then shows
+                        only the dose that applies: 300mg prophylaxis, or 500mg IV TDS treatment.</li>
+                </ul>
+
+                <h4>0.5.9 - October 2026</h4>
+                <p><em>A shorter triage with a red-flag question, and a new inpatient checklist.</em></p>
+                <ul>
+                    <li><strong>Triage asks about red flags.</strong> Already in withdrawal or a high BAL on arrival,
+                        coexisting medical or psychiatric illness, dependence on other sedatives, and pregnancy. Any
+                        one moves the patient up one level of care, and never to ambulatory detox (LOCAL). Pregnancy
+                        adds a reminder that it needs specialist inpatient management.</li>
+                    <li><strong>15 standard drinks a day is a hospital patient on both pages.</strong> The ambulatory
+                        inclusion criterion now reads ≤14 standard drinks per day, matching triage (≥15) and the
+                        regimen bands. It used to say ≤15.</li>
+                    <li><strong>"General Hospital" throughout.</strong> Triage showed "General Hospital" on screen but
+                        copied a different hospital name into the EMR.</li>
+                    <li><strong>Same outcomes otherwise.</strong> Without a red flag, every answer leads where it did
+                        before. "Consider General Hospital" (8-14 drinks with complication history, or 15+ without)
+                        now has one wording for both routes.</li>
+                    <li><strong>Triage has two views:</strong> every question on one screen, or one per screen. The
+                        EMR summary is written from the answers given.</li>
+                    <li><strong>New: Inpatient Alcohol Withdrawal Checklist.</strong> The Inpatient Guidelines tabs
+                        as seven bedside steps on one page, each linked to its full text. It picks the
+                        benzodiazepine, band and regimen type, opens the Regimens tab already set to them, and
+                        carries over triage answers. Nothing ticked is saved.</li>
+                </ul>
+
+                <h4>0.5.8 - October 2026</h4>
+                <p><em>Symptom-triggered dosing on AWS now follows the national guideline's table.</em></p>
+                <ul>
+                    <li><strong>AWS 8 or more now takes the severe symptom-triggered dose</strong> (20mg diazepam,
+                        rescored hourly). The AWS bands for symptom-triggered dosing follow AGTAP Table 8.4 (under 4,
+                        4-7, above 7), the published table that pairs AWS with CIWA-Ar for dosing. They used to follow
+                        NSWCG (under 4, 4-14, above 14). CIWA-Ar dosing is unchanged.</li>
+                    <li><strong>AWS 8-14 is now rescored 1-2 hourly</strong> on the Moderate-Severe schedule, also
+                        following AGTAP Table 8.4. CIWA-Ar 16-20 stays 2-4 hourly.</li>
+                    <li><strong>CIWA-Ar bands now agree everywhere.</strong> The calculator called 19-20 severe; it
+                        now uses above 20, as NSWCG and AGTAP do, and names its bands after the regimens. The fixed
+                        schedules' overlap at 15 is closed: Mild-Moderate is 10-15 and Moderate-Severe 16-20, so a
+                        score of 15 gets the 10mg PRN. The split sits above 15, the published escalation threshold
+                        (Day &amp; Daly 2022; Foy et al. 1988); references are on the Sources page.</li>
+                    <li><strong>The CIWA-Ar calculator now matches the published scale</strong> (Sullivan et al.
+                        1989). Nausea, tremor, sweats, anxiety and agitation can be scored at any value from 0 to 7,
+                        not only the described 0, 1, 4 and 7. Agitation 7 now reads "paces back and forth during
+                        most of the interview, or constantly thrashes about"; it had repeated the anxiety
+                        description by mistake. Prompts follow the published form, and a note reminds raters to
+                        record pulse and blood pressure, which are not scored.</li>
+                    <li><strong>PAWSS removed.</strong> It was an inclusion criterion for ambulatory detox; it is
+                        replaced by "no history of severe withdrawal complications (withdrawal seizures or delirium
+                        tremens)", from AGTAP Recommendation 8.4. PAWSS is in neither NSW nor national guidance and
+                        was developed in medically ill hospital patients, not outpatients. It is not used for
+                        inpatient banding either.</li>
+                    <li><strong>Why:</strong> no validated CIWA-Ar/AWS equivalence has been published. AGTAP's table
+                        errs towards treating AWS 8-14 as severe, and the RASS check before every dose guards against
+                        over-sedation. The fixed schedules already used AGTAP's 7/8 break.</li>
+                </ul>
+
                 <h4>0.5.7 - October 2026</h4>
                 <p><em>The AWS calculator now agrees with the Regimens tab, sedation is defined with the RASS, and
                         one unsourced medication is removed.</em></p>
@@ -5549,6 +5968,13 @@ button.survey-never:hover {
                     <li><strong>New Zealand Ministry of Health</strong> - <em>Substance Withdrawal Management
                             Guidelines</em>.</li>
                     <li><strong>Therapeutic Guidelines (eTG)</strong> - benzodiazepine equivalence.</li>
+                    <li><strong>Day E, Daly C.</strong> - Clinical management of the alcohol withdrawal syndrome.
+                        <em>Addiction</em> 2022;117(3):804-814. Cited for the CIWA-Ar threshold of above 15 used to
+                        split the fixed schedules.</li>
+                    <li><strong>Foy A, March S, Drinkwater V.</strong> - Use of an objective clinical scale in the
+                        assessment and management of alcohol withdrawal in a large general hospital. <em>Alcohol Clin
+                        Exp Res</em> 1988;12(3):360-364. Cited for the increased risk above a score of 15 (modified
+                        CIWA).</li>
                     <li><strong>ANZCA Faculty of Pain Medicine</strong> - opioid dose equivalence and acute pain
                         guidance.</li>
                     <li><strong>NSW Health</strong> - <em>NSW Clinical Guidelines: Treatment of Opioid
@@ -5699,7 +6125,7 @@ button.survey-never:hover {
                     <li><strong>Hosting.</strong> The site is served by GitHub Pages, which - like any web host -
                         records requests to it, including IP addresses, in GitHub's own server logs under GitHub's
                         privacy statement. The author has no access to those logs.</li>
-                    <li><strong>On-device storage.</strong> Your dark-mode preference; a marker that the access
+                    <li><strong>On-device storage.</strong> Your dark-mode preference and preferred triage view; a marker that the access
                         password was accepted (not the password itself); the role and setting you last chose, so they
                         can be pre-selected; the random device identifier; any usage records, feedback or survey
                         answers waiting to be sent; how many times the app has been opened here and when the survey

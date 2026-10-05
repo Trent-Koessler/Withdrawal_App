@@ -33,6 +33,11 @@ const AGTAP_CROSSCHECK = '2026-08-21';
 // the same pass, which changed who is routed to a loading regimen.
 const SELECTOR_REVISED = '2026-08-21';
 
+// The triage was rebuilt around one decision function with a red-flag
+// question, and the inpatient checklist was added as a summary of the
+// Inpatient Guidelines tabs, in the same release.
+const TRIAGE_REVISED = '2026-10-04';
+
 // The OTP page is not NSWCG material at all: the missed-dose bands come from the
 // opioid dependence guidelines and the Buvidal windows from the LAIB guidance,
 // which is why it is a page of its own rather than a section on the withdrawal
@@ -62,7 +67,8 @@ const DRUG_SCREENING_ADDED = '2026-08-29';
 export const CONTENT_META = {
     'inpatient-guidelines-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: SELECTOR_REVISED },
     'ambulatory-guidelines-page': { source: NSWCG_2022, lastReviewed: REVISED },
-    'alcohol-withdrawal-page': { source: NSWCG_2022, lastReviewed: REVISED },
+    'alcohol-withdrawal-page': { source: NSWCG_2022, lastReviewed: TRIAGE_REVISED },
+    'inpatient-checklist-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: TRIAGE_REVISED },
     'screening-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'populations-page': { source: NSWCG_2022, lastReviewed: REVISED },
     'continuing-care-page': { source: `${NSWCG_2022}; ${AGTAP_2021}`, lastReviewed: AGTAP_CROSSCHECK },
