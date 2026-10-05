@@ -9,7 +9,7 @@
     <!-- The release this markup belongs to. script.js publishes the release IT
          belongs to; the check at the bottom of this file compares the two. A
          test keeps this in step with APP_VERSION and package.json. -->
-    <meta name="app-build" content="0.5.10" />
+    <meta name="app-build" content="0.6.0" />
     <script>
         // Apply the saved theme before first paint. Wrapped in try/catch because
         // managed desktops can block storage access outright, and an exception
@@ -1964,6 +1964,346 @@ textarea[id$="-quickstart-summary"] {
 
 .regimen-step .link-button {
     margin-top: 0.25em;
+}
+
+/* --- Page feedback (feedback.js) --- */
+/* The box at the foot of every page. Quiet until used: a question and two
+   buttons, so it never competes with the clinical content above it. */
+.page-feedback {
+    margin: 28px 0 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+.feedback-question {
+    font-weight: bold;
+    margin: 0 0 8px;
+}
+
+.feedback-thumbs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.feedback-thumb {
+    background: var(--tab-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 15px;
+}
+
+.feedback-thumb:hover:not(:disabled) {
+    background: var(--border-color);
+}
+
+.feedback-thumb[aria-pressed="true"] {
+    background: var(--primary-btn-bg);
+    border-color: var(--primary-btn-bg);
+    color: white;
+}
+
+/* A rating is final for the launch; the unchosen one fades rather than
+   disappearing, so the pressed one still reads as a choice. */
+.feedback-thumb:disabled {
+    cursor: default;
+}
+
+.feedback-thumb:disabled[aria-pressed="false"] {
+    opacity: 0.5;
+}
+
+/* A text link that is a <button>, for keyboard and screen-reader users. */
+button.feedback-link,
+a.feedback-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: var(--link-color);
+    text-decoration: underline;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button.feedback-link:hover {
+    background: none;
+    color: var(--link-hover-color);
+}
+
+.feedback-thanks {
+    margin: 8px 0 0;
+}
+
+.feedback-form {
+    margin-top: 12px;
+}
+
+.feedback-heading {
+    font-weight: bold;
+    margin: 0 0 8px;
+}
+
+.feedback-chips {
+    border: none;
+    padding: 0;
+    margin: 0 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.feedback-chips legend {
+    font-size: 14px;
+    margin-bottom: 6px;
+    padding: 0;
+}
+
+/* Real radio buttons, drawn as chips. The input stays in the page (only
+   visually hidden) so keyboard and screen-reader use is the browser's own. */
+.feedback-chip input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.feedback-chip span {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--tab-bg);
+    cursor: pointer;
+}
+
+.feedback-chip input:checked + span {
+    background: var(--primary-btn-bg);
+    border-color: var(--primary-btn-bg);
+    color: white;
+}
+
+.feedback-chip input:focus-visible + span {
+    outline: 3px solid var(--link-color);
+    outline-offset: 2px;
+}
+
+.feedback-text {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 96px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font: inherit;
+}
+
+.feedback-counter {
+    display: block;
+    text-align: right;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.feedback-warning {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.feedback-meta {
+    font-size: 13px;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.feedback-buttons {
+    margin-bottom: 0;
+}
+
+.feedback-send {
+    background-color: var(--primary-btn-bg);
+}
+
+.feedback-send:hover:not(:disabled) {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+.feedback-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.feedback-done {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0;
+}
+
+.feedback-tick {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #1e8e3e;
+    color: white;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+}
+
+.feedback-sub {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* --- Usability survey (survey.js) --- */
+.survey-modal .survey-card {
+    width: auto;
+    max-width: 480px;
+    margin: 12vh auto;
+    margin-left: max(16px, calc(50% - 240px));
+    margin-right: max(16px, calc(50% - 240px));
+}
+
+.survey-card h3 {
+    margin-top: 0;
+}
+
+.survey-question {
+    font-size: 19px;
+    line-height: 1.35;
+}
+
+.survey-small {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.survey-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.survey-actions button {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+}
+
+.survey-primary {
+    background-color: var(--primary-btn-bg);
+}
+
+.survey-primary:hover:not(:disabled) {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+.survey-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button.survey-never {
+    background: none;
+    color: var(--link-color);
+    text-decoration: underline;
+    display: block;
+    margin: 12px auto 0;
+}
+
+button.survey-never:hover {
+    background: none;
+    color: var(--link-hover-color);
+}
+
+.survey-progress {
+    height: 6px;
+    background: var(--tab-bg);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 6px 0 16px;
+}
+
+.survey-progress-bar {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--primary-btn-bg);
+}
+
+.survey-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin: 14px 0 4px;
+}
+
+.survey-options-wide {
+    grid-template-columns: 1fr;
+}
+
+.survey-option {
+    background: var(--tab-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.survey-option:hover {
+    background: var(--border-color);
+}
+
+.survey-option[aria-checked="true"] {
+    background: var(--primary-btn-bg);
+    border-color: var(--primary-btn-bg);
+    color: white;
+}
+
+.survey-ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.survey-nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.survey-nav button {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 15px;
+}
+
+.survey-nav .survey-primary {
+    flex: 2;
+}
+
+.survey-actions button.survey-never {
+    margin-top: 0;
 }
     </style>
     <!-- END style.css -->
@@ -4908,6 +5248,23 @@ textarea[id$="-quickstart-summary"] {
                     the ones that change what a clinician does.</p>
                 <p>Current version: <strong><span class="app-version"></span></strong>.</p>
 
+                <h4>0.6.0 - October 2026</h4>
+                <p><em>A way to tell the author what works and what does not, on every page. No clinical content has
+                        changed.</em></p>
+                <ul>
+                    <li><strong>"Was this page helpful?"</strong> at the foot of every page. A thumbs down opens a short
+                        form to say what was wrong.</li>
+                    <li><strong>A feedback form on every page</strong>, filed against the page and tab you are on. The
+                        Feedback button in the menu opens it too. It warns against patient details and says exactly
+                        what is sent with your message.</li>
+                    <li><strong>A short usability survey</strong> may appear when you return to the Home page, after
+                        the app has been used a few times on your device and then about once a month. You can say not
+                        now, or never ask again.</li>
+                    <li><strong>Automatic error reports</strong> tell the author when part of the app fails, so it can
+                        be fixed without anyone having to report it.</li>
+                    <li><strong>The privacy statement</strong> on the About page now describes all of the above.</li>
+                </ul>
+
                 <h4>0.5.10 - October 2026</h4>
                 <p><em>The sedation caution comes first, and the checklist copies the full regimen.</em></p>
                 <ul>
@@ -5722,8 +6079,9 @@ textarea[id$="-quickstart-summary"] {
                 <h4>Privacy</h4>
                 <p><strong>Clinical information you enter into the calculators, scales and planning tools is processed
                         entirely in your browser. It is never transmitted to, or stored by, this website.</strong> The
-                    site has no accounts and no submission form, and nothing you type is sent anywhere. Closing the
-                    tab discards it.</p>
+                    site has no accounts. The only things you type that are ever sent anywhere are a feedback message
+                    or survey answers, and only when you choose to send them. Closing the tab discards everything
+                    else.</p>
                 <p><strong>The app does keep a record of how it is used</strong>, so that the trial can report which
                     teams and settings use it and which tools help. That record says that a feature was used, never
                     what was entered into it.</p>
@@ -5731,12 +6089,29 @@ textarea[id$="-quickstart-summary"] {
                 <ul>
                     <li><strong>What the usage record contains.</strong> A random identifier created for this device
                         when the app was first opened; the role and setting you selected; that the app was opened;
-                        which pages and scales were opened; whether a scale was used or a note was copied; the app
+                        which pages and scales were opened; whether a scale was used or a note was copied; whether you
+                        rated a page helpful or not; whether the survey was offered, answered or declined; the app
                         version; whether it was opened from a home-screen icon; and the time of each.</li>
-                    <li><strong>What it never contains.</strong> Your name, email or IP address; your device or
-                        browser details; any score, dose or answer; any patient detail; or anything typed into the
-                        app, including searches. The receiving server rejects anything outside a fixed list, so this
+                    <li><strong>What it never contains.</strong> Your name, email or IP address; your browser
+                        details; any score, dose or answer; any patient detail; or anything typed into the
+                        calculators or search. The receiving server rejects anything outside a fixed list, so this
                         cannot be widened quietly.</li>
+                    <li><strong>Feedback you send.</strong> The box at the foot of each page sends what you type,
+                        the kind of feedback you chose, which page and tab it was about, the app version, your role
+                        and setting, the device identifier and the time - and nothing else; no name or email. It is
+                        kept in the same database, read only by the author through a password-protected page, and
+                        new messages are emailed to the author's personal email account once a day. That email is
+                        outside any health service system, so <strong>please do not include patient-identifying
+                        information</strong> - describe the problem with the site, not the patient.</li>
+                    <li><strong>The usability survey.</strong> After the app has been opened five times on a device,
+                        and then about once a month, it may ask eleven short questions about how easy it is to use.
+                        Your answers (each a number from 1 to 5, and a yes, no or not sure) are sent with your role,
+                        setting, the device identifier and the time. You can say not now, or never ask again.</li>
+                    <li><strong>Error reports.</strong> If part of the app fails with a programming error, it sends
+                        the error message, where in the app's code it happened, which page was open, the app version
+                        and the type of device (iPhone, Android, Windows, Mac or Linux - not the browser). Long numbers
+                        and email addresses are removed from the message first, on the device and again on
+                        arrival.</li>
                     <li><strong>The device identifier is not linked to you.</strong> It is random and is not derived
                         from your device or from you. It lets repeat use on one device be told apart from use on many
                         devices. Clearing this site's data in your browser replaces it with a new one.</li>
@@ -5750,18 +6125,17 @@ textarea[id$="-quickstart-summary"] {
                     <li><strong>Hosting.</strong> The site is served by GitHub Pages, which - like any web host -
                         records requests to it, including IP addresses, in GitHub's own server logs under GitHub's
                         privacy statement. The author has no access to those logs.</li>
-                    <li><strong>On-device storage.</strong> Your dark-mode preference; a marker that the access
+                    <li><strong>On-device storage.</strong> Your dark-mode preference and preferred triage view; a marker that the access
                         password was accepted (not the password itself); the role and setting you last chose, so they
-                        can be pre-selected; the random device identifier; any usage records waiting to be sent; and a
-                        one-shot marker used to recover from a bad cached copy of the app. No clinical content is
-                        stored. The offline cache holds the app's own files only - never anything you have typed.</li>
+                        can be pre-selected; the random device identifier; any usage records, feedback or survey
+                        answers waiting to be sent; how many times the app has been opened here and when the survey
+                        was last answered or put off; and a one-shot marker used to recover from a bad cached copy of
+                        the app. No clinical content is stored. The offline cache holds the app's own files only - never anything you have typed.</li>
                     <li><strong>Copy for EMR.</strong> Copying places the text on your device's clipboard for you to
                         paste. The text is never sent anywhere; the usage record notes only that the button was
                         used.</li>
-                    <li><strong>Feedback.</strong> The Feedback button opens your own email program, addressed to the
-                        author's personal email account. Anything you send is an ordinary email outside any health
-                        service system, so <strong>please do not include patient-identifying information</strong> -
-                        describe the problem with the site, not the patient.</li>
+                    <li><strong>The Feedback button</strong> in the menu opens the feedback box on the page you are
+                        reading, as above.</li>
                 </ul>
 
                 <h4>Version and review</h4>

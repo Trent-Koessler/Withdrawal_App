@@ -23,3 +23,27 @@ database_id = "a14d73e5-7750-43a6-84ec-4877c5e31f16"
 # EXPORT_TOKEN is a secret, never a var — a var is readable in the dashboard
 # and committed here. Set it with:
 #   npx wrangler secret put EXPORT_TOKEN
+
+# The admin page (public/admin/). run_worker_first so that every request,
+# including the page itself, passes through src/admin.js and picks up its
+# security headers; the API routes are never static files.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+# The daily feedback email. Two UTC hours because Sydney is UTC+10 in winter
+# and UTC+11 in summer: 23:00 UTC is 9am AEST, 22:00 UTC is 9am AEDT. The
+# worker checks the Sydney time and only the matching run sends.
+[triggers]
+crons = ["0 22,23 * * *"]
+
+# Cloudflare Email Routing. The destination address is not written here: it is
+# the DIGEST_TO secret, so the author's email is not committed to the repo.
+#   npx wrangler secret put DIGEST_TO
+[[send_email]]
+name = "DIGEST"
+
+[vars]
+DIGEST_FROM = "feedback@sudtoolkit.org"
+ADMIN_URL = "https://metrics.sudtoolkit.org/admin/"

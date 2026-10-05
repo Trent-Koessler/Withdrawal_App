@@ -14,6 +14,7 @@
 // project exists to produce.
 
 const QUEUE_KEY = 'sud.queue';
+const OUTBOX_KEY = 'sud.outbox';
 const DEVICE_KEY = 'sud.device';
 
 // The deployed worker — see worker/README.md. Setting this to '' switches
@@ -31,13 +32,28 @@ const MAX_QUEUED = 500;
 // Matches MAX_EVENTS_PER_BATCH in the worker. A larger batch is rejected whole.
 const MAX_BATCH = 100;
 
+// Feedback, survey answers and error reports go to their own endpoint beside
+// the events one, through their own queue: they are fewer, larger, and one of
+// them is free text, so the worker validates them separately. The queue cap is
+// small because each item is a deliberate act, not a page view.
+const RECORDS_ENDPOINT = ENDPOINT ? ENDPOINT.replace(/\/e$/, '/r') : '';
+const MAX_OUTBOX = 50;
+// Matches MAX_RECORDS_PER_BATCH in the worker.
+const MAX_RECORDS_BATCH = 20;
+
+// At most this many error reports from one launch. A fault in a render loop
+// would otherwise send the same error a thousand times.
+const MAX_ERRORS_PER_LAUNCH = 5;
+
 const FLUSH_DEBOUNCE_MS = 5000;
 
 let role = null;
 let location = null;
 let appVersion = '';
 let flushTimer = null;
+let flushDueAt = 0;
 let flushing = false;
+let flushingOutbox = false;
 
 function readQueue() {
     try {
@@ -56,6 +72,24 @@ function writeQueue(events) {
         window.localStorage.setItem(QUEUE_KEY, JSON.stringify(events));
     } catch {
         /* Full or blocked. The events are lost; the app carries on. */
+    }
+}
+
+function readOutbox() {
+    try {
+        const parsed = JSON.parse(window.localStorage.getItem(OUTBOX_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeOutbox(items) {
+    try {
+        window.localStorage.setItem(OUTBOX_KEY, JSON.stringify(items));
+        return true;
+    } catch {
+        return false;
     }
 }
 
@@ -107,6 +141,13 @@ export function startMetrics(context, version) {
     // Minted here rather than lazily at flush time, so it is in place before
     // the first event is recorded against it.
     deviceId();
+
+    // Errors that happened before the gate was answered. They belong to this
+    // launch, so they are sent with this launch's role and setting — and only
+    // now, so a launch that never gets past the gate sends nothing at all.
+    for (const report of earlyErrors.splice(0)) {
+        submit('error', report);
+    }
 
     window.addEventListener('online', () => flush());
 
@@ -165,8 +206,19 @@ export function record(event, detail = null) {
 
     writeQueue(queue.slice(-MAX_QUEUED));
 
+    scheduleFlush(FLUSH_DEBOUNCE_MS);
+}
+
+// Whichever send is due first wins. A usage event recorded just after a
+// survey is submitted must not push the survey's send back by five seconds,
+// during which the app may well be closed; and a burst of page views sends
+// once, five seconds after the first, rather than never while they continue.
+function scheduleFlush(delay) {
+    const due = Date.now() + delay;
+    if (flushTimer && flushDueAt <= due) return;
     clearTimeout(flushTimer);
-    flushTimer = setTimeout(() => flush(), FLUSH_DEBOUNCE_MS);
+    flushDueAt = due;
+    flushTimer = setTimeout(() => { flushTimer = null; flush(); }, delay);
 }
 
 /**
@@ -181,11 +233,17 @@ export function record(event, detail = null) {
  * id and the worker ignores one it already holds.
  */
 export async function flush({ keepalive = false } = {}) {
-    if (!ENDPOINT || !role || flushing || !navigator.onLine) return;
+    if (!ENDPOINT || !role || !navigator.onLine) return;
 
     const device = deviceId();
     if (!device) return;
 
+    await flushEvents(device, keepalive);
+    await flushOutbox(device, keepalive);
+}
+
+async function flushEvents(device, keepalive) {
+    if (flushing) return;
     const queue = readQueue();
     if (queue.length === 0) return;
 
@@ -227,4 +285,146 @@ export async function flush({ keepalive = false } = {}) {
     } finally {
         flushing = false;
     }
+}
+
+// The same contract as the events queue: removed only once the server has
+// confirmed the write or refused it outright; kept on a network failure, a 5xx
+// or a 429.
+async function flushOutbox(device, keepalive) {
+    if (!RECORDS_ENDPOINT || flushingOutbox) return;
+    const outbox = readOutbox();
+    if (outbox.length === 0) return;
+
+    const batch = outbox.slice(0, MAX_RECORDS_BATCH);
+    flushingOutbox = true;
+    try {
+        const response = await fetch(RECORDS_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ device_id: device, app_version: appVersion, items: batch }),
+            keepalive,
+        });
+        if (response.ok ||
+            (response.status >= 400 && response.status < 500 && response.status !== 429)) {
+            const sent = new Set(batch.map(i => i.id));
+            writeOutbox(readOutbox().filter(i => !sent.has(i.id)));
+        }
+    } catch {
+        /* Offline. It waits in the outbox. */
+    } finally {
+        flushingOutbox = false;
+    }
+}
+
+/** True once the gate has been answered and an endpoint is configured. */
+export function isCollecting() {
+    return Boolean(ENDPOINT && role);
+}
+
+/** This launch's answers at the gate, for showing what a report will carry. */
+export function currentContext() {
+    return { role, location };
+}
+
+/**
+ * Queue a feedback message, survey response or error report to send.
+ *
+ * Unlike record(), what is passed here can include text the clinician typed —
+ * that is the point of a feedback form — so it is only ever called from the
+ * feedback form and the survey, each of which tells the person what is sent.
+ * Returns false if nothing was queued.
+ */
+export function submit(kind, data) {
+    if (!ENDPOINT || !role) return false;
+
+    let id;
+    try {
+        id = window.crypto.randomUUID();
+    } catch {
+        return false;
+    }
+
+    const outbox = readOutbox();
+    outbox.push({
+        ...data,
+        id,
+        kind,
+        role,
+        location,
+        t: new Date().toISOString(),
+        queued: navigator.onLine ? 0 : 1,
+    });
+    if (!writeOutbox(outbox.slice(-MAX_OUTBOX))) return false;
+
+    // Sooner than a usage event: someone who has just pressed Send may close
+    // the app straight away.
+    scheduleFlush(500);
+    return true;
+}
+
+// --- Error reports --- //
+//
+// Caught here, at module load, so that an error anywhere in the app is seen —
+// but held in memory until the gate is answered, and sent with nothing but the
+// message, where in the code it happened, which page was open, and a coarse
+// device type. Long numbers and email addresses are masked first, because an
+// error message can quote a value that came from an input.
+
+const earlyErrors = [];
+const seenErrors = new Set();
+let errorsThisLaunch = 0;
+
+export function scrubErrorText(text) {
+    return String(text)
+        .replace(/[^\s@]+@[^\s@]+/g, '[email]')
+        .replace(/\d{4,}/g, '#')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 200);
+}
+
+function platform() {
+    const ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+    if (/Android/.test(ua)) return 'android';
+    if (/Windows/.test(ua)) return 'windows';
+    if (/Macintosh/.test(ua)) return 'mac';
+    if (/Linux/.test(ua)) return 'linux';
+    return 'other';
+}
+
+function noteError(error, file, line, column) {
+    const raw = error && error.message ? error.message : error;
+    if (!raw) return;
+    const message = scrubErrorText(raw);
+    // "Script error." is all a browser reports for a script from another
+    // origin. This app loads none, so it carries no information.
+    if (!message || /^Script error\.?$/.test(message)) return;
+
+    // Only the file name, never a full URL: a URL could carry a query string.
+    // A rejected promise has no file or line of its own, so those come from
+    // the first frame of its stack instead.
+    let where = file ? `${String(file).split(/[?#]/)[0].split('/').pop()}:${line || 0}:${column || 0}` : null;
+    if (!where && error && typeof error.stack === 'string') {
+        const frame = error.stack.match(/([A-Za-z0-9._-]+\.js)(?:\?[^:\s)]*)?:(\d+):(\d+)/);
+        if (frame) where = `${frame[1]}:${frame[2]}:${frame[3]}`;
+    }
+    const key = `${message}|${where}`;
+    if (seenErrors.has(key) || errorsThisLaunch >= MAX_ERRORS_PER_LAUNCH) return;
+    seenErrors.add(key);
+    errorsThisLaunch++;
+
+    const page = window.location.hash.replace(/^#\/?/, '').slice(0, 81) || 'home-page';
+    const report = { message, source: where, page, platform: platform() };
+    if (role) submit('error', report);
+    else earlyErrors.push(report);
+}
+
+if (ENDPOINT && typeof window !== 'undefined') {
+    window.addEventListener('error', event => {
+        noteError(event.error || event.message, event.filename, event.lineno, event.colno);
+    });
+    window.addEventListener('unhandledrejection', event => {
+        noteError(event.reason);
+    });
 }

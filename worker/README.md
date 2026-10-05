@@ -26,8 +26,8 @@ One row per event:
 | `device_id` | Random per-install id. Not derived from anything about the device or person. |
 | `role` | What the clinician selected, e.g. `registrar`. |
 | `location` | Where they said they were working, e.g. `ed`. |
-| `event` | `unlock`, `session`, `page_view`, `scale_complete`, `emr_copy`. |
-| `detail` | Which page or scale, e.g. `ciwa-ar`. Never free text. |
+| `event` | `unlock`, `session`, `page_view`, `scale_complete`, `emr_copy`, `helpful_yes`, `helpful_no`, `survey`. |
+| `detail` | Which page or scale, e.g. `ciwa-ar`, or page and tab, e.g. `scales-page/ciwa-ar`. Never free text. |
 | `app_version` | Which release produced it. |
 | `standalone` | 1 if launched from a home-screen icon. PWA install uptake. |
 | `queued` | 1 if recorded offline and sent later. |
@@ -112,6 +112,102 @@ route = { pattern = "metrics.sudtoolkit.org/*", custom_domain = true }
 
 If DNS is elsewhere, the `workers.dev` URL is fine and changes nothing about
 how it works.
+
+## Feedback, the survey, error reports and the admin page (0.6.0)
+
+Three more kinds of record arrive at `POST /r`, each in its own table:
+
+| Table | What it holds | Sent when |
+| --- | --- | --- |
+| `feedback` | The page and tab, a type (error, unclear, suggestion, praise), the message (max 1000 characters), whether they also tapped 👍/👎, and the author's status (new, actioned, won't fix). | Someone presses Send on the form at the foot of a page. |
+| `survey_responses` | The ten System Usability Scale answers (1-5), "has it changed how you managed a patient" (yes, no, not sure), and the 0-100 score, computed here. | Someone finishes the survey. |
+| `app_errors` | The error message (long numbers and emails masked), file:line:column, page, and device type (ios, android, windows, mac, linux, other). | The app hits a JavaScript error. At most 5 per launch. |
+
+Each carries the same `device_id`, `role`, `location` and `app_version` as the
+usage events. The 👍/👎 ratings themselves are ordinary events
+(`helpful_yes` / `helpful_no`, with the page as `detail`), and the survey being
+offered, started, completed, put off or declined is the `survey` event.
+
+**The feedback message is free text.** It is the first thing this endpoint
+stores that a person typed. The form warns against patient details and the
+privacy statement says so, but treat the table as if it might hold some: it is
+read only through the admin page and its exports.
+
+Each device can send at most 20 feedback messages, 2 surveys and 50 error
+reports a day; the rest are dropped.
+
+### Setting it up
+
+Do these once, from this directory, after pulling 0.6.0.
+
+**1. Add the new tables.** Safe to run on the live database: every statement is
+`IF NOT EXISTS`, so `events` is untouched.
+
+```sh
+npx wrangler d1 execute sudtoolkit-metrics --remote --file=./schema.sql
+```
+
+**2. Turn on Email Routing for sudtoolkit.org** in the Cloudflare dashboard
+(sudtoolkit.org → Email → Email Routing → Enable). Then, under *Destination
+addresses*, add the address the daily email should go to and click the link in
+the verification email Cloudflare sends. The worker can only send to a
+verified address.
+
+**3. Tell the worker that address.** A secret, so it is not committed here:
+
+```sh
+npx wrangler secret put DIGEST_TO
+```
+
+**4. Deploy.**
+
+```sh
+npx wrangler deploy
+```
+
+This publishes the admin page (`public/admin/`), the daily 9am schedule and the
+email binding along with the code.
+
+### The admin page
+
+Open `https://metrics.sudtoolkit.org/admin/` and sign in with the
+`EXPORT_TOKEN` password. Use a long one: four or five random words is easy to
+type and impractical to guess, and this page is on the open internet.
+
+- **Feedback** — every message, newest first, filterable by status, type, page,
+  role, setting and date. Mark each New, Actioned or Won't fix.
+- **Overview** — sessions, devices, returning devices, helpfulness by page, use
+  by role and setting, sessions per week, most used pages and scales, recent
+  errors.
+- **Survey** — response count, average score (68 is the published average),
+  average answer to each question, score by role and by month, and the
+  changed-management answers.
+- **Errors** — app errors grouped by message and place.
+
+Every tab has a **Download CSV** button for the data behind it, with the
+current filters applied.
+
+The password is kept for the browser tab only (sessionStorage) and is sent as a
+header, never in a URL. The page writes feedback text as plain text, never as
+HTML, and is served with a Content-Security-Policy that blocks any script it did
+not ship with.
+
+### The daily email
+
+At 9am Sydney time, if any feedback has not been emailed yet, the worker emails
+it to `DIGEST_TO` with a one-line summary of the last 24 hours and a link to the
+admin page. No email is sent on a day with nothing new. Feedback is marked as
+emailed only after the send succeeds, so a failed send is retried the next
+morning.
+
+The schedule (`crons` in `wrangler.toml`) fires at 22:00 and 23:00 UTC, and the
+worker sends only on the run that is 9am in Sydney, so it follows daylight
+saving without being edited.
+
+The email goes to whatever inbox `DIGEST_TO` is — if that is a personal account,
+the message text leaves Cloudflare and lands there, which the privacy statement
+says. To keep message text out of email entirely, edit `buildDigest()` in
+`src/digest.js` to send only the counts.
 
 ## Getting the data out
 
@@ -199,10 +295,11 @@ to change the storage key in `access.js` as well.
 
 1. Add the entry to `ROLES` or `CONSULT_LOCATIONS` in `data/access-config.js`.
 2. Add the same id to `ALLOWED_ROLES` or `ALLOWED_LOCATIONS` in
-   `worker/src/index.js`, and `npx wrangler deploy`.
+   `worker/src/vocab.js`, and its label to `worker/src/labels.js`, and
+   `npx wrangler deploy`.
 3. Release the app.
 
-`test/access.test.js` asserts the two lists match exactly, so a half-done change
+`test/access.test.js` and `test/feedback.test.js` assert the lists match exactly, so a half-done change
 fails the suite rather than reaching production. Do steps 2 and 3 in that order:
 a device sending an id the worker does not know yet gets a 403, and the app
 discards that batch rather than retrying forever.
@@ -214,12 +311,13 @@ data behind it. Add a new one and leave the old in place.
 
 The endpoint is public — the URL ships inside the app, so anyone can find it.
 It only accepts requests carrying an `Origin` of sudtoolkit.org, only accepts
-known role and location ids, caps the body at 64 KB and the batch at 100 events,
-and writes nothing it was not explicitly told to expect.
+known role and location ids, caps the body at 64 KB and the batch at 100 events
+(20 records on `/r`, with a daily ceiling per device), and writes nothing it was
+not explicitly told to expect.
 
 None of that stops someone determined from inserting plausible-looking rows.
 The realistic protections are that there is nothing here worth stealing or
 corrupting, and that Cloudflare's free rate limiting can be pointed at
-`/e` from the dashboard if it ever becomes a problem. Worth knowing before you
+`/e` and `/r` from the dashboard if it ever becomes a problem. Worth knowing before you
 describe the data as tamper-proof to anyone — it is honest usage data, not an
 audit log.

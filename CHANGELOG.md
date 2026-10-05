@@ -5,6 +5,52 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.6.0 - October 2026
+
+No clinical content changes in this release.
+
+### Feedback and evaluation
+
+- **Feedback on every page.** Each page ends with "Was this page helpful?"
+  (a thumbs up or down, recorded as a usage event against the page and open
+  tab, e.g. `scales-page/ciwa-ar`) and a short form: a type (Error, Unclear,
+  Suggestion, Praise), up to 1000 characters, a patient-details warning, and a
+  line saying exactly what is sent with it. A thumbs down opens the form. The
+  menu's Feedback button now opens the form on the current page instead of an
+  email program; email remains the fallback when collection is switched off.
+- **Feedback is saved first, then emailed.** Messages are stored in a new
+  `feedback` table on the metrics worker (POST `/r`), then a daily email at
+  9am Sydney time lists anything not yet emailed. No email on a day with
+  nothing new; a failed send is picked up the next day.
+- **Usability survey.** The System Usability Scale (10 standard items, "app"
+  for "system") plus "Has using this app changed how you managed a patient?".
+  Offered after 5 sessions on a device and again a month after each
+  completion, only on returning to Home, at most once per launch. "Not now"
+  waits a week; "Don't ask me again" is final for the device. The worker
+  computes the 0-100 score.
+- **Error reports.** JavaScript errors are reported automatically (at most 5
+  per launch, deduplicated): the message with long numbers and email addresses
+  masked on the device and again on the worker, file and line, page, app
+  version and a coarse device type. Errors before the gate are held in memory
+  and sent only once it is answered.
+- **Admin page** at `metrics.sudtoolkit.org/admin/`, behind the export
+  password: Feedback (filter, mark New / Actioned / Won't fix), Overview
+  (sessions, returning devices, helpfulness by page, use by role and setting,
+  sessions per week, most used pages and scales, recent errors), Survey and
+  Errors, each with a CSV download.
+- **Privacy statement updated** to describe the feedback form, the daily
+  email, the survey and error reports.
+
+### Housekeeping
+
+- Worker split into modules (`vocab.js`, `util.js`, `records.js`, `admin.js`,
+  `digest.js`, `labels.js`); the admin page is served as static assets from
+  `worker/public/admin/`. New tables `feedback`, `survey_responses` and
+  `app_errors` in `schema.sql` (re-run it; existing data is untouched).
+- `detail` may now be a page id and a tab id joined by one slash.
+- New tests: `test/feedback.test.js` runs the worker's SQL against a real
+  SQLite database (`node:sqlite`), so CI moves to Node 22.
+
 ## 0.5.10 - October 2026
 
 ### Clinical

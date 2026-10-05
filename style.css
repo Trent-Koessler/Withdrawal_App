@@ -1932,3 +1932,343 @@ textarea[id$="-quickstart-summary"] {
 .regimen-step .link-button {
     margin-top: 0.25em;
 }
+
+/* --- Page feedback (feedback.js) --- */
+/* The box at the foot of every page. Quiet until used: a question and two
+   buttons, so it never competes with the clinical content above it. */
+.page-feedback {
+    margin: 28px 0 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+
+.feedback-question {
+    font-weight: bold;
+    margin: 0 0 8px;
+}
+
+.feedback-thumbs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.feedback-thumb {
+    background: var(--tab-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 15px;
+}
+
+.feedback-thumb:hover:not(:disabled) {
+    background: var(--border-color);
+}
+
+.feedback-thumb[aria-pressed="true"] {
+    background: var(--primary-btn-bg);
+    border-color: var(--primary-btn-bg);
+    color: white;
+}
+
+/* A rating is final for the launch; the unchosen one fades rather than
+   disappearing, so the pressed one still reads as a choice. */
+.feedback-thumb:disabled {
+    cursor: default;
+}
+
+.feedback-thumb:disabled[aria-pressed="false"] {
+    opacity: 0.5;
+}
+
+/* A text link that is a <button>, for keyboard and screen-reader users. */
+button.feedback-link,
+a.feedback-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: var(--link-color);
+    text-decoration: underline;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button.feedback-link:hover {
+    background: none;
+    color: var(--link-hover-color);
+}
+
+.feedback-thanks {
+    margin: 8px 0 0;
+}
+
+.feedback-form {
+    margin-top: 12px;
+}
+
+.feedback-heading {
+    font-weight: bold;
+    margin: 0 0 8px;
+}
+
+.feedback-chips {
+    border: none;
+    padding: 0;
+    margin: 0 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.feedback-chips legend {
+    font-size: 14px;
+    margin-bottom: 6px;
+    padding: 0;
+}
+
+/* Real radio buttons, drawn as chips. The input stays in the page (only
+   visually hidden) so keyboard and screen-reader use is the browser's own. */
+.feedback-chip input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.feedback-chip span {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--tab-bg);
+    cursor: pointer;
+}
+
+.feedback-chip input:checked + span {
+    background: var(--primary-btn-bg);
+    border-color: var(--primary-btn-bg);
+    color: white;
+}
+
+.feedback-chip input:focus-visible + span {
+    outline: 3px solid var(--link-color);
+    outline-offset: 2px;
+}
+
+.feedback-text {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 96px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font: inherit;
+}
+
+.feedback-counter {
+    display: block;
+    text-align: right;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.feedback-warning {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.feedback-meta {
+    font-size: 13px;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.feedback-buttons {
+    margin-bottom: 0;
+}
+
+.feedback-send {
+    background-color: var(--primary-btn-bg);
+}
+
+.feedback-send:hover:not(:disabled) {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+.feedback-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.feedback-done {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0;
+}
+
+.feedback-tick {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #1e8e3e;
+    color: white;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+}
+
+.feedback-sub {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* --- Usability survey (survey.js) --- */
+.survey-modal .survey-card {
+    width: auto;
+    max-width: 480px;
+    margin: 12vh auto;
+    margin-left: max(16px, calc(50% - 240px));
+    margin-right: max(16px, calc(50% - 240px));
+}
+
+.survey-card h3 {
+    margin-top: 0;
+}
+
+.survey-question {
+    font-size: 19px;
+    line-height: 1.35;
+}
+
+.survey-small {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.survey-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.survey-actions button {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+}
+
+.survey-primary {
+    background-color: var(--primary-btn-bg);
+}
+
+.survey-primary:hover:not(:disabled) {
+    background-color: var(--primary-btn-hover-bg);
+}
+
+.survey-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button.survey-never {
+    background: none;
+    color: var(--link-color);
+    text-decoration: underline;
+    display: block;
+    margin: 12px auto 0;
+}
+
+button.survey-never:hover {
+    background: none;
+    color: var(--link-hover-color);
+}
+
+.survey-progress {
+    height: 6px;
+    background: var(--tab-bg);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 6px 0 16px;
+}
+
+.survey-progress-bar {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--primary-btn-bg);
+}
+
+.survey-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin: 14px 0 4px;
+}
+
+.survey-options-wide {
+    grid-template-columns: 1fr;
+}
+
+.survey-option {
+    background: var(--tab-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.survey-option:hover {
+    background: var(--border-color);
+}
+
+.survey-option[aria-checked="true"] {
+    background: var(--primary-btn-bg);
+    border-color: var(--primary-btn-bg);
+    color: white;
+}
+
+.survey-ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.survey-nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.survey-nav button {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 15px;
+}
+
+.survey-nav .survey-primary {
+    flex: 2;
+}
+
+.survey-actions button.survey-never {
+    margin-top: 0;
+}
