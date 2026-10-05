@@ -4,13 +4,13 @@ import {
 } from './data/flowchart.js';
 import {
     INPATIENT_CHECKLIST, BENZO_FACTORS, BAND_INTAKE, BAND_RISKS, BAND_NAMES, LOADING_CRITERIA, FIXED_CRITERIA,
-    REGIMEN_TYPE_NAMES, ESCALATION_TRIGGERS, newChecklistState, chooseBenzo, chooseBand, chooseRegimenType,
-    prefillFromTriage, stepProgress, checklistSummary
+    REGIMEN_TYPE_NAMES, ESCALATION_TRIGGERS, WERNICKE_PROMPT, THIAMINE_DOSES, SCALE_NAMES, newChecklistState,
+    chooseBenzo, chooseBand, chooseRegimenType, prefillFromTriage, stepProgress, regimenCellKey, checklistSummary
 } from './data/checklist.js';
 import { REGIMEN_CONFIG, EMR_SAFETY_LINES, INITIAL_SCORING_INTERVAL } from './data/regimens.js';
 import { SCALES, SCALE_CAVEATS_UNIVERSAL } from './data/scales.js';
-import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL } from './data/symptomatic.js';
-import { RASS_RULE_HTML } from './data/sedation.js';
+import { SYMPTOMATIC, SYMPTOMATIC_UNIVERSAL, SYMPTOMATIC_SEDATION } from './data/symptomatic.js';
+import { RASS_RULE_HTML, SEDATION_STEPS_HTML } from './data/sedation.js';
 import { HARM_REDUCTION } from './data/harm-reduction.js';
 import { BENZO_EQUIVALENCE, EQUIVALENCE_CAVEATS, DIAZEPAM_REFERENCE_MG } from './data/benzo-equivalence.js';
 import {
@@ -45,7 +45,7 @@ import { buildSearchIndex, searchEntries, revealElement } from './search.js';
 // handler, so the build-skew guard in index.html can read it even if this file
 // throws while starting up. That guard compares it against the release the
 // markup belongs to; see the comment above it.
-const APP_VERSION = '0.5.9';
+const APP_VERSION = '0.5.10';
 window.SUD_BUILD = APP_VERSION;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -888,6 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // by pressing the tab's own buttons so its state stays the single source.
     function openChosenRegimen() {
         const { benzo, band, type } = checklistDecisions();
+        if (checklist.scale) document.querySelector(`.scale-choice-btn[data-scale="${checklist.scale}"]`)?.click();
         document.querySelector(`.benzo-choice-btn[data-benzo="${benzo}"]`)?.click();
         if (type === 'fixed' && band) document.querySelector(`.regimen-severity-btn[data-severity="${band}"]`)?.click();
         else if (type) selectRegimenType(type);
@@ -908,6 +909,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 on => updateChecklist(() => { checklist.ticks[key] = on; }), `tick-${key}`));
         });
         if (step.warning) body.appendChild(el('div', 'warning-box', `⚠️ ${step.warning}`));
+    }
+
+    function checklistThiamine(body, step) {
+        body.appendChild(el('p', 'checklist-prompt', WERNICKE_PROMPT));
+        const group = el('div', 'seg-group');
+        group.setAttribute('role', 'group');
+        group.setAttribute('aria-label', 'Wernicke-Korsakoff syndrome suspected?');
+        [['no', 'No'], ['yes', 'Yes']].forEach(([v, label]) => group.appendChild(segmentButton(label,
+            checklist.wernicke === v, () => updateChecklist(() => { checklist.wernicke = v; }), `wernicke-${v}`)));
+        body.appendChild(group);
+        if (checklist.wernicke) {
+            const dose = THIAMINE_DOSES[checklist.wernicke];
+            body.appendChild(el('div', 'checklist-result checklist-dose', `<strong>${dose.name}:</strong> <span>${dose.html}</span>`));
+        }
+        checklistTicks(body, step);
     }
 
     function checklistResult(label, value) {
@@ -964,6 +980,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checklistRegimen(body) {
         const { band, type } = checklistDecisions();
+        body.appendChild(el('p', 'checklist-prompt', 'Which scale does your ward chart?'));
+        const scales = el('div', 'seg-group');
+        scales.setAttribute('role', 'group');
+        scales.setAttribute('aria-label', 'Withdrawal scale');
+        Object.entries(SCALE_NAMES).forEach(([key, name]) => scales.appendChild(segmentButton(name,
+            checklist.scale === key, () => updateChecklist(() => { checklist.scale = key; }), `scale-${key}`)));
+        body.appendChild(scales);
+        body.appendChild(el('p', 'triage-hint', 'Sets the bands, PRN triggers and scoring frequency in the EMR text.'));
         body.appendChild(el('p', 'checklist-prompt', 'Loading if any apply:'));
         if (band === 'severe') body.appendChild(el('p', 'triage-hint', 'Band is Severe: severe withdrawal is managed by loading.'));
         checklistFactorList(body, LOADING_CRITERIA, 'loading');
@@ -989,16 +1013,21 @@ document.addEventListener('DOMContentLoaded', () => {
             + `<ul>${ESCALATION_TRIGGERS.map(t => `<li>${t}</li>`).join('')}</ul>`));
     }
 
-    const CHECKLIST_BODIES = { ticks: checklistTicks, benzo: checklistBenzo, band: checklistBand,
+    const CHECKLIST_BODIES = { ticks: checklistTicks, thiamine: checklistThiamine, benzo: checklistBenzo, band: checklistBand,
         regimen: checklistRegimen, escalate: checklistEscalate };
 
     function checklistRecap(step) {
         const { benzo, band, type } = checklistDecisions();
         const progress = stepProgress(step, checklist);
-        if (progress) return `${progress.ticked} of ${progress.total} ticked`;
+        if (step.type === 'thiamine' && checklist.wernicke) {
+            return `${THIAMINE_DOSES[checklist.wernicke].name} · ${progress.ticked} of ${progress.total} complete`;
+        }
+        if (progress) return `${progress.ticked} of ${progress.total} complete`;
         if (step.type === 'benzo') return benzo;
         if (step.type === 'band') return band ? BAND_NAMES[band] : 'Not chosen yet';
-        if (step.type === 'regimen') return type ? REGIMEN_TYPE_NAMES[type] : 'Not chosen yet';
+        if (step.type === 'regimen') {
+            return [type ? REGIMEN_TYPE_NAMES[type] : 'Not chosen yet', SCALE_NAMES[checklist.scale]].filter(Boolean).join(' · ');
+        }
         return 'Escalation triggers';
     }
 
@@ -1012,7 +1041,8 @@ document.addEventListener('DOMContentLoaded', () => {
         checklistPage.appendChild(el('p', 'triage-hint', 'A bedside summary of the Inpatient Guidelines. Each step '
             + 'links to the full text. Ticks are not saved: they clear when the app closes.'));
         checklistPage.appendChild(el('p', 'triage-progress-label', [benzo, band && BAND_NAMES[band],
-            type && REGIMEN_TYPE_NAMES[type], `${ticked} of ${total} ticked`].filter(Boolean).join(' · ')));
+            type && REGIMEN_TYPE_NAMES[type],
+            ticked === total ? 'Checklist complete ✓' : `Checklist complete: ${ticked} of ${total}`].filter(Boolean).join(' · ')));
         const bar = el('div', 'progress-bar');
         bar.appendChild(el('span'));
         bar.firstChild.style.width = `${Math.round(100 * ticked / total)}%`;
@@ -1065,8 +1095,10 @@ document.addEventListener('DOMContentLoaded', () => {
         summary.appendChild(el('h4', '', 'Checklist summary for the EMR'));
         const emr = el('textarea');
         emr.readOnly = true;
-        emr.rows = 6;
-        emr.value = checklistSummary(checklist);
+        emr.rows = 10;
+        const cellKey = regimenCellKey(band, type);
+        emr.value = checklistSummary(checklist, cellKey && checklist.scale
+            ? buildRegimenSummary({ benzo, cellKey, scale: checklist.scale }) : '');
         const copy = el('button');
         copy.type = 'button';
         copy.textContent = 'Copy to Clipboard';
@@ -1079,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const actions = el('div', 'flowchart-options');
         const regimen = el('button', 'big-button', 'Open this regimen on the Regimens tab →');
         regimen.type = 'button';
-        regimen.disabled = !(band && type);
+        regimen.disabled = !(band && type && checklist.scale);
         regimen.addEventListener('click', openChosenRegimen);
         actions.appendChild(regimen);
         summary.appendChild(actions);
@@ -1166,14 +1198,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Bands are stored as thresholds only, in both scales. The label is applied
     // here so a band can never render under the wrong scale's name.
-    const bandLabel = (b) => `${SCALE_LABEL[selectedScale]} ${b[selectedScale]}`;
+    const bandLabel = (b, scale = selectedScale) => `${SCALE_LABEL[scale]} ${b[scale]}`;
 
     // Title is composed rather than stored: the same cell reads
     // "Mild-Moderate (CIWA-Ar 10-15) - Diazepam" or "Mild-Moderate (AWS 4-14) -
     // Oxazepam". The drug is appended here, once, rather than being written
     // into some cell names and not others.
-    const regimenTitle = (cell) => (cell.band ? `${cell.name} (${bandLabel(cell.band)})` : cell.name)
-        + ` - ${REGIMEN_CONFIG[selectedBenzo].name}`;
+    const regimenTitle = (cell, benzo = selectedBenzo, scale = selectedScale) =>
+        (cell.band ? `${cell.name} (${bandLabel(cell.band, scale)})` : cell.name) + ` - ${REGIMEN_CONFIG[benzo].name}`;
 
     // --- EMR EXPORT (AUTH-06) --- //
 
@@ -1358,6 +1390,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // single plain line it becomes in an EMR field, citations removed.
     function plainLine(html) {
         const line = html
+            // A list inside a line (the RASS levels) reads as sentences once flat.
+            .replace(/<li>/g, ' ').replace(/<\/li>/g, '. ')
             .replace(/<span class="src-tag[\s\S]*?<\/span>/g, '')
             .replace(/<[^>]+>/g, '')
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
@@ -1398,9 +1432,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // coarser than the CIWA-Ar split this app uses. Naming the CIWA-Ar sub-band
     // alongside is the honest resolution: silently rendering "AWS 4-14" twice
     // with different doses would be an instruction a nurse cannot follow.
-    function prnBandLabel(entry, allEntries) {
-        const label = selectedScale === 'aws' ? `AWS ${entry.aws}` : `CIWA-Ar ${entry.range}`;
-        if (selectedScale !== 'aws') return label;
+    function prnBandLabel(entry, allEntries, scale = selectedScale) {
+        const label = scale === 'aws' ? `AWS ${entry.aws}` : `CIWA-Ar ${entry.range}`;
+        if (scale !== 'aws') return label;
         const ambiguous = allEntries.filter((e) => typeof e !== 'string' && e.aws === entry.aws).length > 1;
         return ambiguous ? `${label} (CIWA-Ar ${entry.range})` : label;
     }
@@ -1414,12 +1448,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // discharge rules and thiamine - all of which the clinician has on screen -
     // stay out of the paste. Citations are dropped: the app is the source of
     // record, and a prescribing block is read at the drug chart, not audited.
-    function buildRegimenSummary() {
-        const config = REGIMEN_CONFIG[selectedBenzo];
-        const data = config[activeCellKey()];
+    // Defaults to what the Regimens tab shows. The inpatient checklist passes
+    // its own drug, cell and scale, so its EMR text is this same block without
+    // changing the tab's selection behind the clinician's back.
+    function buildRegimenSummary({ benzo = selectedBenzo, cellKey = activeCellKey(), scale: scaleKey = selectedScale } = {}) {
+        const config = REGIMEN_CONFIG[benzo];
+        const data = config[cellKey];
         const drug = config.name;
-        const scale = SCALE_LABEL[selectedScale];
-        const out = [`ALCOHOL WITHDRAWAL - ${plainLine(regimenTitle(data))}`, ''];
+        const scale = SCALE_LABEL[scaleKey];
+        const out = [`ALCOHOL WITHDRAWAL - ${plainLine(regimenTitle(data, benzo, scaleKey))}`, ''];
 
         if (data.routing) {
             // No regimen exists for this cell (severe withdrawal on oxazepam).
@@ -1428,7 +1465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (data.bands) {
             out.push(`Score ${scale} at the interval for the current band, and give that band's dose:`);
             data.bands.forEach((b) => {
-                out.push(`  - ${plainLine(bandLabel(b))}: ${plainLine(b.dose)}, rescore ${b.monitoring}`);
+                out.push(`  - ${plainLine(bandLabel(b, scaleKey))}: ${plainLine(b.dose)}, rescore ${b.monitoring}`);
             });
         } else if (data.steps) {
             // Loading: the steps in the order they happen, so the paste reads
@@ -1461,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.prn.forEach((p) => {
                 out.push(typeof p === 'string'
                     ? `  - ${plainLine(p)}`
-                    : `  - ${prnBandLabel(p, data.prn)}: extra ${drug} ${p.dose}mg PRN`);
+                    : `  - ${prnBandLabel(p, data.prn, scaleKey)}: extra ${drug} ${p.dose}mg PRN`);
             });
         }
 
@@ -1470,12 +1507,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2-hourly interval and its own 80mg review point; repeating them
         // underneath invites the reader to treat the two as different rules.
         const body = out.join('\n');
-        out.push('');
+        // The sedation caution is the first thing after the doses: it is the
+        // over-sedation safeguard, so it must not be read as one rule among
+        // the scoring and review lines underneath.
+        out.push('', EMR_SAFETY_LINES.sedation, '');
         // Symptom-triggered dosing states its own frequency per band above, so
         // repeating a single figure here would contradict the list.
         // An AWS-only frequency (AWS 8-14, AGTAP Table 8.4) replaces the
         // shared one when the ward charts AWS.
-        const monitoring = (selectedScale === 'aws' && data.monitoringAws) || data.monitoring;
+        const monitoring = (scaleKey === 'aws' && data.monitoringAws) || data.monitoring;
         if (monitoring && !data.bands) {
             // At 1-2 hourly or closer, the 2-hourly opening interval would be a
             // step down, so the band frequency applies from the start.
@@ -1486,7 +1526,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data.routing && !/2-hourly|q2hrly/i.test(body)) {
             out.push(EMR_SAFETY_LINES.dosingInterval);
         }
-        out.push(EMR_SAFETY_LINES.sedation);
         if (config.reviewMax && !data.routing && !/in 24 hours/i.test(body)) {
             out.push(EMR_SAFETY_LINES.review(drug.toLowerCase(), config.reviewMax));
         }
@@ -1596,11 +1635,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // on the way out: a routing card that left the previous regimen's doses
         // sitting in the textarea would be the worst possible stale paste.
         if (data.routing) {
-            return `<h3>${regimenTitle(data)}</h3>`
+            // Oxazepam's "loading" card has no schedule but still advises
+            // titrated doses, so it leads with the sedation caution too.
+            const caution = data.name === 'Loading'
+                ? `<div class="warning-box sedation-caution">⚠️ ${RASS_RULE_HTML}</div>` : '';
+            return `<h3>${regimenTitle(data)}</h3>` + caution
                 + data.routing.map(item => `<div class="routing-card">${item}</div>`).join('');
         }
 
         let displayHTML = `<h3>${regimenTitle(data)}</h3>`;
+
+        // The sedation caution leads every regimen that gives a dose: it is the
+        // over-sedation safeguard, so it sits above the setting, the caveats
+        // and the doses. A schedule carries the full rule; loading and the
+        // test dose carry their RASS checks inside their steps, so they get
+        // the plain caution and a pointer to those steps.
+        const givesDoses = !data.steps && !/Test-Dose/.test(data.name || '');
+        displayHTML += `<div class="warning-box sedation-caution">⚠️ ${givesDoses ? RASS_RULE_HTML : SEDATION_STEPS_HTML}</div>`;
 
         // Where to manage the patient comes before what to prescribe, so it is
         // rendered above everything else rather than under PRN dosing.
@@ -1621,12 +1672,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // ...and its CIWA-Ar twin (why the fixed schedules split CIWA-Ar at 15/16).
         if (selectedScale !== 'aws' && data.caveatCiwa) displayHTML += renderCaveats([data.caveatCiwa]);
 
-        // The one sedation rule, shown with every schedule that gives doses.
-        // Loading carries its own version inside Step 1 (its endpoint is
-        // RASS -1), the test-dose protocol has its own, and a routing card
-        // gives no dose.
-        const givesDoses = !data.steps && !data.routing && !/Test-Dose/.test(data.name || '');
-        if (givesDoses) displayHTML += `<div class="clinical-block rass-rule"><p>${RASS_RULE_HTML}</p></div>`;
 
         // Score-banded dosing (symptom-triggered). A list, not a table: this is
         // the block clinicians paste into the EMR, where a table degrades into
@@ -2147,6 +2192,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `<h5>${item.symptom}</h5><ul>${item.lines.map(l => `<li>${l}</li>`).join('')}</ul>`).join('');
         host.classList.add('shared-block');
         host.innerHTML = `<h4>${set.title}</h4>`
+            + `<div class="warning-box sedation-caution">⚠️ ${SYMPTOMATIC_SEDATION}</div>`
             + (set.intro ? `<p>${set.intro}</p>` : '')
             + items
             + `<h5>Rules that apply to all of the above</h5><ul>`

@@ -20,8 +20,8 @@ import {
     baseOutcome, triageOutcome, triageSummary
 } from '../data/flowchart.js';
 import {
-    INPATIENT_CHECKLIST, newChecklistState, chooseBenzo, chooseBand, chooseRegimenType, prefillFromTriage,
-    checklistSummary
+    INPATIENT_CHECKLIST, THIAMINE_DOSES, newChecklistState, chooseBenzo, chooseBand, chooseRegimenType,
+    prefillFromTriage, stepProgress, regimenCellKey, checklistSummary
 } from '../data/checklist.js';
 import { bandFor, restartDose, ORAL_OTP_AGENTS, MISSED_DOSE_BANDS } from '../data/otp-missed-doses.js';
 
@@ -410,9 +410,69 @@ describe('inpatient checklist', () => {
         assert.ok(/Benzodiazepine: Diazepam/.test(text));
         assert.ok(/Band: Mild-Mod/.test(text));
         assert.ok(/Regimen type: not yet chosen/.test(text));
-        assert.ok(/Thiamine: Thiamine 300mg IV/.test(text));
-        assert.ok(!/BAL checked/.test(text), 'a ticked item is listed as open');
+        assert.ok(/Wernicke screen not yet answered/.test(text));
+        assert.ok(/Regimen doses: choose the band and regimen type/.test(text));
+        assert.ok(/- Before you start: diagnosis, bloods, scoring started, follow-up plan/.test(text),
+            'unticked items should be listed by short label, one line per step');
+        assert.ok(!/\bBAL\b/.test(text.split('Not yet ticked:')[1]), 'a ticked item is listed as open');
         assert.ok(!/<|NSWCG §/.test(text), 'markup or a source chip leaked into the EMR text');
+    });
+
+    // The two thiamine doses are alternatives decided by the Wernicke screen;
+    // only the one that applies reaches the EMR.
+    test('every checklist item has a short label of a few words for the EMR', () => {
+        for (const step of INPATIENT_CHECKLIST) {
+            for (const item of step.items || []) {
+                assert.ok(item.short && item.short.split(' ').length <= 3, `${step.id}.${item.id} short label`);
+            }
+        }
+    });
+
+    test('thiamine: the Wernicke answer picks one dose, and the screen counts toward the step', () => {
+        const step = INPATIENT_CHECKLIST.find((x) => x.id === 'thiamine');
+        const s = newChecklistState();
+        assert.equal(stepProgress(step, s).total, step.items.length + 1);
+        assert.equal(stepProgress(step, s).ticked, 0);
+        s.wernicke = 'no';
+        assert.equal(stepProgress(step, s).ticked, 1);
+        let text = checklistSummary(s);
+        assert.ok(text.includes(THIAMINE_DOSES.no.emr) && !text.includes(THIAMINE_DOSES.yes.emr));
+        assert.ok(/300mg IV/.test(THIAMINE_DOSES.no.emr));
+        s.wernicke = 'yes';
+        text = checklistSummary(s);
+        assert.ok(text.includes(THIAMINE_DOSES.yes.emr) && !text.includes(THIAMINE_DOSES.no.emr));
+        assert.ok(/500mg IV TDS for at least 5 days/.test(THIAMINE_DOSES.yes.emr));
+        for (const d of Object.values(THIAMINE_DOSES)) assert.ok(/before any glucose/.test(d.emr));
+    });
+
+    test('the thiamine doses match the Thiamine tab', () => {
+        const html = read('index.html');
+        assert.ok(/thiamine 300mg daily IV \(preferred\) or IM for 3 days, then 300mg oral daily\s+for 2-3 weeks/.test(html));
+        assert.ok(/500mg IV TDS for a minimum of 5 days/.test(html));
+    });
+
+    test('the regimen block is placed as given, after the open items', () => {
+        const s = newChecklistState();
+        s.intake = 'high';
+        s.picked = 'fixed';
+        s.scale = 'ciwa';
+        const text = checklistSummary(s, 'ALCOHOL WITHDRAWAL - test block');
+        assert.ok(text.endsWith('ALCOHOL WITHDRAWAL - test block'));
+        assert.ok(text.indexOf('Not yet ticked:') < text.indexOf('ALCOHOL WITHDRAWAL'));
+        assert.ok(/scored on CIWA-Ar/.test(text));
+    });
+
+    test('checklist choices land on a Regimens tab cell that exists', () => {
+        assert.equal(regimenCellKey('mild', 'fixed'), 'mild');
+        assert.equal(regimenCellKey('moderate', 'fixed'), 'moderate');
+        assert.equal(regimenCellKey('mild', 'symptom'), 'symptom');
+        assert.equal(regimenCellKey('severe', 'loading'), 'loading');
+        assert.equal(regimenCellKey('mild', null), null);
+        for (const benzo of ['Diazepam', 'Oxazepam']) {
+            for (const key of ['mild', 'moderate', 'symptom', 'loading']) {
+                assert.ok(REGIMEN_CONFIG[benzo][key], `${benzo}.${key} missing`);
+            }
+        }
     });
 });
 

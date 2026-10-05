@@ -653,6 +653,23 @@ textarea {
     font-size: 16px;
 }
 
+/* The global button hover is the dark secondary grey, which would black out
+   a step title or an answer chip under the pointer. */
+.checklist-head:hover,
+.sofar-chip:hover {
+    background-color: var(--tab-bg);
+}
+
+/* The three RASS levels inside a sedation caution box. */
+.rass-levels {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.rass-levels li {
+    margin: 2px 0;
+}
+
 .checklist-dot {
     position: absolute;
     left: 0;
@@ -723,6 +740,11 @@ textarea {
     border-radius: 0 6px 6px 0;
     padding: 8px 12px;
     margin: 10px 0 0;
+}
+
+.checklist-result.checklist-dose {
+    display: block;
+    line-height: 1.4;
 }
 
 .checklist-actions {

@@ -904,7 +904,11 @@ describe('AUTH-06 — the EMR copy function exports a prescribing block', () => 
 
     test('it is built from the regimen data, not scraped from the whole tab', () => {
         assert.ok(summary.length > 200, 'buildRegimenSummary is missing');
-        assert.ok(/REGIMEN_CONFIG\[selectedBenzo\]/.test(summary),
+        // The inpatient checklist passes its own choices in; with no argument the
+        // export is still whatever the Regimens tab has selected.
+        assert.ok(/benzo = selectedBenzo, cellKey = activeCellKey\(\), scale: scaleKey = selectedScale/.test(summary),
+            'with no argument the export must default to the Regimens tab selection');
+        assert.ok(/REGIMEN_CONFIG\[benzo\]/.test(summary),
             'the export should read the selected regimen directly');
         for (const id of ['block-band-selection', 'block-monitoring', 'block-escalation',
             'block-discharge', 'thiamine']) {
@@ -922,8 +926,11 @@ describe('AUTH-06 — the EMR copy function exports a prescribing block', () => 
     test('the paste says how often to score, in the scale the ward charts', () => {
         assert.ok(/INITIAL_SCORING_INTERVAL/.test(summary),
             'a fixed schedule must paste with a scoring interval, not doses alone');
-        assert.ok(/SCALE_LABEL\[selectedScale\]/.test(summary),
+        assert.ok(/SCALE_LABEL\[scaleKey\]/.test(summary),
             'the paste must name the scale the clinician selected');
+        assert.ok(!/selectedScale|selectedBenzo|selectedType|selectedSeverity/.test(
+            summary.slice(summary.indexOf(') {'))),
+            'the export reads tab state past its defaults, so the checklist would get the tab\'s regimen, not its own');
     });
 
     // The counterpart of dropping citations: the safety sentences in the paste

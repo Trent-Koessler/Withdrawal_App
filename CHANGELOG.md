@@ -5,6 +5,43 @@ change what a clinician does; everything else is housekeeping.
 
 The user-facing version of this lives at `#changelog-page` in the app.
 
+## 0.5.10 - October 2026
+
+### Clinical
+
+- **Sedation caution first, in plain words, kept short.** Every statement
+  of the RASS rule now opens "Do not give a benzodiazepine if the patient is
+  sedated (drowsy or hard to rouse)." before naming RASS, then lists the three
+  RASS levels as bullets (0 or above: give; -1: withhold; -2 or below:
+  withhold, medical review), each worded for its setting (`SEDATION_LEAD_*`,
+  `rassLevelsHtml` in data/sedation.js). It is the first element, in an amber
+  caution box, of every section that gives a benzodiazepine: regimen cards
+  (loading and test dose get the plain caution plus a pointer to their step
+  checks; oxazepam's loading card too), Monitoring, Special Cases, Ambulatory
+  medication, Benzodiazepine tapering, GHB benzodiazepine treatment, the
+  shared symptomatic tables, and the checklist's review step. "If multiple
+  doses are withheld, the schedule is too high" stays in the EMR paste and on
+  the Monitoring tab only. The RASS thresholds are unchanged.
+- **EMR paste: sedation line moved to straight after the doses/PRN**, before
+  the scoring frequency, dosing-interval and 24-hour review lines.
+- **Checklist thiamine step asks "Wernicke-Korsakoff suspected?" first** and
+  shows one dose: 300mg IV/IM prophylaxis, or 500mg IV TDS treatment (NSWCG
+  §5.4.7). The oral 100mg course is not offered: the Thiamine tab says it is
+  generally not appropriate for patients receiving significant withdrawal
+  treatment.
+
+### Other
+
+- Checklist EMR summary includes the full regimen block from
+  `buildRegimenSummary()`, the Regimens tab's own export, now parameterised by
+  drug, cell and scale (defaults unchanged). The checklist asks which scale the
+  ward charts. Thiamine plan included.
+- Checklist EMR summary lists unticked items by short label, one line per
+  step (e.g. "- Thiamine: charted, magnesium"), instead of each item in full.
+- Checklist progress reads "Checklist complete: 3 of 13", and "Checklist
+  complete ✓" when everything is done. Step titles and triage answer chips no
+  longer turn dark grey under the pointer.
+
 ## 0.5.9 - October 2026
 
 ### Clinical
